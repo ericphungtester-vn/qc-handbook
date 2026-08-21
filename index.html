@@ -87,6 +87,13 @@
   }
   nav.side a:hover{background:var(--surface-2)}
   nav.side a .n{font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums}
+  .navtoggle{display:flex; gap:3px; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:3px; margin-bottom:14px}
+  .navtoggle button{
+    flex:1; font:600 12px var(--sans); padding:6px 8px; border:0; border-radius:6px;
+    background:transparent; color:var(--muted); cursor:pointer;
+  }
+  .navtoggle button.on{background:var(--surface); color:var(--ink); box-shadow:var(--shadow)}
+  #navComps a .n{font-family:var(--mono); text-transform:none; letter-spacing:0}
 
   /* Intro */
   .intro{
@@ -103,6 +110,7 @@
 
   /* Sections */
   section.cat{margin-bottom:14px; scroll-margin-top:82px}
+  .comp{scroll-margin-top:88px}
   .cat-head{display:flex; align-items:baseline; gap:12px; margin:30px 0 14px}
   .cat-head h3{margin:0; font-size:16px; letter-spacing:-.01em}
   .cat-head .en{font-size:13px; color:var(--muted); font-weight:500}
@@ -275,7 +283,12 @@
 
 <div class="wrap shell">
   <nav class="side" id="nav" aria-label="Danh mục">
-    <p class="lbl">Danh mục</p>
+    <div class="navtoggle" role="tablist" aria-label="Kiểu hiển thị menu">
+      <button id="tgGroups" type="button" class="on" aria-selected="true">Nhóm</button>
+      <button id="tgComps" type="button" aria-selected="false">Component</button>
+    </div>
+    <div id="navGroups"><p class="lbl">Danh mục</p></div>
+    <div id="navComps" hidden><p class="lbl">Tất cả component (A→Z)</p></div>
   </nav>
 
   <main>
@@ -515,17 +528,19 @@ const API = {
   "Video player":["GET","Stream video (GET có Range). Test tua (range request), lỗi mạng, phụ đề, autoplay."],
 };
 
-const nav = document.getElementById("nav");
+const navGroups = document.getElementById("navGroups");
+const navComps = document.getElementById("navComps");
 const content = document.getElementById("content");
+const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
 
 CATS.forEach(cat=>{
   const items = COMPS.filter(x=>x.c===cat.id);
-  // nav
+  // nav (theo nhóm)
   const a = document.createElement("a");
   a.href = "#cat-"+cat.id;
   a.dataset.cat = cat.id;
   a.innerHTML = `<span>${cat.vi}</span><span class="n">${items.length}</span>`;
-  nav.appendChild(a);
+  navGroups.appendChild(a);
   // section
   const sec = document.createElement("section");
   sec.className = "cat";
@@ -537,6 +552,7 @@ CATS.forEach(cat=>{
   items.forEach(x=>{
     const card = document.createElement("article");
     card.className = "comp";
+    card.id = "comp-"+slug(x.n);
     const api = API[x.n] || null;
     card.dataset.k = (x.n+" "+x.vn+" "+x.d+" "+x.t.join(" ")+" "+(api?api[0]+" "+api[1]:"")).toLowerCase();
     const pv = PREVIEWS[x.n] || "";
@@ -565,8 +581,36 @@ CATS.forEach(cat=>{
   const a = document.createElement("a");
   a.href = "#"+id;
   a.innerHTML = `<span>${label}</span><span class="n">★</span>`;
-  nav.appendChild(a);
+  navGroups.appendChild(a);
 });
+
+// nav theo tên component (A→Z)
+[...COMPS].sort((a,b)=>a.n.localeCompare(b.n)).forEach(x=>{
+  const a = document.createElement("a");
+  a.href = "#comp-"+slug(x.n);
+  a.title = x.vn;
+  a.innerHTML = `<span>${x.n}</span><span class="n">${x.vn}</span>`;
+  navComps.appendChild(a);
+});
+
+// Toggle: hiển thị menu theo Nhóm / theo Component (nhớ lựa chọn)
+const tgGroups = document.getElementById("tgGroups");
+const tgComps = document.getElementById("tgComps");
+function setNavMode(mode){
+  const comps = mode === "comps";
+  navComps.hidden = !comps;
+  navGroups.hidden = comps;
+  tgComps.classList.toggle("on", comps);
+  tgGroups.classList.toggle("on", !comps);
+  tgComps.setAttribute("aria-selected", comps);
+  tgGroups.setAttribute("aria-selected", !comps);
+  try{ localStorage.setItem("qc-nav-mode", mode); }catch(e){}
+}
+tgGroups.addEventListener("click", ()=>setNavMode("groups"));
+tgComps.addEventListener("click", ()=>setNavMode("comps"));
+let savedMode = "groups";
+try{ savedMode = localStorage.getItem("qc-nav-mode") || "groups"; }catch(e){}
+setNavMode(savedMode);
 
 // Search
 const q = document.getElementById("q");
