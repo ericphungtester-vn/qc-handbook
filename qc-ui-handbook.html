@@ -75,7 +75,7 @@
 
   /* Layout */
   .shell{display:grid; grid-template-columns:230px 1fr; gap:34px; padding:28px 0 80px}
-  nav.side{position:sticky; top:82px; align-self:start; height:max-content}
+  nav.side{position:sticky; top:82px; align-self:start; max-height:calc(100vh - 100px); overflow-y:auto; overscroll-behavior:contain; padding-right:4px}
   nav.side .lbl{
     font-size:11px; text-transform:uppercase; letter-spacing:.09em;
     color:var(--muted); font-weight:700; margin:0 0 8px 8px;
@@ -366,27 +366,28 @@ const COMPS = [
   {c:"form", n:"Text field", vn:"Ô nhập 1 dòng", d:"Ô gõ văn bản ngắn (tên, tiêu đề…).", t:["Max length, dán chuỗi dài","Bỏ trống khi bắt buộc (required)","Trim khoảng trắng đầu/cuối","Ký tự đặc biệt, emoji, tiếng Việt có dấu","XSS / SQL injection","Placeholder mờ, biến mất khi gõ","Validate lúc blur / lúc submit"]},
   {c:"form", n:"Textarea", vn:"Ô nhập nhiều dòng", d:"Ô văn bản dài, xuống dòng được.", t:["Xuống dòng (Enter) giữ đúng","Max length & đếm ký tự","Kéo resize (nếu có)","Cuộn khi nội dung dài","Dán đoạn văn rất dài"]},
   {c:"form", n:"Dropdown / Select", vn:"Menu xổ chọn", d:"Chọn 1 giá trị từ danh sách xổ xuống.", t:["Chọn từng option đúng giá trị","Giá trị mặc định / placeholder","Danh sách rỗng","Nhiều option → cuộn","Chọn bằng bàn phím","Click ra ngoài đóng lại"]},
-  {c:"form", n:"Combobox", vn:"Ô chọn có gõ tìm", d:"Dropdown cho gõ để lọc option.", t:["Gõ lọc đúng","Không có kết quả","Không phân biệt hoa/thường","Khớp có dấu tiếng Việt","Chọn item bằng phím & chuột"]},
+  {c:"form", n:"Combobox", vn:"Ô chọn có gõ tìm", d:"Dropdown cho gõ để lọc option (còn gọi Autocomplete).", t:["Gõ lọc đúng","Không có kết quả","Không phân biệt hoa/thường","Khớp có dấu tiếng Việt","Chọn item bằng phím & chuột"]},
   {c:"form", n:"Multi-select", vn:"Chọn nhiều", d:"Chọn nhiều giá trị cùng lúc (thường hiện chip).", t:["Chọn / bỏ chọn nhiều item","Xoá từng chip đã chọn","Giới hạn số lượng (nếu có)","Chọn tất cả / bỏ tất cả","Tràn khi chọn nhiều"]},
   {c:"form", n:"Checkbox", vn:"Ô tick", d:"Bật/tắt một lựa chọn độc lập (chọn nhiều).", t:["Tick / bỏ tick lưu đúng","Trạng thái mặc định","Indeterminate (tick 1 phần)","Nhóm bắt buộc chọn ≥ 1","disabled không bấm được"]},
   {c:"form", n:"Radio button", vn:"Nút chọn 1", d:"Chọn đúng 1 trong nhóm.", t:["Chỉ chọn được 1 trong nhóm","Giá trị mặc định","Bắt buộc chọn khi submit","Đổi lựa chọn qua lại","Chọn bằng phím mũi tên"]},
-  {c:"form", n:"Toggle / Switch", vn:"Công tắc bật/tắt", d:"Bật/tắt tức thì một tính năng.", t:["Bật/tắt lưu đúng trạng thái","Phản hồi ngay (hoặc có xác nhận)","Trạng thái mặc định đúng","disabled"]},
-  {c:"form", n:"Slider", vn:"Thanh kéo", d:"Chọn giá trị trong khoảng bằng cách kéo.", t:["Chạm min / max","Bước nhảy (step) đúng","Kéo chuột & phím mũi tên","Giá trị hiển thị đồng bộ với vị trí"]},
+  {c:"form", n:"Switch", vn:"Công tắc gạt", d:"Công tắc gạt bật/tắt một cài đặt — áp dụng NGAY, không cần bấm Lưu.", t:["Bật/tắt lưu đúng trạng thái","Áp dụng ngay (hoặc có bước xác nhận)","Trạng thái mặc định đúng","Khi API lỗi → gạt về lại trạng thái cũ (rollback)","disabled / read-only"]},
+  {c:"form", n:"Slider", vn:"Thanh kéo", d:"Chọn giá trị trong khoảng bằng cách kéo (loại 2 núm = Range slider).", t:["Chạm min / max","Bước nhảy (step) đúng","Kéo chuột & phím mũi tên","Giá trị hiển thị đồng bộ với vị trí"]},
   {c:"form", n:"Date picker", vn:"Chọn ngày", d:"Lịch để chọn ngày/giờ.", t:["Định dạng ngày đúng vùng","Ngày không hợp lệ (31/4, 29/2)","Giới hạn min/max","Lệch múi giờ (timezone)","Chọn quá khứ / tương lai","Nhập tay vs chọn lịch"]},
-  {c:"form", n:"File upload", vn:"Tải file lên", d:"Chọn hoặc kéo-thả file.", t:["Đúng định dạng cho phép","Chặn sai định dạng (đổi đuôi)","Giới hạn dung lượng","Nhiều file cùng lúc","Kéo-thả & chọn thủ công","File 0 byte, tên dài / ký tự lạ"]},
+  {c:"form", n:"File upload", vn:"Tải file lên", d:"Chọn hoặc kéo-thả file (còn gọi Dropzone / File picker).", t:["Đúng định dạng cho phép","Chặn sai định dạng (đổi đuôi)","Giới hạn dung lượng","Nhiều file cùng lúc","Kéo-thả & chọn thủ công","File 0 byte, tên dài / ký tự lạ"]},
   {c:"form", n:"Search box", vn:"Ô tìm kiếm", d:"Nhập từ khoá để tìm.", t:["Tìm rỗng","Không có kết quả","Ký tự đặc biệt / có dấu","Debounce (không gọi mỗi phím)","Nút × xoá nhanh","Nhấn Enter để tìm"]},
-  {c:"form", n:"Stepper (number)", vn:"Ô số +/−", d:"Ô số có nút tăng/giảm.", t:["Chạm min / max","Nhập tay giá trị ngoài khoảng","Số âm, số thập phân","Giữ nút tăng liên tục","Nhập chữ vào ô số"]},
+  {c:"form", n:"Number input", vn:"Ô số (+/−)", d:"Ô nhập số, thường kèm nút tăng/giảm (spinner). Khác Wizard/Stepper (quy trình nhiều bước).", t:["Chạm min / max","Nhập tay giá trị ngoài khoảng","Số âm, số thập phân","Giữ nút tăng liên tục","Nhập chữ vào ô số"]},
 
   // ACTION
   {c:"action", n:"Button", vn:"Nút bấm", d:"Kích hoạt một hành động (Lưu, Gửi…).", t:["Click thực thi đúng","Double-click không submit 2 lần","disabled không bấm được","Loading khi đang xử lý","Enter / Space kích hoạt","Chữ dài không vỡ nút"]},
   {c:"action", n:"Primary / Secondary", vn:"Nút chính / phụ", d:"Phân cấp hành động: chính nổi bật, phụ nhạt.", t:["Nút chính nổi bật đúng chỗ","Chỉ 1 nút chính mỗi khu vực","Phân biệt rõ với nút phụ / huỷ"]},
   {c:"action", n:"Icon button", vn:"Nút biểu tượng", d:"Nút chỉ có icon, không chữ.", t:["Có tooltip / aria-label mô tả","Vùng bấm đủ lớn (≥ 40px)","Trạng thái active / selected"]},
+  {c:"action", n:"Toggle button", vn:"Nút giữ trạng thái", d:"Nút bật/tắt giữ trạng thái nhấn (active/inactive) — vd nút B / I trên thanh soạn thảo. Khác Switch (công tắc gạt).", t:["Nhấn giữ đúng trạng thái active/inactive","aria-pressed đúng","Nhóm chọn 1 (segmented) nếu có","disabled","Bàn phím Space / Enter"]},
   {c:"action", n:"Link", vn:"Liên kết", d:"Chữ bấm được để điều hướng.", t:["Điều hướng đúng đích","Mở tab mới đúng (target)","Link hỏng (404)","Trạng thái visited / hover","Right-click sao chép được"]},
   {c:"action", n:"FAB", vn:"Nút nổi", d:"Floating Action Button — nút tròn nổi ở góc.", t:["Luôn nổi khi cuộn trang","Không che nội dung quan trọng","Bấm được trên mobile"]},
 
   // NAV
   {c:"nav", n:"Navbar / Header", vn:"Thanh trên cùng", d:"Thanh điều hướng ở đầu trang.", t:["Sticky khi cuộn (nếu thiết kế vậy)","Đánh dấu mục đang mở (active)","Responsive: thu thành hamburger","Logo về trang chủ"]},
-  {c:"nav", n:"Sidebar", vn:"Thanh bên", d:"Menu điều hướng dọc bên trái/phải.", t:["Mở / đóng / thu gọn","Cuộn độc lập với nội dung","Mục active đúng","Responsive trên màn nhỏ"]},
+  {c:"nav", n:"Sidebar", vn:"Thanh bên", d:"Menu điều hướng dọc bên trái/phải (bản mobile gọi là Navigation drawer).", t:["Mở / đóng / thu gọn","Cuộn độc lập với nội dung","Mục active đúng","Responsive trên màn nhỏ"]},
   {c:"nav", n:"Menu / Dropdown menu", vn:"Menu xổ", d:"Menu bật ra khi bấm (thao tác/tùy chọn).", t:["Mở / đóng đúng","Click ra ngoài đóng","Điều hướng bằng bàn phím","Item disabled","Submenu (menu con)"]},
   {c:"nav", n:"Breadcrumb", vn:"Đường dẫn phân cấp", d:"\"Trang chủ › Mục › Trang hiện tại\".", t:["Đúng cấp phân cấp","Link về cấp cha hoạt động","Mục cuối không bấm được","Tràn khi đường dẫn sâu"]},
   {c:"nav", n:"Tab", vn:"Thẻ chuyển mục", d:"Chuyển qua lại giữa các nhóm nội dung.", t:["Chuyển tab giữ dữ liệu đã nhập","Tab mặc định đúng","Deep-link / nhớ tab khi F5","Tràn khi nhiều tab"]},
@@ -400,7 +401,8 @@ const COMPS = [
   {c:"feedback", n:"Modal / Dialog", vn:"Hộp thoại", d:"Pop-up chặn nền, buộc xử lý trước khi tiếp.", t:["Mở / đóng đúng","Đóng bằng ESC & click nền (nếu cho)","Focus trap: Tab không thoát ra ngoài","Khoá cuộn nền","Nút Xác nhận / Huỷ hoạt động đúng"]},
   {c:"feedback", n:"Popover", vn:"Bảng bật nhỏ", d:"Bảng nhỏ nội dung bật ra khi bấm.", t:["Mở / đóng đúng","Vị trí đúng, không tràn màn hình","Click ra ngoài đóng"]},
   {c:"feedback", n:"Badge", vn:"Chấm/số thông báo", d:"Số hoặc chấm nhỏ gắn trên icon.", t:["Số lớn hiển thị 99+","Số 0 → ẩn (thường vậy)","Cập nhật realtime đúng"]},
-  {c:"feedback", n:"Chip / Tag", vn:"Thẻ nhỏ", d:"Thẻ nhỏ biểu diễn lựa chọn / nhãn.", t:["Xoá bằng nút ×","Tràn nhiều chip xuống dòng","Chọn / bỏ chọn (nếu là filter)"]},
+  {c:"feedback", n:"Chip", vn:"Chip tương tác", d:"Thẻ nhỏ tương tác được: lọc, chọn, hoặc xoá bằng ×.", t:["Xoá bằng nút ×","Chọn / bỏ chọn (filter chip)","Tràn nhiều chip xuống dòng","Chip disabled","Bàn phím: xoá bằng Delete / Backspace"]},
+  {c:"feedback", n:"Tag", vn:"Nhãn", d:"Nhãn chỉ đọc để phân loại / thể hiện trạng thái (không tương tác).", t:["Đúng màu theo loại / trạng thái","Chữ dài cắt gọn (truncate) hoặc xuống dòng","Không bấm được (khác Chip)","Tương phản đủ (a11y) ở light & dark"]},
   {c:"feedback", n:"Progress bar", vn:"Thanh tiến trình", d:"Thể hiện tiến độ 0→100%.", t:["Chạy 0% → 100% mượt","Kiểu không xác định (indeterminate)","Đồng bộ với tiến độ thật"]},
   {c:"feedback", n:"Spinner / Loader", vn:"Vòng xoay tải", d:"Báo hiệu đang tải.", t:["Hiện khi tải, ẩn khi xong","Không kẹt vô hạn khi lỗi","Không chặn cả màn nếu không cần"]},
   {c:"feedback", n:"Skeleton", vn:"Khung tải mờ", d:"Khung xám nhấp nháy lúc đang tải.", t:["Đúng bố cục nội dung thật","Thay bằng nội dung khi tải xong","Không kẹt hiển thị mãi"]},
@@ -408,10 +410,12 @@ const COMPS = [
 
   // LAYOUT
   {c:"layout", n:"Card", vn:"Thẻ nội dung", d:"Khối gom thông tin liên quan.", t:["Nội dung dài tràn thế nào","Ảnh lỗi trong card","Bấm được nếu là card clickable","Responsive khi thu nhỏ"]},
-  {c:"layout", n:"Accordion", vn:"Bung/thu gọn", d:"Mục có thể bung ra / thu lại.", t:["Bung / thu đúng","Cho mở nhiều mục cùng lúc?","Giữ trạng thái khi thao tác khác","Nội dung bên trong dài"]},
+  {c:"layout", n:"Accordion", vn:"Nhóm bung/thu (nhiều mục)", d:"Nhóm NHIỀU khối bung/thu xếp chồng; thường mở mục này thì tự đóng mục khác.", t:["Mở mục này có tự đóng mục khác? (chế độ chỉ-mở-1)","Hay cho mở nhiều mục cùng lúc?","Bung / thu từng mục đúng","Giữ trạng thái khi thao tác khác","Nội dung bên trong dài"]},
+  {c:"layout", n:"Collapse / Disclosure", vn:"Xem thêm / thu gọn (1 khối)", d:"MỘT khối đơn lẻ bung ra / thu lại (vd nút \"Xem thêm\").", t:["Bung / thu đúng 1 khối","Nhãn đổi Xem thêm ↔ Thu gọn","Giữ trạng thái khi thao tác khác","Nội dung bên trong dài","ARIA: aria-expanded đúng"]},
   {c:"layout", n:"Table / Data grid", vn:"Bảng dữ liệu", d:"Bảng hàng-cột, thường kèm sắp xếp/lọc.", t:["Sắp xếp cột (tăng/giảm)","Lọc & phân trang","Cuộn ngang khi nhiều cột","Chọn hàng / chọn tất cả","Số căn phải, tabular","Khi bảng rỗng"]},
   {c:"layout", n:"Carousel", vn:"Băng chuyền ảnh", d:"Trượt qua nhiều slide/ảnh.", t:["Next / Prev đúng","Auto-play & dừng khi hover","Vòng lặp về đầu","Swipe trên mobile","Chỉ 1 slide thì ẩn nút"]},
   {c:"layout", n:"Divider", vn:"Đường phân cách", d:"Kẻ ngăn các khối nội dung.", t:["Hiển thị đúng, không phá layout","Đúng cả light & dark"]},
+  {c:"layout", n:"Scrollbar / Scroll area", vn:"Thanh cuộn / vùng cuộn", d:"Vùng nội dung tràn, cuộn dọc/ngang bên trong.", t:["Cuộn dọc & ngang khi nội dung tràn","Cuộn lồng nhau (vùng trong trang) không kẹt","Header/sticky giữ đúng khi cuộn","Bàn phím: PageUp/Down, Home/End","Cảm ứng & trackpad mượt","Không mất nội dung ở cuối (overscroll)","Focus tự cuộn vào tầm nhìn"]},
 
   // MEDIA
   {c:"media", n:"Image", vn:"Hình ảnh", d:"Ảnh hiển thị trong trang.", t:["Có alt text mô tả","Ảnh lỗi (broken) → xử lý gọn","Lazy-load khi cuộn","Không méo tỉ lệ","Responsive theo màn"]},
@@ -429,16 +433,17 @@ const PREVIEWS = {
   "Multi-select":`<div class="pv col"><div class="pvf" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"><span class="pvchip">Đỏ <span class="x">×</span></span><span class="pvchip">Xanh <span class="x">×</span></span><span class="mut">+ thêm</span></div></div>`,
   "Checkbox":`<div class="pv col"><div class="pvrow"><span class="pvck on">✓</span> Nhận email</div><div class="pvrow"><span class="pvck"></span> Nhận SMS</div></div>`,
   "Radio button":`<div class="pv col"><div class="pvrow"><span class="pvrd on"></span> Nam</div><div class="pvrow"><span class="pvrd"></span> Nữ</div></div>`,
-  "Toggle / Switch":`<div class="pv"><span class="pvrow"><span class="pvtg"></span> Bật</span><span class="pvrow" style="margin-left:12px"><span class="pvtg off"></span> Tắt</span></div>`,
+  "Switch":`<div class="pv"><span class="pvrow"><span class="pvtg"></span> Bật</span><span class="pvrow" style="margin-left:12px"><span class="pvtg off"></span> Tắt</span></div>`,
   "Slider":`<div class="pv col"><div class="pvsl"></div><div class="pvbetween mut" style="font-size:11px"><span>0</span><span style="color:var(--accent-ink);font-weight:600">55</span><span>100</span></div></div>`,
   "Date picker":`<div class="pv col"><div class="pvf pvbetween">22/08/2026 <span>📅</span></div></div>`,
   "File upload":`<div class="pv col"><div class="pvf" style="border-style:dashed;text-align:center;padding:12px;color:var(--muted)">⬆︎ Kéo-thả hoặc <span style="color:var(--accent-ink);font-weight:600">chọn file</span></div></div>`,
   "Search box":`<div class="pv col"><div class="pvf pvbetween"><span>🔍 màn hình</span><span class="mut">×</span></div></div>`,
-  "Stepper (number)":`<div class="pv"><span class="pvic">−</span><span class="pvf" style="width:52px;text-align:center;padding:7px 4px">10</span><span class="pvic">+</span></div>`,
+  "Number input":`<div class="pv"><span class="pvic">−</span><span class="pvf" style="width:52px;text-align:center;padding:7px 4px">10</span><span class="pvic">+</span></div>`,
   // ACTION
   "Button":`<div class="pv"><span class="pvb pri">Lưu thay đổi</span></div>`,
   "Primary / Secondary":`<div class="pv"><span class="pvb pri">Lưu</span><span class="pvb sec">Huỷ</span></div>`,
   "Icon button":`<div class="pv"><span class="pvic">✏︎</span><span class="pvic">🗑</span><span class="pvic">⋯</span></div>`,
+  "Toggle button":`<div class="pv"><span class="pvic" style="font-weight:800;background:var(--accent-soft);color:var(--accent-ink);border-color:transparent">B</span><span class="pvic" style="font-style:italic">I</span><span class="pvic" style="text-decoration:underline">U</span></div>`,
   "Link":`<div class="pv"><a style="font-size:13px;text-decoration:underline">Xem chi tiết →</a></div>`,
   "FAB":`<div class="pv" style="justify-content:flex-end"><span class="pvb pri" style="width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center;font-size:22px;box-shadow:var(--shadow)">+</span></div>`,
   // NAV
@@ -456,7 +461,8 @@ const PREVIEWS = {
   "Modal / Dialog":`<div class="pv" style="background:color-mix(in srgb,#000 28%,var(--surface-2))"><div class="pvcard" style="width:80%"><b style="font-size:12px">Xoá mục này?</b><div class="mut" style="font-size:10.5px;margin:3px 0 8px">Không thể hoàn tác.</div><div style="display:flex;gap:6px;justify-content:flex-end"><span class="pvb sec" style="padding:5px 10px">Huỷ</span><span class="pvb pri" style="padding:5px 10px;background:var(--fail)">Xoá</span></div></div></div>`,
   "Popover":`<div class="pv col" style="align-items:flex-start"><span class="pvb sec" style="padding:5px 10px">Bộ lọc ▾</span><div class="pvcard" style="margin-top:5px;width:70%"><div class="pvrow" style="font-size:11px"><span class="pvck on">✓</span> Còn hàng</div></div></div>`,
   "Badge":`<div class="pv"><span class="pvbadge">🔔<span class="b">9+</span></span></div>`,
-  "Chip / Tag":`<div class="pv"><span class="pvchip">Mới</span><span class="pvchip">Giảm giá <span class="x">×</span></span></div>`,
+  "Chip":`<div class="pv"><span class="pvchip">Đang mở <span class="x">×</span></span><span class="pvchip">Đã đóng <span class="x">×</span></span></div>`,
+  "Tag":`<div class="pv"><span class="pvchip" style="background:color-mix(in srgb,var(--pass) 15%,transparent);color:var(--pass)">Hoạt động</span><span class="pvchip" style="background:color-mix(in srgb,var(--warn) 15%,transparent);color:var(--warn)">Chờ</span><span class="pvchip" style="background:color-mix(in srgb,var(--fail) 15%,transparent);color:var(--fail)">Lỗi</span></div>`,
   "Progress bar":`<div class="pv col"><div class="pvpg"></div><div class="mut" style="font-size:10.5px;text-align:right">62%</div></div>`,
   "Spinner / Loader":`<div class="pv"><span class="pvspin"></span></div>`,
   "Skeleton":`<div class="pv col" style="gap:7px"><div class="pvsk" style="width:70%"></div><div class="pvsk" style="width:100%"></div><div class="pvsk" style="width:45%"></div></div>`,
@@ -464,9 +470,11 @@ const PREVIEWS = {
   // LAYOUT
   "Card":`<div class="pv"><div class="pvcard"><div class="pvimg" style="height:30px;margin-bottom:7px">🖼</div><b style="font-size:12px">Tiêu đề thẻ</b><div class="mut" style="font-size:10.5px">Mô tả ngắn nội dung.</div></div></div>`,
   "Accordion":`<div class="pv col"><div class="pvcard" style="padding:0"><div class="pvbetween" style="padding:8px 11px;border-bottom:1px solid var(--line)"><b style="font-size:11.5px">Câu hỏi 1</b><span>▴</span></div><div class="mut" style="padding:7px 11px;font-size:10.5px">Nội dung trả lời…</div><div class="pvbetween" style="padding:8px 11px;border-top:1px solid var(--line)"><b style="font-size:11.5px">Câu hỏi 2</b><span>▾</span></div></div></div>`,
+  "Collapse / Disclosure":`<div class="pv col" style="align-items:flex-start;gap:6px"><div style="font-size:11px;color:var(--ink);line-height:1.4">Đoạn văn bản ngắn hiển thị trước…</div><span style="font-size:11.5px;color:var(--accent-ink);font-weight:600">Xem thêm ▾</span></div>`,
   "Table / Data grid":`<div class="pv col"><div class="pvcard" style="padding:0;overflow:hidden;font-size:10.5px"><div class="pvbetween" style="padding:6px 10px;background:var(--surface-2);font-weight:700"><span>Tên</span><span>Số</span></div><div class="pvbetween" style="padding:6px 10px;border-top:1px solid var(--line)"><span>An</span><span>1.200</span></div><div class="pvbetween" style="padding:6px 10px;border-top:1px solid var(--line)"><span>Bình</span><span>980</span></div></div></div>`,
   "Carousel":`<div class="pv col"><div class="pvbetween"><span class="pvic" style="width:26px;height:26px">‹</span><div class="pvimg" style="height:34px;margin:0 6px">🏞</div><span class="pvic" style="width:26px;height:26px">›</span></div><div style="display:flex;gap:5px;justify-content:center;margin-top:6px"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent)"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--line)"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--line)"></span></div></div>`,
   "Divider":`<div class="pv col" style="gap:8px;font-size:11px;color:var(--ink)"><span>Phần trên</span><span style="height:1px;background:var(--line);width:100%"></span><span>Phần dưới</span></div>`,
+  "Scrollbar / Scroll area":`<div class="pv col"><div class="pvcard" style="height:54px;overflow:hidden;position:relative;padding:8px 11px;font-size:11px;color:var(--muted);line-height:1.5">Mục 1<br>Mục 2<br>Mục 3<br>Mục 4<span style="position:absolute;top:6px;right:5px;bottom:6px;width:5px;border-radius:3px;background:var(--surface-2)"><span style="position:absolute;top:0;left:0;right:0;height:42%;background:var(--muted);border-radius:3px;opacity:.55"></span></span></div></div>`,
   // MEDIA
   "Image":`<div class="pv"><span class="pvimg" style="height:52px">🖼</span></div>`,
   "Avatar":`<div class="pv"><span class="pvav">AN</span><span class="pvav" style="margin-left:-12px;background:var(--warn)">BT</span><span class="pvav" style="margin-left:-12px;background:var(--muted)">+3</span></div>`,
@@ -484,16 +492,17 @@ const API = {
   "Multi-select":["GET,POST","GET danh sách; gửi mảng giá trị. Test gửi rỗng, trùng, vượt giới hạn số lượng."],
   "Checkbox":["POST,PUT,PATCH","Gửi boolean / mảng. Test giá trị mặc định và khi KHÔNG tick (gửi false hay bỏ field?)."],
   "Radio button":["POST,PUT","Gửi đúng 1 giá trị. Test khi thiếu giá trị bắt buộc, giá trị lạ."],
-  "Toggle / Switch":["PATCH,PUT","Thường lưu ngay (PATCH). Test khi API lỗi thì UI rollback về trạng thái cũ."],
+  "Switch":["PATCH,PUT","Thường lưu ngay (PATCH). Test khi API lỗi thì UI rollback về trạng thái cũ."],
   "Slider":["POST,PUT,PATCH","Gửi số trong khoảng. Test biên min/max, đúng step, giá trị ngoài khoảng bị chặn."],
   "Date picker":["POST,PUT","Gửi ngày dạng ISO. Test 29/2, min/max, lệch múi giờ (UTC vs local)."],
   "File upload":["POST","multipart/form-data. Test dung lượng, MIME thật vs đuôi file, upload gián đoạn, trùng tên."],
   "Search box":["GET","GET ?q=… Test rỗng, không kết quả, ký tự đặc biệt, debounce, phân trang kết quả."],
-  "Stepper (number)":["POST,PUT,PATCH","Gửi số nguyên. Test min/max, số âm, ngoài khoảng, gửi chữ vào field số."],
+  "Number input":["POST,PUT,PATCH","Gửi số nguyên. Test min/max, số âm, ngoài khoảng, gửi chữ vào field số."],
   // ACTION
   "Button":["POST,PUT,DELETE","Method tuỳ hành động gắn vào. Test double-click gửi 2 lần → chống lặp (idempotency)."],
   "Primary / Secondary":["POST,PUT","Nút chính xác nhận (POST/PUT); nút phụ/huỷ thường KHÔNG gọi API."],
   "Icon button":["PUT,DELETE","Tuỳ icon: sửa=PUT, xoá=DELETE. Test hành động khớp icon & kiểm tra quyền."],
+  "Toggle button":["PATCH,PUT","Tuỳ dùng: lưu trạng thái (PATCH) hoặc chỉ đổi UI cục bộ (vd định dạng chữ). Test đúng trạng thái được gửi / khôi phục."],
   "Link":["GET","Điều hướng (GET trang). Test link hỏng 404, redirect, mở tab mới."],
   "FAB":["POST","Thường mở luồng tạo mới → POST. Test tạo bản ghi thành công/thất bại."],
   // NAV
@@ -511,7 +520,8 @@ const API = {
   "Modal / Dialog":["POST,PUT,DELETE","Chỉ khi bấm Xác nhận mới gọi API (vd Xoá=DELETE). Test bấm Huỷ thì KHÔNG gọi."],
   "Popover":["GET","Có thể lazy-load nội dung khi mở (GET). Test chỉ tải khi bật."],
   "Badge":["GET","Số lấy từ API (đếm thông báo…). Test polling/realtime cập nhật đúng, số lớn 99+."],
-  "Chip / Tag":["GET,DELETE","Filter (GET ?tag=) hoặc xoá tag (DELETE). Test bấm × gọi đúng bản ghi."],
+  "Chip":["GET,DELETE","Filter (GET ?tag=) hoặc xoá (DELETE). Test bấm × gọi đúng bản ghi, chọn/bỏ chọn cập nhật kết quả."],
+  "Tag":["—","Chỉ hiển thị nhãn/trạng thái — không gọi API (dữ liệu trạng thái đến từ GET của phần chứa nó)."],
   "Progress bar":["GET","Phản ánh tiến độ job (polling / stream GET). Test đồng bộ với tiến độ thật."],
   "Spinner / Loader":["—","Là trạng thái pending của request. Test timeout & khi lỗi thì ẩn spinner (không kẹt vô hạn)."],
   "Skeleton":["GET","Hiện khi đang GET dữ liệu. Test thay bằng data khi 200, ẩn khi lỗi."],
@@ -519,9 +529,11 @@ const API = {
   // LAYOUT
   "Card":["GET","Hiển thị dữ liệu từ GET. Test thiếu field (null), ảnh lỗi."],
   "Accordion":["GET","Có thể lazy-load nội dung khi bung (GET). Test chỉ gọi khi mở."],
+  "Collapse / Disclosure":["GET","Có thể lazy-load nội dung khi bung (GET). Test chỉ gọi khi mở, không gọi lại khi đã tải."],
   "Table / Data grid":["GET,DELETE","GET ?sort=&filter=&page=; xoá hàng=DELETE. Test sort/filter phía server, bảng rỗng, xoá hàng loạt."],
   "Carousel":["GET","Ảnh/slide lấy từ GET. Test lazy-load ảnh, ảnh lỗi."],
   "Divider":["—","Chỉ hiển thị, không gọi API."],
+  "Scrollbar / Scroll area":["GET","Thường gắn với tải thêm khi cuộn — infinite scroll / lazy-load (GET ?cursor=). Test gọi đúng lúc chạm đáy, không gọi trùng, dừng khi hết dữ liệu."],
   // MEDIA
   "Image":["GET","Tải ảnh (GET file/CDN). Test 404 ảnh, lazy-load, ảnh nặng/độ phân giải."],
   "Avatar":["GET","Tải ảnh user (GET); lỗi → fallback chữ cái. Test 404, cache, ảnh riêng tư cần quyền."],
