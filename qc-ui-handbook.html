@@ -363,6 +363,11 @@ const CATS = [
 
 const COMPS = [
   // FORM
+  {c:"form", n:"Label", vn:"Nhãn trường", d:"Nhãn mô tả cho một trường nhập; bấm vào nên focus đúng ô.", t:["Bấm label → focus đúng ô (for/id khớp)","Đánh dấu bắt buộc (*) rõ ràng","Không bị cắt khi chữ dài","Gắn đúng với ô cho screen reader (a11y)","Đổi màu theo trạng thái lỗi (nếu có)"]},
+  {c:"form", n:"Helper text", vn:"Dòng gợi ý", d:"Dòng chú thích mờ dưới ô, hướng dẫn cách điền.", t:["Hiển thị đúng dưới ô","Bị thay bằng lỗi khi nhập sai?","Không quá dài che layout","Screen reader đọc được (aria-describedby)"]},
+  {c:"form", n:"Error / Validation message", vn:"Báo lỗi nhập liệu", d:"Dòng lỗi (thường đỏ) dưới ô khi giá trị không hợp lệ.", t:["Hiện đúng lúc (blur / submit)","Nội dung rõ: sai gì + sửa sao","Viền ô đổi đỏ đồng bộ","Ẩn khi sửa đúng","Screen reader thông báo (aria-live / aria-invalid)","Lỗi từ server hiển thị đúng ô"]},
+  {c:"form", n:"Required indicator", vn:"Dấu bắt buộc (*)", d:"Dấu * hoặc chữ \"bắt buộc\" đánh dấu trường phải điền.", t:["Đánh dấu đúng trường bắt buộc","Nhất quán toàn form (* hay chữ)","Chú thích ý nghĩa dấu * ở đầu form","Screen reader báo required (aria-required)"]},
+  {c:"form", n:"Character counter", vn:"Bộ đếm ký tự", d:"Hiển thị số ký tự đã gõ / giới hạn (vd 24/100).", t:["Đếm đúng realtime khi gõ","Cảnh báo khi gần / vượt giới hạn","Đếm đúng emoji & ký tự nhiều byte","Đồng bộ với max length thật của ô"]},
   {c:"form", n:"Text field", vn:"Ô nhập 1 dòng", d:"Ô gõ văn bản ngắn (tên, tiêu đề…).", t:["Max length, dán chuỗi dài","Bỏ trống khi bắt buộc (required)","Trim khoảng trắng đầu/cuối","Ký tự đặc biệt, emoji, tiếng Việt có dấu","XSS / SQL injection","Placeholder mờ, biến mất khi gõ","Validate lúc blur / lúc submit"]},
   {c:"form", n:"Textarea", vn:"Ô nhập nhiều dòng", d:"Ô văn bản dài, xuống dòng được.", t:["Xuống dòng (Enter) giữ đúng","Max length & đếm ký tự","Kéo resize (nếu có)","Cuộn khi nội dung dài","Dán đoạn văn rất dài"]},
   {c:"form", n:"Dropdown / Select", vn:"Menu xổ chọn", d:"Chọn 1 giá trị từ danh sách xổ xuống.", t:["Chọn từng option đúng giá trị","Giá trị mặc định / placeholder","Danh sách rỗng","Nhiều option → cuộn","Chọn bằng bàn phím","Click ra ngoài đóng lại"]},
@@ -433,6 +438,11 @@ const COMPS = [
 // Preview giả lập cho từng component (để QC nhìn là nhận ra ngay)
 const PREVIEWS = {
   // FORM
+  "Label":`<div class="pv col"><span style="font-size:12px;color:var(--ink);font-weight:600;margin-bottom:5px">Email <span style="color:var(--fail)">*</span></span><div class="pvf mut">ban@congty.com</div></div>`,
+  "Helper text":`<div class="pv col"><div class="pvf mut">••••••••</div><span style="font-size:10.5px;color:var(--muted);margin-top:5px">Tối thiểu 8 ký tự</span></div>`,
+  "Error / Validation message":`<div class="pv col"><div class="pvf err">sai@</div><span class="pverr" style="margin-top:5px">⚠︎ Email không hợp lệ</span></div>`,
+  "Required indicator":`<div class="pv col"><span style="font-size:12px;color:var(--ink);font-weight:600;margin-bottom:5px">Số điện thoại <span style="color:var(--fail)">*</span></span><div class="pvf mut">Bắt buộc</div></div>`,
+  "Character counter":`<div class="pv col"><div class="pvf" style="height:36px">Nội dung ngắn…</div><span style="font-size:10.5px;color:var(--muted);margin-top:5px;text-align:right">24 / 100</span></div>`,
   "Text field":`<div class="pv col"><span class="pvlbl">Họ tên</span><div class="pvf focus">Nguyễn Văn A<span class="pvcaret">|</span></div></div>`,
   "Textarea":`<div class="pv col"><div class="pvf" style="height:46px;white-space:normal;line-height:1.4">Ghi chú nhiều dòng…<br>xuống dòng được<span class="pvcaret">|</span></div></div>`,
   "Dropdown / Select":`<div class="pv col"><div class="pvf pvbetween"><span class="mut">Chọn tỉnh / thành</span><span>▾</span></div></div>`,
@@ -499,6 +509,11 @@ const PREVIEWS = {
 // [danh sách method, ghi chú cần kiểm tra phía server]
 const API = {
   // FORM
+  "Label":["—","Chỉ hiển thị nhãn — không gọi API. Quan trọng cho a11y: đảm bảo for/id khớp đúng ô nhập."],
+  "Helper text":["—","Chỉ hiển thị hướng dẫn — không gọi API."],
+  "Error / Validation message":["—","Validate ở client không gọi API; nhưng lỗi từ server (POST/PUT trả 4xx) phải map đúng vào ô. Test hiển thị lỗi field-level từ response."],
+  "Required indicator":["—","Chỉ đánh dấu hiển thị — không gọi API. Server vẫn phải tự validate required (đừng tin client)."],
+  "Character counter":["—","Chỉ hiển thị đếm — không gọi API. Nhưng giới hạn thật phải được server enforce."],
   "Text field":["POST,PUT","Giá trị gửi khi submit form. Kiểm tra server-side validate, độ dài, trim, encoding, chống XSS/SQLi."],
   "Textarea":["POST,PUT","Như text field; chú ý escape HTML & giữ đúng xuống dòng khi lưu và hiển thị lại."],
   "Dropdown / Select":["GET,POST","GET nạp danh sách option; giá trị chọn gửi kèm POST/PUT. Test option rỗng, giá trị không nằm trong danh sách."],
