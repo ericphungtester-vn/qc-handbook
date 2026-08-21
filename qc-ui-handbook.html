@@ -1,0 +1,394 @@
+<title>Sổ tay UI cho QC</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --paper:#e9edf1; --surface:#ffffff; --surface-2:#f3f6f8;
+    --ink:#19232d; --muted:#5b6773; --line:#d6dee5;
+    --accent:#0e7c7b; --accent-ink:#0b5f5e; --accent-soft:#dcefee;
+    --pass:#2f9e56; --warn:#b7791f; --fail:#cf4655;
+    --shadow:0 1px 2px rgba(20,30,40,.06),0 6px 20px rgba(20,30,40,.06);
+    --radius:14px;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#0e141a; --surface:#161f28; --surface-2:#1c2731;
+      --ink:#e6edf3; --muted:#93a1b0; --line:#2a3742;
+      --accent:#3bb4b2; --accent-ink:#7fd6d4; --accent-soft:#123030;
+      --pass:#43b26b; --warn:#d29b3a; --fail:#e0687a;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0e141a; --surface:#161f28; --surface-2:#1c2731;
+    --ink:#e6edf3; --muted:#93a1b0; --line:#2a3742;
+    --accent:#3bb4b2; --accent-ink:#7fd6d4; --accent-soft:#123030;
+    --pass:#43b26b; --warn:#d29b3a; --fail:#e0687a;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent-ink)}
+  .wrap{max-width:1280px; margin:0 auto; padding:0 20px}
+
+  /* Header */
+  header.top{
+    position:sticky; top:0; z-index:30;
+    background:color-mix(in srgb,var(--paper) 88%,transparent);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .top .wrap{display:flex; align-items:center; gap:18px; padding:14px 20px; flex-wrap:wrap}
+  .brand{display:flex; flex-direction:column; gap:2px; margin-right:auto}
+  .brand h1{
+    margin:0; font-size:19px; letter-spacing:-.01em; font-weight:750;
+    display:flex; align-items:center; gap:9px;
+  }
+  .brand .mark{
+    width:24px;height:24px;border-radius:7px;background:var(--accent);
+    display:grid;place-items:center;color:#fff;font-size:14px;flex:none;
+  }
+  .brand p{margin:0; font-size:12.5px; color:var(--muted)}
+  .search{
+    position:relative; flex:1 1 320px; min-width:200px; max-width:460px;
+  }
+  .search input{
+    width:100%; padding:10px 14px 10px 38px; border-radius:10px;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink);
+    font-size:14px; font-family:var(--sans);
+  }
+  .search input:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:transparent}
+  .search svg{position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted)}
+  .count{font-size:12px; color:var(--muted); white-space:nowrap; font-variant-numeric:tabular-nums}
+  .theme-btn{
+    border:1px solid var(--line); background:var(--surface); color:var(--ink);
+    width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:16px;
+    display:grid;place-items:center;
+  }
+  .theme-btn:hover{border-color:var(--accent)}
+
+  /* Layout */
+  .shell{display:grid; grid-template-columns:230px 1fr; gap:34px; padding:28px 0 80px}
+  nav.side{position:sticky; top:82px; align-self:start; height:max-content}
+  nav.side .lbl{
+    font-size:11px; text-transform:uppercase; letter-spacing:.09em;
+    color:var(--muted); font-weight:700; margin:0 0 8px 8px;
+  }
+  nav.side a{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:7px 10px; border-radius:8px; text-decoration:none; color:var(--ink);
+    font-size:13.5px; font-weight:500;
+  }
+  nav.side a:hover{background:var(--surface-2)}
+  nav.side a .n{font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums}
+
+  /* Intro */
+  .intro{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:22px 24px; margin-bottom:26px; box-shadow:var(--shadow);
+  }
+  .intro h2{margin:0 0 6px; font-size:22px; letter-spacing:-.02em; text-wrap:balance}
+  .intro p{margin:0 0 14px; color:var(--muted); max-width:64ch; font-size:14.5px}
+  .intro p:last-child{margin-bottom:0}
+  .legend{display:flex; gap:18px; flex-wrap:wrap; margin-top:4px}
+  .legend span{display:inline-flex; align-items:center; gap:7px; font-size:12.5px; color:var(--ink)}
+  .dot{width:10px;height:10px;border-radius:50%}
+
+  /* Sections */
+  section.cat{margin-bottom:14px; scroll-margin-top:82px}
+  .cat-head{display:flex; align-items:baseline; gap:12px; margin:30px 0 14px}
+  .cat-head h3{margin:0; font-size:16px; letter-spacing:-.01em}
+  .cat-head .en{font-size:13px; color:var(--muted); font-weight:500}
+  .cat-head .rule{flex:1; height:1px; background:var(--line)}
+
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+    gap:16px; align-items:start;
+  }
+  .comp{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px 18px 15px; box-shadow:var(--shadow);
+  }
+  .comp .h{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px}
+  .comp .name{
+    font-family:var(--mono); font-size:14.5px; font-weight:600; color:var(--accent-ink);
+    letter-spacing:-.01em;
+  }
+  .comp .vn{font-size:12.5px; color:var(--muted)}
+  .comp .desc{font-size:13px; color:var(--ink); margin:2px 0 11px; opacity:.9}
+  .comp .tlabel{
+    font-size:10.5px; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--accent-ink); font-weight:700; margin-bottom:6px; opacity:.9;
+  }
+  .comp ul{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:5px}
+  .comp li{
+    font-size:12.5px; color:var(--ink); padding-left:16px; position:relative; line-height:1.4;
+  }
+  .comp li::before{
+    content:""; position:absolute; left:2px; top:6px; width:6px;height:6px;
+    border-radius:2px; background:var(--accent); opacity:.7;
+  }
+
+  /* States block */
+  .states-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px}
+  .state{
+    background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:13px 15px;
+  }
+  .state .k{font-family:var(--mono); font-size:13px; font-weight:600; color:var(--accent-ink)}
+  .state .v{font-size:12.5px; color:var(--muted); margin-top:3px}
+
+  /* Cheatsheet */
+  .cheat{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow)}
+  .cheat table{width:100%; border-collapse:collapse; font-size:13px}
+  .cheat th,.cheat td{text-align:left; padding:11px 16px; border-bottom:1px solid var(--line); vertical-align:top}
+  .cheat th{background:var(--surface-2); font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); font-weight:700}
+  .cheat tr:last-child td{border-bottom:none}
+  .cheat td:first-child{font-weight:600; white-space:nowrap; width:150px}
+  .cheat code{
+    font-family:var(--mono); font-size:12px; background:var(--surface-2);
+    padding:1px 6px; border-radius:5px; border:1px solid var(--line);
+  }
+  .table-scroll{overflow-x:auto}
+
+  .noresult{display:none; text-align:center; padding:60px 20px; color:var(--muted)}
+  .noresult.show{display:block}
+
+  footer{border-top:1px solid var(--line); padding:26px 0; color:var(--muted); font-size:12.5px; text-align:center}
+
+  mark{background:var(--accent-soft); color:var(--ink); border-radius:3px; padding:0 1px}
+
+  @media (max-width:860px){
+    .shell{grid-template-columns:1fr; gap:0}
+    nav.side{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <h1><span class="mark">✓</span> Sổ tay UI cho QC</h1>
+      <p>Tên component chuẩn &amp; checklist "cần test" cho từng thành phần</p>
+    </div>
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" type="search" placeholder="Tìm component… (vd: dropdown, modal, ngày)" autocomplete="off" aria-label="Tìm component">
+    </div>
+    <span class="count" id="count"></span>
+    <button class="theme-btn" id="theme" title="Đổi giao diện sáng/tối" aria-label="Đổi giao diện">◐</button>
+  </div>
+</header>
+
+<div class="wrap shell">
+  <nav class="side" id="nav" aria-label="Danh mục">
+    <p class="lbl">Danh mục</p>
+  </nav>
+
+  <main>
+    <div class="intro">
+      <h2>Gọi đúng tên, test đủ trạng thái</h2>
+      <p>Tài liệu tra cứu nhanh cho QC: mỗi thành phần giao diện có <strong>tên chuẩn tiếng Anh</strong> (để báo bug/viết test case dev hiểu ngay), tên Việt, và danh sách <strong>cần test</strong>. Gõ vào ô tìm kiếm để lọc tức thì.</p>
+      <p>Phần lớn bug nằm ở <strong>trạng thái (state)</strong> của cùng một element, không phải ở lúc bình thường — nhớ test đủ các state ở mục <a href="#states">Trạng thái</a>, và dùng <a href="#cheat">bộ dữ liệu test mẫu</a> cho mọi ô nhập.</p>
+      <div class="legend" aria-hidden="true">
+        <span><i class="dot" style="background:var(--pass)"></i> Pass / hợp lệ</span>
+        <span><i class="dot" style="background:var(--warn)"></i> Cảnh báo / biên</span>
+        <span><i class="dot" style="background:var(--fail)"></i> Fail / lỗi</span>
+      </div>
+    </div>
+
+    <div id="content"></div>
+
+    <div class="noresult" id="noresult">Không tìm thấy component nào khớp. Thử từ khoá khác.</div>
+
+    <!-- States -->
+    <section class="cat" id="states" data-static>
+      <div class="cat-head"><h3>Trạng thái</h3><span class="en">States — test đủ cho MỌI element</span><span class="rule"></span></div>
+      <div class="states-grid">
+        <div class="state"><div class="k">default</div><div class="v">Bình thường, chưa tương tác</div></div>
+        <div class="state"><div class="k">hover</div><div class="v">Rê chuột lên (desktop)</div></div>
+        <div class="state"><div class="k">focus</div><div class="v">Đang được chọn (Tab / click) — phải thấy viền focus</div></div>
+        <div class="state"><div class="k">active / pressed</div><div class="v">Ngay lúc đang nhấn</div></div>
+        <div class="state"><div class="k">disabled</div><div class="v">Bị khoá — không bấm/gõ được, mờ đi</div></div>
+        <div class="state"><div class="k">loading</div><div class="v">Đang xử lý — thường kèm spinner, chặn bấm lại</div></div>
+        <div class="state"><div class="k">error</div><div class="v">Nhập sai — viền đỏ + thông báo lỗi rõ ràng</div></div>
+        <div class="state"><div class="k">success</div><div class="v">Hợp lệ / thành công</div></div>
+        <div class="state"><div class="k">selected / checked</div><div class="v">Đã chọn / đã tick</div></div>
+        <div class="state"><div class="k">expanded / collapsed</div><div class="v">Đang bung / thu gọn</div></div>
+        <div class="state"><div class="k">read-only</div><div class="v">Xem được nhưng không sửa (khác disabled)</div></div>
+        <div class="state"><div class="k">empty</div><div class="v">Chưa có dữ liệu — hiện empty state, không phải lỗi</div></div>
+      </div>
+    </section>
+
+    <!-- Cheatsheet -->
+    <section class="cat" id="cheat" data-static>
+      <div class="cat-head"><h3>Dữ liệu test mẫu</h3><span class="en">Test data cheatsheet — thử với mọi ô nhập</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Nhóm</th><th>Giá trị nên thử</th></tr></thead>
+        <tbody>
+          <tr><td>Biên (boundary)</td><td>0 · 1 · giá trị nhỏ nhất · lớn nhất · <strong>max + 1</strong> · số âm · số cực lớn</td></tr>
+          <tr><td>Chuỗi trống</td><td>để trống · chỉ toàn khoảng trắng <code>"   "</code> · khoảng trắng đầu/cuối (kiểm tra trim)</td></tr>
+          <tr><td>Độ dài</td><td>đúng giới hạn · vượt giới hạn (max length) · 1 ký tự · dán đoạn văn rất dài</td></tr>
+          <tr><td>Ký tự đặc biệt</td><td><code>!@#$%^&amp;*()_+&lt;&gt;?/</code> · dấu nháy <code>' "</code> · emoji 😀🎉 · tiếng Việt có dấu · chữ hoa/thường</td></tr>
+          <tr><td>Bảo mật</td><td>XSS <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> · SQL <code>' OR 1=1 --</code> · ký tự Unicode/RTL</td></tr>
+          <tr><td>Email</td><td>hợp lệ · thiếu <code>@</code> · nhiều <code>@</code> · có dấu cách · domain không hợp lệ · viết HOA</td></tr>
+          <tr><td>Số</td><td>thập phân · số âm · số 0 · dấu phẩy/chấm phần nghìn · chữ lẫn số · tràn số (overflow)</td></tr>
+          <tr><td>Ngày / giờ</td><td>29/02 năm nhuận &amp; năm thường · 31/04 · định dạng khác (DD/MM vs MM/DD) · lệch múi giờ · quá khứ/tương lai</td></tr>
+          <tr><td>File</td><td>đúng định dạng · sai định dạng đổi đuôi · vượt dung lượng · file 0 byte · tên file dài / ký tự lạ</td></tr>
+        </tbody>
+      </table></div></div>
+    </section>
+
+  </main>
+</div>
+
+<footer>Sổ tay UI cho QC · dùng nội bộ · tên component theo chuẩn ngành để trao đổi với dev nhanh &amp; chính xác</footer>
+
+<script>
+const CATS = [
+  {id:"form", vi:"Ô nhập liệu", en:"Form controls"},
+  {id:"action", vi:"Nút & hành động", en:"Buttons & actions"},
+  {id:"nav", vi:"Điều hướng", en:"Navigation"},
+  {id:"feedback", vi:"Phản hồi & lớp phủ", en:"Feedback & overlays"},
+  {id:"layout", vi:"Bố cục & nhóm", en:"Layout & grouping"},
+  {id:"media", vi:"Hình ảnh & media", en:"Media"},
+];
+
+const COMPS = [
+  // FORM
+  {c:"form", n:"Text field", vn:"Ô nhập 1 dòng", d:"Ô gõ văn bản ngắn (tên, tiêu đề…).", t:["Max length, dán chuỗi dài","Bỏ trống khi bắt buộc (required)","Trim khoảng trắng đầu/cuối","Ký tự đặc biệt, emoji, tiếng Việt có dấu","XSS / SQL injection","Placeholder mờ, biến mất khi gõ","Validate lúc blur / lúc submit"]},
+  {c:"form", n:"Textarea", vn:"Ô nhập nhiều dòng", d:"Ô văn bản dài, xuống dòng được.", t:["Xuống dòng (Enter) giữ đúng","Max length & đếm ký tự","Kéo resize (nếu có)","Cuộn khi nội dung dài","Dán đoạn văn rất dài"]},
+  {c:"form", n:"Dropdown / Select", vn:"Menu xổ chọn", d:"Chọn 1 giá trị từ danh sách xổ xuống.", t:["Chọn từng option đúng giá trị","Giá trị mặc định / placeholder","Danh sách rỗng","Nhiều option → cuộn","Chọn bằng bàn phím","Click ra ngoài đóng lại"]},
+  {c:"form", n:"Combobox", vn:"Ô chọn có gõ tìm", d:"Dropdown cho gõ để lọc option.", t:["Gõ lọc đúng","Không có kết quả","Không phân biệt hoa/thường","Khớp có dấu tiếng Việt","Chọn item bằng phím & chuột"]},
+  {c:"form", n:"Multi-select", vn:"Chọn nhiều", d:"Chọn nhiều giá trị cùng lúc (thường hiện chip).", t:["Chọn / bỏ chọn nhiều item","Xoá từng chip đã chọn","Giới hạn số lượng (nếu có)","Chọn tất cả / bỏ tất cả","Tràn khi chọn nhiều"]},
+  {c:"form", n:"Checkbox", vn:"Ô tick", d:"Bật/tắt một lựa chọn độc lập (chọn nhiều).", t:["Tick / bỏ tick lưu đúng","Trạng thái mặc định","Indeterminate (tick 1 phần)","Nhóm bắt buộc chọn ≥ 1","disabled không bấm được"]},
+  {c:"form", n:"Radio button", vn:"Nút chọn 1", d:"Chọn đúng 1 trong nhóm.", t:["Chỉ chọn được 1 trong nhóm","Giá trị mặc định","Bắt buộc chọn khi submit","Đổi lựa chọn qua lại","Chọn bằng phím mũi tên"]},
+  {c:"form", n:"Toggle / Switch", vn:"Công tắc bật/tắt", d:"Bật/tắt tức thì một tính năng.", t:["Bật/tắt lưu đúng trạng thái","Phản hồi ngay (hoặc có xác nhận)","Trạng thái mặc định đúng","disabled"]},
+  {c:"form", n:"Slider", vn:"Thanh kéo", d:"Chọn giá trị trong khoảng bằng cách kéo.", t:["Chạm min / max","Bước nhảy (step) đúng","Kéo chuột & phím mũi tên","Giá trị hiển thị đồng bộ với vị trí"]},
+  {c:"form", n:"Date picker", vn:"Chọn ngày", d:"Lịch để chọn ngày/giờ.", t:["Định dạng ngày đúng vùng","Ngày không hợp lệ (31/4, 29/2)","Giới hạn min/max","Lệch múi giờ (timezone)","Chọn quá khứ / tương lai","Nhập tay vs chọn lịch"]},
+  {c:"form", n:"File upload", vn:"Tải file lên", d:"Chọn hoặc kéo-thả file.", t:["Đúng định dạng cho phép","Chặn sai định dạng (đổi đuôi)","Giới hạn dung lượng","Nhiều file cùng lúc","Kéo-thả & chọn thủ công","File 0 byte, tên dài / ký tự lạ"]},
+  {c:"form", n:"Search box", vn:"Ô tìm kiếm", d:"Nhập từ khoá để tìm.", t:["Tìm rỗng","Không có kết quả","Ký tự đặc biệt / có dấu","Debounce (không gọi mỗi phím)","Nút × xoá nhanh","Nhấn Enter để tìm"]},
+  {c:"form", n:"Stepper (number)", vn:"Ô số +/−", d:"Ô số có nút tăng/giảm.", t:["Chạm min / max","Nhập tay giá trị ngoài khoảng","Số âm, số thập phân","Giữ nút tăng liên tục","Nhập chữ vào ô số"]},
+
+  // ACTION
+  {c:"action", n:"Button", vn:"Nút bấm", d:"Kích hoạt một hành động (Lưu, Gửi…).", t:["Click thực thi đúng","Double-click không submit 2 lần","disabled không bấm được","Loading khi đang xử lý","Enter / Space kích hoạt","Chữ dài không vỡ nút"]},
+  {c:"action", n:"Primary / Secondary", vn:"Nút chính / phụ", d:"Phân cấp hành động: chính nổi bật, phụ nhạt.", t:["Nút chính nổi bật đúng chỗ","Chỉ 1 nút chính mỗi khu vực","Phân biệt rõ với nút phụ / huỷ"]},
+  {c:"action", n:"Icon button", vn:"Nút biểu tượng", d:"Nút chỉ có icon, không chữ.", t:["Có tooltip / aria-label mô tả","Vùng bấm đủ lớn (≥ 40px)","Trạng thái active / selected"]},
+  {c:"action", n:"Link", vn:"Liên kết", d:"Chữ bấm được để điều hướng.", t:["Điều hướng đúng đích","Mở tab mới đúng (target)","Link hỏng (404)","Trạng thái visited / hover","Right-click sao chép được"]},
+  {c:"action", n:"FAB", vn:"Nút nổi", d:"Floating Action Button — nút tròn nổi ở góc.", t:["Luôn nổi khi cuộn trang","Không che nội dung quan trọng","Bấm được trên mobile"]},
+
+  // NAV
+  {c:"nav", n:"Navbar / Header", vn:"Thanh trên cùng", d:"Thanh điều hướng ở đầu trang.", t:["Sticky khi cuộn (nếu thiết kế vậy)","Đánh dấu mục đang mở (active)","Responsive: thu thành hamburger","Logo về trang chủ"]},
+  {c:"nav", n:"Sidebar", vn:"Thanh bên", d:"Menu điều hướng dọc bên trái/phải.", t:["Mở / đóng / thu gọn","Cuộn độc lập với nội dung","Mục active đúng","Responsive trên màn nhỏ"]},
+  {c:"nav", n:"Menu / Dropdown menu", vn:"Menu xổ", d:"Menu bật ra khi bấm (thao tác/tùy chọn).", t:["Mở / đóng đúng","Click ra ngoài đóng","Điều hướng bằng bàn phím","Item disabled","Submenu (menu con)"]},
+  {c:"nav", n:"Breadcrumb", vn:"Đường dẫn phân cấp", d:"\"Trang chủ › Mục › Trang hiện tại\".", t:["Đúng cấp phân cấp","Link về cấp cha hoạt động","Mục cuối không bấm được","Tràn khi đường dẫn sâu"]},
+  {c:"nav", n:"Tab", vn:"Thẻ chuyển mục", d:"Chuyển qua lại giữa các nhóm nội dung.", t:["Chuyển tab giữ dữ liệu đã nhập","Tab mặc định đúng","Deep-link / nhớ tab khi F5","Tràn khi nhiều tab"]},
+  {c:"nav", n:"Pagination", vn:"Phân trang", d:"Chia dữ liệu thành nhiều trang.", t:["Trang đầu/cuối disable đúng","Nhảy tới trang bất kỳ","Đổi số item mỗi trang","Khi 0 item / chỉ 1 trang"]},
+  {c:"nav", n:"Wizard / Stepper", vn:"Quy trình nhiều bước", d:"Chia luồng dài thành các bước tuần tự.", t:["Next / Back giữ dữ liệu","Validate từng bước","Không nhảy cóc bước chưa xong","Thanh tiến trình đúng bước"]},
+
+  // FEEDBACK
+  {c:"feedback", n:"Tooltip", vn:"Chú thích nhỏ", d:"Gợi ý ngắn khi rê chuột / focus.", t:["Hiện khi hover & focus bàn phím","Tự ẩn khi rời","Không che nội dung / không tràn màn hình","Mobile: cách xem thay thế"]},
+  {c:"feedback", n:"Toast / Snackbar", vn:"Thông báo tạm", d:"Thông báo nhỏ hiện rồi tự tắt.", t:["Tự tắt sau X giây","Nhiều toast xếp chồng gọn","Nút đóng thủ công","Không chặn thao tác đang làm"]},
+  {c:"feedback", n:"Alert / Banner", vn:"Dải cảnh báo", d:"Dải thông báo theo mức độ (info/warn/error).", t:["Đúng màu theo loại","Đóng được (nếu cho)","Nội dung lỗi rõ: sai gì + sửa sao"]},
+  {c:"feedback", n:"Modal / Dialog", vn:"Hộp thoại", d:"Pop-up chặn nền, buộc xử lý trước khi tiếp.", t:["Mở / đóng đúng","Đóng bằng ESC & click nền (nếu cho)","Focus trap: Tab không thoát ra ngoài","Khoá cuộn nền","Nút Xác nhận / Huỷ hoạt động đúng"]},
+  {c:"feedback", n:"Popover", vn:"Bảng bật nhỏ", d:"Bảng nhỏ nội dung bật ra khi bấm.", t:["Mở / đóng đúng","Vị trí đúng, không tràn màn hình","Click ra ngoài đóng"]},
+  {c:"feedback", n:"Badge", vn:"Chấm/số thông báo", d:"Số hoặc chấm nhỏ gắn trên icon.", t:["Số lớn hiển thị 99+","Số 0 → ẩn (thường vậy)","Cập nhật realtime đúng"]},
+  {c:"feedback", n:"Chip / Tag", vn:"Thẻ nhỏ", d:"Thẻ nhỏ biểu diễn lựa chọn / nhãn.", t:["Xoá bằng nút ×","Tràn nhiều chip xuống dòng","Chọn / bỏ chọn (nếu là filter)"]},
+  {c:"feedback", n:"Progress bar", vn:"Thanh tiến trình", d:"Thể hiện tiến độ 0→100%.", t:["Chạy 0% → 100% mượt","Kiểu không xác định (indeterminate)","Đồng bộ với tiến độ thật"]},
+  {c:"feedback", n:"Spinner / Loader", vn:"Vòng xoay tải", d:"Báo hiệu đang tải.", t:["Hiện khi tải, ẩn khi xong","Không kẹt vô hạn khi lỗi","Không chặn cả màn nếu không cần"]},
+  {c:"feedback", n:"Skeleton", vn:"Khung tải mờ", d:"Khung xám nhấp nháy lúc đang tải.", t:["Đúng bố cục nội dung thật","Thay bằng nội dung khi tải xong","Không kẹt hiển thị mãi"]},
+  {c:"feedback", n:"Empty state", vn:"Màn trống", d:"Màn hình khi chưa có dữ liệu.", t:["Hiện khi 0 dữ liệu","Có hướng dẫn / nút hành động","Không nhầm với màn lỗi"]},
+
+  // LAYOUT
+  {c:"layout", n:"Card", vn:"Thẻ nội dung", d:"Khối gom thông tin liên quan.", t:["Nội dung dài tràn thế nào","Ảnh lỗi trong card","Bấm được nếu là card clickable","Responsive khi thu nhỏ"]},
+  {c:"layout", n:"Accordion", vn:"Bung/thu gọn", d:"Mục có thể bung ra / thu lại.", t:["Bung / thu đúng","Cho mở nhiều mục cùng lúc?","Giữ trạng thái khi thao tác khác","Nội dung bên trong dài"]},
+  {c:"layout", n:"Table / Data grid", vn:"Bảng dữ liệu", d:"Bảng hàng-cột, thường kèm sắp xếp/lọc.", t:["Sắp xếp cột (tăng/giảm)","Lọc & phân trang","Cuộn ngang khi nhiều cột","Chọn hàng / chọn tất cả","Số căn phải, tabular","Khi bảng rỗng"]},
+  {c:"layout", n:"Carousel", vn:"Băng chuyền ảnh", d:"Trượt qua nhiều slide/ảnh.", t:["Next / Prev đúng","Auto-play & dừng khi hover","Vòng lặp về đầu","Swipe trên mobile","Chỉ 1 slide thì ẩn nút"]},
+  {c:"layout", n:"Divider", vn:"Đường phân cách", d:"Kẻ ngăn các khối nội dung.", t:["Hiển thị đúng, không phá layout","Đúng cả light & dark"]},
+
+  // MEDIA
+  {c:"media", n:"Image", vn:"Hình ảnh", d:"Ảnh hiển thị trong trang.", t:["Có alt text mô tả","Ảnh lỗi (broken) → xử lý gọn","Lazy-load khi cuộn","Không méo tỉ lệ","Responsive theo màn"]},
+  {c:"media", n:"Avatar", vn:"Ảnh đại diện", d:"Ảnh/chữ cái đại diện người dùng.", t:["Ảnh lỗi → fallback chữ cái","Bo tròn đúng","Nhiều kích thước","Ảnh nhóm xếp chồng"]},
+  {c:"media", n:"Video player", vn:"Trình phát video", d:"Phát video có điều khiển.", t:["Play / pause","Tua & thanh thời gian","Âm lượng / tắt tiếng","Toàn màn hình","Phụ đề (nếu có)","Chính sách autoplay"]},
+];
+
+const nav = document.getElementById("nav");
+const content = document.getElementById("content");
+
+CATS.forEach(cat=>{
+  const items = COMPS.filter(x=>x.c===cat.id);
+  // nav
+  const a = document.createElement("a");
+  a.href = "#cat-"+cat.id;
+  a.dataset.cat = cat.id;
+  a.innerHTML = `<span>${cat.vi}</span><span class="n">${items.length}</span>`;
+  nav.appendChild(a);
+  // section
+  const sec = document.createElement("section");
+  sec.className = "cat";
+  sec.id = "cat-"+cat.id;
+  sec.dataset.cat = cat.id;
+  sec.innerHTML = `<div class="cat-head"><h3>${cat.vi}</h3><span class="en">${cat.en}</span><span class="rule"></span></div>`;
+  const grid = document.createElement("div");
+  grid.className = "grid";
+  items.forEach(x=>{
+    const card = document.createElement("article");
+    card.className = "comp";
+    card.dataset.k = (x.n+" "+x.vn+" "+x.d+" "+x.t.join(" ")).toLowerCase();
+    card.innerHTML =
+      `<div class="h"><span class="name">${x.n}</span><span class="vn">${x.vn}</span></div>`+
+      `<div class="desc">${x.d}</div>`+
+      `<div class="tlabel">Cần test</div>`+
+      `<ul>${x.t.map(i=>`<li>${i}</li>`).join("")}</ul>`;
+    grid.appendChild(card);
+  });
+  sec.appendChild(grid);
+  content.appendChild(sec);
+});
+
+// nav links to static reference sections
+[["states","Trạng thái"],["cheat","Dữ liệu test mẫu"]].forEach(([id,label])=>{
+  const a = document.createElement("a");
+  a.href = "#"+id;
+  a.innerHTML = `<span>${label}</span><span class="n">★</span>`;
+  nav.appendChild(a);
+});
+
+// Search
+const q = document.getElementById("q");
+const countEl = document.getElementById("count");
+const noresult = document.getElementById("noresult");
+const total = COMPS.length;
+function updateCount(v){ countEl.textContent = v===total ? `${total} component` : `${v}/${total} khớp`; }
+updateCount(total);
+
+q.addEventListener("input", ()=>{
+  const term = q.value.trim().toLowerCase();
+  let visible = 0;
+  document.querySelectorAll("#content .cat").forEach(sec=>{
+    let any = 0;
+    sec.querySelectorAll(".comp").forEach(card=>{
+      const hit = !term || card.dataset.k.includes(term);
+      card.style.display = hit ? "" : "none";
+      if(hit){ any++; visible++; }
+    });
+    sec.style.display = any ? "" : "none";
+  });
+  updateCount(visible);
+  noresult.classList.toggle("show", visible===0);
+});
+
+// Theme toggle
+const root = document.documentElement;
+const tbtn = document.getElementById("theme");
+tbtn.addEventListener("click", ()=>{
+  const cur = root.getAttribute("data-theme");
+  const isDark = cur ? cur==="dark" : matchMedia("(prefers-color-scheme:dark)").matches;
+  root.setAttribute("data-theme", isDark ? "light" : "dark");
+});
+</script>
