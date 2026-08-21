@@ -96,6 +96,7 @@
   .intro h2{margin:0 0 6px; font-size:22px; letter-spacing:-.02em; text-wrap:balance}
   .intro p{margin:0 0 14px; color:var(--muted); max-width:64ch; font-size:14.5px}
   .intro p:last-child{margin-bottom:0}
+  .intro code{font-family:var(--mono); font-size:12px; background:var(--surface-2); padding:1px 5px; border-radius:5px; border:1px solid var(--line)}
   .legend{display:flex; gap:18px; flex-wrap:wrap; margin-top:4px}
   .legend span{display:inline-flex; align-items:center; gap:7px; font-size:12.5px; color:var(--ink)}
   .dot{width:10px;height:10px;border-radius:50%}
@@ -134,6 +135,93 @@
     content:""; position:absolute; left:2px; top:6px; width:6px;height:6px;
     border-radius:2px; background:var(--accent); opacity:.7;
   }
+
+  /* ===== Component previews (visual demo of each component) ===== */
+  .comp .pv{
+    background:var(--surface-2); border:1px solid var(--line); border-radius:10px;
+    padding:13px 14px; margin:3px 0 12px; min-height:58px;
+    display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;
+    position:relative; overflow:hidden;
+  }
+  .pv.col{flex-direction:column; align-items:stretch; justify-content:center}
+  .pv *{box-sizing:border-box}
+  .pv .mut{color:var(--muted)}
+  /* text-like inputs */
+  .pvf{width:100%; font:500 12px var(--sans); color:var(--ink);
+    background:var(--surface); border:1px solid var(--line); border-radius:7px; padding:7px 9px}
+  .pvf.focus{border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft)}
+  .pvf.err{border-color:var(--fail); box-shadow:0 0 0 2px color-mix(in srgb,var(--fail) 22%,transparent)}
+  .pvlbl{font-size:10px; color:var(--muted); margin-bottom:3px}
+  .pverr{font-size:10px; color:var(--fail); margin-top:4px}
+  .pvcaret{color:var(--accent); font-weight:400; animation:pvblink 1.1s step-end infinite}
+  @keyframes pvblink{50%{opacity:0}}
+  .pvbetween{display:flex; align-items:center; justify-content:space-between; gap:8px}
+  /* buttons */
+  .pvb{font:600 12px var(--sans); border-radius:7px; padding:7px 13px; border:1px solid transparent; white-space:nowrap}
+  .pvb.pri{background:var(--accent); color:#fff}
+  .pvb.sec{background:var(--surface); color:var(--ink); border-color:var(--line)}
+  .pvb.gho{background:transparent; color:var(--accent-ink); padding:7px 4px}
+  .pvic{width:32px;height:32px;border-radius:7px;border:1px solid var(--line);background:var(--surface);
+    display:grid;place-items:center;color:var(--ink);font-size:15px;flex:none}
+  /* checkbox / radio */
+  .pvrow{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink)}
+  .pvck{width:16px;height:16px;border:1.5px solid var(--line);border-radius:4px;background:var(--surface);flex:none;display:grid;place-items:center;color:#fff;font-size:11px}
+  .pvck.on{background:var(--accent);border-color:var(--accent)}
+  .pvrd{width:16px;height:16px;border:1.5px solid var(--line);border-radius:50%;background:var(--surface);flex:none;display:grid;place-items:center}
+  .pvrd.on{border-color:var(--accent)}
+  .pvrd.on::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
+  /* toggle */
+  .pvtg{width:38px;height:22px;border-radius:999px;background:var(--accent);position:relative;flex:none}
+  .pvtg::after{content:"";position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:#fff}
+  .pvtg.off{background:var(--line)}
+  .pvtg.off::after{left:2px;right:auto}
+  /* slider */
+  .pvsl{width:100%;height:4px;border-radius:2px;background:var(--line);position:relative;margin:8px 0}
+  .pvsl::before{content:"";position:absolute;left:0;top:0;height:100%;width:55%;background:var(--accent);border-radius:2px}
+  .pvsl::after{content:"";position:absolute;left:calc(55% - 8px);top:-6px;width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);box-shadow:var(--shadow)}
+  /* chips / tags */
+  .pvchip{display:inline-flex;align-items:center;gap:5px;font-size:11px;background:var(--accent-soft);color:var(--accent-ink);border-radius:999px;padding:3px 9px;white-space:nowrap}
+  .pvchip .x{opacity:.55;font-weight:700}
+  /* badge */
+  .pvbadge{position:relative;width:34px;height:34px;border-radius:8px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;font-size:17px}
+  .pvbadge .b{position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;border-radius:999px;background:var(--fail);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px;border:2px solid var(--surface-2)}
+  /* progress / spinner / skeleton */
+  .pvpg{width:100%;height:7px;border-radius:999px;background:var(--line);overflow:hidden}
+  .pvpg::before{content:"";display:block;height:100%;width:62%;background:var(--accent);border-radius:999px}
+  .pvspin{width:24px;height:24px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:pvspin .9s linear infinite}
+  @keyframes pvspin{to{transform:rotate(360deg)}}
+  .pvsk{height:9px;border-radius:5px;background:linear-gradient(90deg,var(--line),var(--surface),var(--line));background-size:200% 100%;animation:pvsk 1.4s ease-in-out infinite}
+  @keyframes pvsk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  /* avatar / image */
+  .pvav{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:600;flex:none;border:2px solid var(--surface-2)}
+  .pvimg{width:100%;height:46px;border-radius:7px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);font-size:18px}
+  /* alert / toast / banner */
+  .pvalert{width:100%;border-radius:8px;padding:8px 10px;font-size:11.5px;display:flex;align-items:center;gap:8px}
+  .pvalert.warn{background:color-mix(in srgb,var(--warn) 15%,var(--surface));color:var(--ink);border:1px solid color-mix(in srgb,var(--warn) 45%,transparent)}
+  .pvtoast{background:#222c36;color:#eef3f7;border-radius:9px;padding:9px 12px;font-size:11.5px;display:flex;align-items:center;gap:9px;box-shadow:var(--shadow)}
+  :root[data-theme="dark"] .pvtoast, :root:not([data-theme="light"]) .pvtoast{background:#e6edf3;color:#161f28}
+  /* tabs */
+  .pvtabs{display:flex;gap:2px;width:100%;border-bottom:1px solid var(--line)}
+  .pvtab{font-size:11.5px;padding:6px 10px;color:var(--muted)}
+  .pvtab.on{color:var(--accent-ink);font-weight:600;border-bottom:2px solid var(--accent);margin-bottom:-1px}
+  /* generic mini list (menu, sidebar, empty, dialog) */
+  .pvcard{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:9px 11px;box-shadow:var(--shadow)}
+  .pvpill{font-size:11px;color:var(--muted)}
+  .pvpill.on{color:var(--accent-ink);font-weight:600;background:var(--accent-soft);border-radius:6px;padding:4px 8px}
+  @media (prefers-reduced-motion:reduce){
+    .pvcaret,.pvspin,.pvsk{animation:none}
+  }
+
+  /* API method mapping per component */
+  .comp .apibox{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px; margin:0 0 12px; font-size:11.5px}
+  .apilbl{font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:700}
+  .apim{font-family:var(--mono); font-size:10.5px; font-weight:700; padding:1px 6px; border-radius:5px; border:1px solid; letter-spacing:.02em}
+  .apim.get{color:var(--accent-ink); border-color:color-mix(in srgb,var(--accent) 40%,transparent); background:var(--accent-soft)}
+  .apim.post{color:var(--pass); border-color:color-mix(in srgb,var(--pass) 42%,transparent); background:color-mix(in srgb,var(--pass) 12%,transparent)}
+  .apim.put{color:var(--warn); border-color:color-mix(in srgb,var(--warn) 42%,transparent); background:color-mix(in srgb,var(--warn) 12%,transparent)}
+  .apim.del{color:var(--fail); border-color:color-mix(in srgb,var(--fail) 42%,transparent); background:color-mix(in srgb,var(--fail) 12%,transparent)}
+  .apim.none{color:var(--muted); border-color:var(--line); background:var(--surface-2)}
+  .apinote{color:var(--muted); flex-basis:100%; line-height:1.42}
 
   /* States block */
   .states-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px}
@@ -195,6 +283,7 @@
       <h2>Gọi đúng tên, test đủ trạng thái</h2>
       <p>Tài liệu tra cứu nhanh cho QC: mỗi thành phần giao diện có <strong>tên chuẩn tiếng Anh</strong> (để báo bug/viết test case dev hiểu ngay), tên Việt, và danh sách <strong>cần test</strong>. Gõ vào ô tìm kiếm để lọc tức thì.</p>
       <p>Phần lớn bug nằm ở <strong>trạng thái (state)</strong> của cùng một element, không phải ở lúc bình thường — nhớ test đủ các state ở mục <a href="#states">Trạng thái</a>, và dùng <a href="#cheat">bộ dữ liệu test mẫu</a> cho mọi ô nhập.</p>
+      <p>Mỗi thẻ có dòng <strong>API</strong> cho biết component đó thường gọi loại request nào — <code>GET</code> đọc dữ liệu, <code>POST</code> tạo mới, <code>PUT</code>/<code>PATCH</code> cập nhật, <code>DELETE</code> xoá, <code>—</code> chỉ hiển thị (không gọi API) — kèm gợi ý cần kiểm tra phía server.</p>
       <div class="legend" aria-hidden="true">
         <span><i class="dot" style="background:var(--pass)"></i> Pass / hợp lệ</span>
         <span><i class="dot" style="background:var(--warn)"></i> Cảnh báo / biên</span>
@@ -317,6 +406,115 @@ const COMPS = [
   {c:"media", n:"Video player", vn:"Trình phát video", d:"Phát video có điều khiển.", t:["Play / pause","Tua & thanh thời gian","Âm lượng / tắt tiếng","Toàn màn hình","Phụ đề (nếu có)","Chính sách autoplay"]},
 ];
 
+// Preview giả lập cho từng component (để QC nhìn là nhận ra ngay)
+const PREVIEWS = {
+  // FORM
+  "Text field":`<div class="pv col"><span class="pvlbl">Họ tên</span><div class="pvf focus">Nguyễn Văn A<span class="pvcaret">|</span></div></div>`,
+  "Textarea":`<div class="pv col"><div class="pvf" style="height:46px;white-space:normal;line-height:1.4">Ghi chú nhiều dòng…<br>xuống dòng được<span class="pvcaret">|</span></div></div>`,
+  "Dropdown / Select":`<div class="pv col"><div class="pvf pvbetween"><span class="mut">Chọn tỉnh / thành</span><span>▾</span></div></div>`,
+  "Combobox":`<div class="pv col"><div class="pvf pvbetween">Hà N<span class="pvcaret">|</span><span>▾</span></div><div class="pvcard" style="margin-top:5px;padding:5px 0"><div class="pvpill on" style="margin:0 5px">Hà Nội</div><div class="pvpill" style="padding:4px 13px">Hà Nam</div></div></div>`,
+  "Multi-select":`<div class="pv col"><div class="pvf" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"><span class="pvchip">Đỏ <span class="x">×</span></span><span class="pvchip">Xanh <span class="x">×</span></span><span class="mut">+ thêm</span></div></div>`,
+  "Checkbox":`<div class="pv col"><div class="pvrow"><span class="pvck on">✓</span> Nhận email</div><div class="pvrow"><span class="pvck"></span> Nhận SMS</div></div>`,
+  "Radio button":`<div class="pv col"><div class="pvrow"><span class="pvrd on"></span> Nam</div><div class="pvrow"><span class="pvrd"></span> Nữ</div></div>`,
+  "Toggle / Switch":`<div class="pv"><span class="pvrow"><span class="pvtg"></span> Bật</span><span class="pvrow" style="margin-left:12px"><span class="pvtg off"></span> Tắt</span></div>`,
+  "Slider":`<div class="pv col"><div class="pvsl"></div><div class="pvbetween mut" style="font-size:11px"><span>0</span><span style="color:var(--accent-ink);font-weight:600">55</span><span>100</span></div></div>`,
+  "Date picker":`<div class="pv col"><div class="pvf pvbetween">22/08/2026 <span>📅</span></div></div>`,
+  "File upload":`<div class="pv col"><div class="pvf" style="border-style:dashed;text-align:center;padding:12px;color:var(--muted)">⬆︎ Kéo-thả hoặc <span style="color:var(--accent-ink);font-weight:600">chọn file</span></div></div>`,
+  "Search box":`<div class="pv col"><div class="pvf pvbetween"><span>🔍 màn hình</span><span class="mut">×</span></div></div>`,
+  "Stepper (number)":`<div class="pv"><span class="pvic">−</span><span class="pvf" style="width:52px;text-align:center;padding:7px 4px">10</span><span class="pvic">+</span></div>`,
+  // ACTION
+  "Button":`<div class="pv"><span class="pvb pri">Lưu thay đổi</span></div>`,
+  "Primary / Secondary":`<div class="pv"><span class="pvb pri">Lưu</span><span class="pvb sec">Huỷ</span></div>`,
+  "Icon button":`<div class="pv"><span class="pvic">✏︎</span><span class="pvic">🗑</span><span class="pvic">⋯</span></div>`,
+  "Link":`<div class="pv"><a style="font-size:13px;text-decoration:underline">Xem chi tiết →</a></div>`,
+  "FAB":`<div class="pv" style="justify-content:flex-end"><span class="pvb pri" style="width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center;font-size:22px;box-shadow:var(--shadow)">+</span></div>`,
+  // NAV
+  "Navbar / Header":`<div class="pv col"><div class="pvcard pvbetween" style="padding:8px 11px"><span style="font-weight:700;color:var(--accent-ink)">◆ Logo</span><span style="display:flex;gap:10px"><span class="pvpill on">Trang chủ</span><span class="pvpill">Sản phẩm</span></span></div></div>`,
+  "Sidebar":`<div class="pv col"><div class="pvcard" style="display:flex;flex-direction:column;gap:5px;padding:8px"><span class="pvpill on">▤ Tổng quan</span><span class="pvpill" style="padding:4px 8px">▤ Đơn hàng</span></div></div>`,
+  "Menu / Dropdown menu":`<div class="pv col"><div class="pvcard" style="display:flex;flex-direction:column;gap:3px;padding:6px"><span class="pvpill" style="padding:4px 8px">Sửa</span><span class="pvpill" style="padding:4px 8px">Nhân bản</span><span class="pvpill" style="padding:4px 8px;color:var(--fail)">Xoá</span></div></div>`,
+  "Breadcrumb":`<div class="pv" style="font-size:12px"><span class="mut">Trang chủ</span> <span class="mut">›</span> <span class="mut">Đơn hàng</span> <span class="mut">›</span> <b>#1024</b></div>`,
+  "Tab":`<div class="pv col"><div class="pvtabs"><span class="pvtab on">Thông tin</span><span class="pvtab">Lịch sử</span><span class="pvtab">Bình luận</span></div></div>`,
+  "Pagination":`<div class="pv" style="font-size:12px;gap:4px"><span class="pvic" style="width:28px;height:28px">‹</span><span class="pvb pri" style="padding:5px 10px">1</span><span class="pvic" style="width:28px;height:28px">2</span><span class="pvic" style="width:28px;height:28px">3</span><span class="pvic" style="width:28px;height:28px">›</span></div>`,
+  "Wizard / Stepper":`<div class="pv" style="font-size:11px;gap:6px"><span class="pvav" style="width:24px;height:24px;font-size:11px">1</span><span class="mut">──</span><span class="pvav" style="width:24px;height:24px;font-size:11px">2</span><span class="mut">──</span><span class="pvic" style="width:24px;height:24px;border-radius:50%">3</span></div>`,
+  // FEEDBACK
+  "Tooltip":`<div class="pv col" style="align-items:center;gap:5px"><span class="pvtoast" style="font-size:10.5px;padding:5px 9px">Lưu bản nháp</span><span style="font-size:9px;color:var(--ink)">▾</span><span class="pvic">💾</span></div>`,
+  "Toast / Snackbar":`<div class="pv"><span class="pvtoast">✓ Đã lưu thành công</span></div>`,
+  "Alert / Banner":`<div class="pv"><span class="pvalert warn">⚠︎ Phiên đăng nhập sắp hết hạn.</span></div>`,
+  "Modal / Dialog":`<div class="pv" style="background:color-mix(in srgb,#000 28%,var(--surface-2))"><div class="pvcard" style="width:80%"><b style="font-size:12px">Xoá mục này?</b><div class="mut" style="font-size:10.5px;margin:3px 0 8px">Không thể hoàn tác.</div><div style="display:flex;gap:6px;justify-content:flex-end"><span class="pvb sec" style="padding:5px 10px">Huỷ</span><span class="pvb pri" style="padding:5px 10px;background:var(--fail)">Xoá</span></div></div></div>`,
+  "Popover":`<div class="pv col" style="align-items:flex-start"><span class="pvb sec" style="padding:5px 10px">Bộ lọc ▾</span><div class="pvcard" style="margin-top:5px;width:70%"><div class="pvrow" style="font-size:11px"><span class="pvck on">✓</span> Còn hàng</div></div></div>`,
+  "Badge":`<div class="pv"><span class="pvbadge">🔔<span class="b">9+</span></span></div>`,
+  "Chip / Tag":`<div class="pv"><span class="pvchip">Mới</span><span class="pvchip">Giảm giá <span class="x">×</span></span></div>`,
+  "Progress bar":`<div class="pv col"><div class="pvpg"></div><div class="mut" style="font-size:10.5px;text-align:right">62%</div></div>`,
+  "Spinner / Loader":`<div class="pv"><span class="pvspin"></span></div>`,
+  "Skeleton":`<div class="pv col" style="gap:7px"><div class="pvsk" style="width:70%"></div><div class="pvsk" style="width:100%"></div><div class="pvsk" style="width:45%"></div></div>`,
+  "Empty state":`<div class="pv col" style="align-items:center;gap:5px;text-align:center"><span style="font-size:22px">📭</span><span class="mut" style="font-size:11px">Chưa có dữ liệu</span><span class="pvb pri" style="padding:5px 11px">Tạo mới</span></div>`,
+  // LAYOUT
+  "Card":`<div class="pv"><div class="pvcard"><div class="pvimg" style="height:30px;margin-bottom:7px">🖼</div><b style="font-size:12px">Tiêu đề thẻ</b><div class="mut" style="font-size:10.5px">Mô tả ngắn nội dung.</div></div></div>`,
+  "Accordion":`<div class="pv col"><div class="pvcard" style="padding:0"><div class="pvbetween" style="padding:8px 11px;border-bottom:1px solid var(--line)"><b style="font-size:11.5px">Câu hỏi 1</b><span>▴</span></div><div class="mut" style="padding:7px 11px;font-size:10.5px">Nội dung trả lời…</div><div class="pvbetween" style="padding:8px 11px;border-top:1px solid var(--line)"><b style="font-size:11.5px">Câu hỏi 2</b><span>▾</span></div></div></div>`,
+  "Table / Data grid":`<div class="pv col"><div class="pvcard" style="padding:0;overflow:hidden;font-size:10.5px"><div class="pvbetween" style="padding:6px 10px;background:var(--surface-2);font-weight:700"><span>Tên</span><span>Số</span></div><div class="pvbetween" style="padding:6px 10px;border-top:1px solid var(--line)"><span>An</span><span>1.200</span></div><div class="pvbetween" style="padding:6px 10px;border-top:1px solid var(--line)"><span>Bình</span><span>980</span></div></div></div>`,
+  "Carousel":`<div class="pv col"><div class="pvbetween"><span class="pvic" style="width:26px;height:26px">‹</span><div class="pvimg" style="height:34px;margin:0 6px">🏞</div><span class="pvic" style="width:26px;height:26px">›</span></div><div style="display:flex;gap:5px;justify-content:center;margin-top:6px"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent)"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--line)"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--line)"></span></div></div>`,
+  "Divider":`<div class="pv col" style="gap:8px;font-size:11px;color:var(--ink)"><span>Phần trên</span><span style="height:1px;background:var(--line);width:100%"></span><span>Phần dưới</span></div>`,
+  // MEDIA
+  "Image":`<div class="pv"><span class="pvimg" style="height:52px">🖼</span></div>`,
+  "Avatar":`<div class="pv"><span class="pvav">AN</span><span class="pvav" style="margin-left:-12px;background:var(--warn)">BT</span><span class="pvav" style="margin-left:-12px;background:var(--muted)">+3</span></div>`,
+  "Video player":`<div class="pv col"><div class="pvimg" style="height:52px;position:relative;background:#0e141a;color:#fff">▶︎<span style="position:absolute;left:0;right:0;bottom:0;height:12px;background:rgba(255,255,255,.15);display:flex;align-items:center;padding:0 6px"><span style="height:3px;flex:1;background:var(--accent);border-radius:2px"></span></span></div></div>`,
+};
+
+// Loại API / HTTP method mà component thường gắn tới (để QC biết đằng sau gọi request gì)
+// [danh sách method, ghi chú cần kiểm tra phía server]
+const API = {
+  // FORM
+  "Text field":["POST,PUT","Giá trị gửi khi submit form. Kiểm tra server-side validate, độ dài, trim, encoding, chống XSS/SQLi."],
+  "Textarea":["POST,PUT","Như text field; chú ý escape HTML & giữ đúng xuống dòng khi lưu và hiển thị lại."],
+  "Dropdown / Select":["GET,POST","GET nạp danh sách option; giá trị chọn gửi kèm POST/PUT. Test option rỗng, giá trị không nằm trong danh sách."],
+  "Combobox":["GET","GET lọc theo từ khoá (thường ?q=). Test debounce, không dấu, kết quả rỗng, injection ở query."],
+  "Multi-select":["GET,POST","GET danh sách; gửi mảng giá trị. Test gửi rỗng, trùng, vượt giới hạn số lượng."],
+  "Checkbox":["POST,PUT,PATCH","Gửi boolean / mảng. Test giá trị mặc định và khi KHÔNG tick (gửi false hay bỏ field?)."],
+  "Radio button":["POST,PUT","Gửi đúng 1 giá trị. Test khi thiếu giá trị bắt buộc, giá trị lạ."],
+  "Toggle / Switch":["PATCH,PUT","Thường lưu ngay (PATCH). Test khi API lỗi thì UI rollback về trạng thái cũ."],
+  "Slider":["POST,PUT,PATCH","Gửi số trong khoảng. Test biên min/max, đúng step, giá trị ngoài khoảng bị chặn."],
+  "Date picker":["POST,PUT","Gửi ngày dạng ISO. Test 29/2, min/max, lệch múi giờ (UTC vs local)."],
+  "File upload":["POST","multipart/form-data. Test dung lượng, MIME thật vs đuôi file, upload gián đoạn, trùng tên."],
+  "Search box":["GET","GET ?q=… Test rỗng, không kết quả, ký tự đặc biệt, debounce, phân trang kết quả."],
+  "Stepper (number)":["POST,PUT,PATCH","Gửi số nguyên. Test min/max, số âm, ngoài khoảng, gửi chữ vào field số."],
+  // ACTION
+  "Button":["POST,PUT,DELETE","Method tuỳ hành động gắn vào. Test double-click gửi 2 lần → chống lặp (idempotency)."],
+  "Primary / Secondary":["POST,PUT","Nút chính xác nhận (POST/PUT); nút phụ/huỷ thường KHÔNG gọi API."],
+  "Icon button":["PUT,DELETE","Tuỳ icon: sửa=PUT, xoá=DELETE. Test hành động khớp icon & kiểm tra quyền."],
+  "Link":["GET","Điều hướng (GET trang). Test link hỏng 404, redirect, mở tab mới."],
+  "FAB":["POST","Thường mở luồng tạo mới → POST. Test tạo bản ghi thành công/thất bại."],
+  // NAV
+  "Navbar / Header":["GET","Điều hướng GET; có thể gọi API user / số thông báo. Test route active, quyền menu."],
+  "Sidebar":["GET","Điều hướng GET giữa trang. Test ẩn/hiện mục theo quyền (authorization)."],
+  "Menu / Dropdown menu":["PUT,DELETE","Mỗi item là 1 hành động (sửa/nhân bản/xoá). Test đúng bản ghi & quyền theo item."],
+  "Breadcrumb":["GET","Điều hướng GET về cấp cha. Test URL đúng cấp phân cấp."],
+  "Tab":["GET","Có thể lazy-load nội dung tab (GET). Test chỉ gọi khi mở tab, không gọi lại khi quay lại."],
+  "Pagination":["GET","GET ?page=&size=. Test trang ngoài khoảng, tổng số item, size quá lớn."],
+  "Wizard / Stepper":["POST,PUT","Lưu từng bước (PUT) hoặc submit ở bước cuối (POST). Test lưu nháp, gián đoạn giữa chừng."],
+  // FEEDBACK
+  "Tooltip":["—","Chỉ hiển thị, không gọi API."],
+  "Toast / Snackbar":["—","Là kết quả của API trước đó. Test hiện đúng message thành công/lỗi từ response."],
+  "Alert / Banner":["—","Thường phản ánh lỗi từ API. Test map đúng mã lỗi/thông báo từ server."],
+  "Modal / Dialog":["POST,PUT,DELETE","Chỉ khi bấm Xác nhận mới gọi API (vd Xoá=DELETE). Test bấm Huỷ thì KHÔNG gọi."],
+  "Popover":["GET","Có thể lazy-load nội dung khi mở (GET). Test chỉ tải khi bật."],
+  "Badge":["GET","Số lấy từ API (đếm thông báo…). Test polling/realtime cập nhật đúng, số lớn 99+."],
+  "Chip / Tag":["GET,DELETE","Filter (GET ?tag=) hoặc xoá tag (DELETE). Test bấm × gọi đúng bản ghi."],
+  "Progress bar":["GET","Phản ánh tiến độ job (polling / stream GET). Test đồng bộ với tiến độ thật."],
+  "Spinner / Loader":["—","Là trạng thái pending của request. Test timeout & khi lỗi thì ẩn spinner (không kẹt vô hạn)."],
+  "Skeleton":["GET","Hiện khi đang GET dữ liệu. Test thay bằng data khi 200, ẩn khi lỗi."],
+  "Empty state":["GET","Khi API trả 200 + danh sách rỗng. Test phân biệt rỗng thật vs lỗi mạng."],
+  // LAYOUT
+  "Card":["GET","Hiển thị dữ liệu từ GET. Test thiếu field (null), ảnh lỗi."],
+  "Accordion":["GET","Có thể lazy-load nội dung khi bung (GET). Test chỉ gọi khi mở."],
+  "Table / Data grid":["GET,DELETE","GET ?sort=&filter=&page=; xoá hàng=DELETE. Test sort/filter phía server, bảng rỗng, xoá hàng loạt."],
+  "Carousel":["GET","Ảnh/slide lấy từ GET. Test lazy-load ảnh, ảnh lỗi."],
+  "Divider":["—","Chỉ hiển thị, không gọi API."],
+  // MEDIA
+  "Image":["GET","Tải ảnh (GET file/CDN). Test 404 ảnh, lazy-load, ảnh nặng/độ phân giải."],
+  "Avatar":["GET","Tải ảnh user (GET); lỗi → fallback chữ cái. Test 404, cache, ảnh riêng tư cần quyền."],
+  "Video player":["GET","Stream video (GET có Range). Test tua (range request), lỗi mạng, phụ đề, autoplay."],
+};
+
 const nav = document.getElementById("nav");
 const content = document.getElementById("content");
 
@@ -339,10 +537,21 @@ CATS.forEach(cat=>{
   items.forEach(x=>{
     const card = document.createElement("article");
     card.className = "comp";
-    card.dataset.k = (x.n+" "+x.vn+" "+x.d+" "+x.t.join(" ")).toLowerCase();
+    const api = API[x.n] || null;
+    card.dataset.k = (x.n+" "+x.vn+" "+x.d+" "+x.t.join(" ")+" "+(api?api[0]+" "+api[1]:"")).toLowerCase();
+    const pv = PREVIEWS[x.n] || "";
+    const clsOf = m => ({GET:"get",POST:"post",PUT:"put",PATCH:"put",DELETE:"del"}[m] || "none");
+    let apiHtml = "";
+    if(api){
+      const chips = api[0].split(",").map(m=>m.trim()).filter(Boolean)
+        .map(m=>`<span class="apim ${clsOf(m)}">${m}</span>`).join("");
+      apiHtml = `<div class="apibox"><span class="apilbl">API</span>${chips}<span class="apinote">${api[1]}</span></div>`;
+    }
     card.innerHTML =
       `<div class="h"><span class="name">${x.n}</span><span class="vn">${x.vn}</span></div>`+
       `<div class="desc">${x.d}</div>`+
+      pv+
+      apiHtml+
       `<div class="tlabel">Cần test</div>`+
       `<ul>${x.t.map(i=>`<li>${i}</li>`).join("")}</ul>`;
     grid.appendChild(card);
