@@ -915,6 +915,152 @@
       <p style="font-size:12.5px;color:var(--muted);margin:12px 2px 0;line-height:1.55"><strong>Một bug report tốt gồm:</strong> tiêu đề rõ (cái gì + ở đâu) · môi trường (trình duyệt/OS/thiết bị/phiên bản) · <strong>các bước tái hiện</strong> · kết quả <strong>mong đợi vs thực tế</strong> · ảnh/video/log console · mức độ (severity) &amp; ưu tiên (priority) · tần suất (luôn/thỉnh thoảng).</p>
     </section>
 
+    <!-- Test types & pyramid -->
+    <section class="cat" id="testtypes" data-static>
+      <div class="cat-head"><h3>Loại test &amp; tháp kiểm thử</h3><span class="en">Test types &amp; testing pyramid</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Loại test</th><th>Là gì · khi nào</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Unit test</strong></td><td>Kiểm 1 hàm/đơn vị nhỏ; dev viết; chạy rất nhanh (đáy tháp — nhiều nhất)</td></tr>
+          <tr><td><strong>Integration test</strong></td><td>Nhiều module phối hợp; thường chạm API + DB</td></tr>
+          <tr><td><strong>E2E (End-to-end)</strong></td><td>Mô phỏng người dùng thật trên UI (Playwright/Cypress); chậm, ít nhất (đỉnh tháp)</td></tr>
+          <tr><td><strong>Smoke test</strong></td><td>Kiểm nhanh chức năng cốt lõi sau mỗi build/deploy</td></tr>
+          <tr><td><strong>Regression test</strong></td><td>Đảm bảo thay đổi mới không phá tính năng cũ</td></tr>
+          <tr><td><strong>Exploratory</strong></td><td>Dò lỗi tự do, không theo script — dựa kinh nghiệm</td></tr>
+          <tr><td><strong>UAT</strong></td><td>Người dùng/nghiệp vụ nghiệm thu trước khi phát hành</td></tr>
+          <tr><td><strong>Visual regression</strong></td><td>So ảnh chụp UI để phát hiện lệch giao diện</td></tr>
+          <tr><td><strong>Load / Performance</strong></td><td>Kiểm dưới tải cao, chịu tải, thời gian phản hồi</td></tr>
+        </tbody>
+      </table></div></div>
+      <p style="font-size:12.5px;color:var(--muted);margin:12px 2px 0;line-height:1.55"><strong>Tháp kiểm thử:</strong> nhiều <em>unit</em> ở đáy (rẻ, nhanh), ít <em>E2E</em> ở đỉnh (đắt, chậm); QC thủ công &amp; exploratory bổ trợ cho phần tự động.</p>
+    </section>
+
+    <!-- SEO & Meta -->
+    <section class="cat" id="seo" data-static>
+      <div class="cat-head"><h3>SEO &amp; Meta</h3><span class="en">Tối ưu công cụ tìm kiếm &amp; thẻ meta</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Hạng mục</th><th>Cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td>Title &amp; meta description</td><td>Mỗi trang riêng biệt, độ dài hợp lý, có từ khoá</td></tr>
+          <tr><td>Heading</td><td>Đúng 1 <code>&lt;h1&gt;</code>/trang, phân cấp hợp lý</td></tr>
+          <tr><td>OpenGraph / Twitter card</td><td>Chia sẻ link hiện đúng ảnh + tiêu đề + mô tả</td></tr>
+          <tr><td>Canonical URL</td><td>Tránh nội dung trùng lặp</td></tr>
+          <tr><td>sitemap.xml &amp; robots.txt</td><td>Cho phép index đúng trang; chặn trang không cần</td></tr>
+          <tr><td>Structured data (schema.org)</td><td>Rich result (sản phẩm, đánh giá, breadcrumb…)</td></tr>
+          <tr><td>URL thân thiện</td><td>Rõ nghĩa, không lỗi, redirect 301 khi đổi</td></tr>
+          <tr><td>Ảnh có alt</td><td>Tốt cho cả SEO &amp; a11y</td></tr>
+          <tr><td>Tốc độ tải</td><td>Web Vitals ảnh hưởng xếp hạng (xem mục Web Vitals)</td></tr>
+          <tr><td>Trang staging/nội bộ</td><td><strong>Không</strong> để bị index (noindex)</td></tr>
+        </tbody>
+      </table></div></div>
+    </section>
+
+    <!-- Analytics & Tracking -->
+    <section class="cat" id="analytics" data-static>
+      <div class="cat-head"><h3>Analytics &amp; Tracking</h3><span class="en">Xác minh sự kiện &amp; đo lường</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Hạng mục</th><th>Cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td>Event bắn đúng</td><td>Đúng khi click/submit/view; đúng tên &amp; tham số</td></tr>
+          <tr><td>Pageview (SPA)</td><td>Đổi route bắn pageview đúng (không reload trang)</td></tr>
+          <tr><td>Không trùng / không thiếu</td><td>Một thao tác không bắn 2 lần; không sót event quan trọng</td></tr>
+          <tr><td>Consent</td><td>Chỉ chạy tracking sau khi người dùng đồng ý (GDPR)</td></tr>
+          <tr><td>Dữ liệu cá nhân (PII)</td><td>Không gửi email/tên/thẻ vào event</td></tr>
+          <tr><td>Công cụ debug</td><td>Kiểm bằng GA DebugView / Tag Assistant / network</td></tr>
+          <tr><td>Conversion / funnel</td><td>Các bước phễu &amp; mục tiêu ghi nhận đúng</td></tr>
+        </tbody>
+      </table></div></div>
+    </section>
+
+    <!-- Email & Notification -->
+    <section class="cat" id="notify" data-static>
+      <div class="cat-head"><h3>Email &amp; Notification</h3><span class="en">Kiểm thử email giao dịch &amp; thông báo đẩy</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Hạng mục</th><th>Cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td>Gửi đúng lúc</td><td>Đăng ký, đặt lại mật khẩu, đơn hàng, OTP… đúng sự kiện</td></tr>
+          <tr><td>Nội dung cá nhân hoá</td><td>Tên, link, mã… đúng &amp; không lỗi biến (còn trơ {{name}})</td></tr>
+          <tr><td>Link trong email</td><td>Hoạt động &amp; đúng môi trường (không trỏ localhost/staging)</td></tr>
+          <tr><td>Hiển thị</td><td>Đúng trên Gmail/Outlook/mobile; dark mode; ảnh chặn vẫn đọc được</td></tr>
+          <tr><td>Spam &amp; unsubscribe</td><td>Không vào spam (SPF/DKIM); có link huỷ nhận</td></tr>
+          <tr><td>Push notification</td><td>Xin quyền đúng; deep-link mở đúng màn; hiện khi app nền</td></tr>
+          <tr><td>Độ tin cậy</td><td>Retry khi gửi lỗi; không gửi trùng/spam</td></tr>
+        </tbody>
+      </table></div></div>
+    </section>
+
+    <!-- Payment -->
+    <section class="cat" id="payment" data-static>
+      <div class="cat-head"><h3>Luồng thanh toán</h3><span class="en">Payment flow — nếu có e-commerce</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Hạng mục</th><th>Cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td>Luồng thành công</td><td>Đầu-cuối: chọn hàng → thanh toán → xác nhận đơn</td></tr>
+          <tr><td>Thẻ lỗi</td><td>Từ chối / hết hạn / không đủ tiền / sai số — báo rõ</td></tr>
+          <tr><td>3D Secure / OTP</td><td>Xác thực ngân hàng; huỷ giữa chừng xử lý đúng</td></tr>
+          <tr><td>Chống double-charge</td><td>Bấm 2 lần / refresh không trừ tiền 2 lần (idempotency)</td></tr>
+          <tr><td>Timeout / mất mạng</td><td>Trạng thái đơn đúng (pending), không mất tiền</td></tr>
+          <tr><td>Hoàn / huỷ</td><td>Refund &amp; cancel đúng số tiền &amp; trạng thái</td></tr>
+          <tr><td>Số tiền &amp; tiền tệ</td><td>Làm tròn, thuế, phí, đổi tiền đúng</td></tr>
+          <tr><td>Bảo mật (PCI)</td><td>Không lưu số thẻ; dùng cổng/token; HTTPS</td></tr>
+          <tr><td>Webhook &amp; hoá đơn</td><td>Xác nhận từ cổng thanh toán; biên nhận/hoá đơn đúng</td></tr>
+        </tbody>
+      </table></div></div>
+    </section>
+
+    <!-- Consent & Legal -->
+    <section class="cat" id="legal" data-static>
+      <div class="cat-head"><h3>Consent &amp; Pháp lý</h3><span class="en">Cookie / GDPR / tuân thủ</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Hạng mục</th><th>Cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td>Cookie consent banner</td><td>Hiện lần đầu; <strong>chặn tracking</strong> đến khi đồng ý</td></tr>
+          <tr><td>Lưu &amp; rút lại consent</td><td>Nhớ lựa chọn; cho phép đổi/rút lại sau</td></tr>
+          <tr><td>Privacy Policy &amp; Terms</td><td>Có, truy cập được, cập nhật</td></tr>
+          <tr><td>Quyền dữ liệu (GDPR)</td><td>Xem/xoá/tải dữ liệu cá nhân (data request)</td></tr>
+          <tr><td>Thu thập tối thiểu</td><td>Chỉ lấy dữ liệu cần; thông báo rõ mục đích</td></tr>
+          <tr><td>Tuân thủ a11y</td><td>WCAG là nghĩa vụ pháp lý ở nhiều nước</td></tr>
+        </tbody>
+      </table></div></div>
+    </section>
+
+    <!-- Environments & release -->
+    <section class="cat" id="release" data-static>
+      <div class="cat-head"><h3>Môi trường &amp; phát hành</h3><span class="en">Environments, feature flags, release</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Hạng mục</th><th>Cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td>Tách môi trường</td><td>dev / staging / production riêng biệt</td></tr>
+          <tr><td>Staging giống prod</td><td>Cấu hình &amp; dữ liệu gần giống để test tin cậy</td></tr>
+          <tr><td>Secret &amp; biến môi trường</td><td>Không lộ key/secret ở phía client</td></tr>
+          <tr><td>Feature flag</td><td>Bật/tắt tính năng; test cả 2 nhánh on/off</td></tr>
+          <tr><td>Release / rollback</td><td>Có quy trình quay lui nhanh khi lỗi</td></tr>
+          <tr><td>Cache / CDN</td><td>Xoá/version asset đúng sau deploy (không kẹt bản cũ)</td></tr>
+          <tr><td>Smoke test sau deploy</td><td>Kiểm nhanh chức năng cốt lõi trên prod</td></tr>
+          <tr><td>Bản in (print)</td><td>Trang in gọn, ẩn nav/nút, ngắt trang hợp lý</td></tr>
+        </tbody>
+      </table></div></div>
+    </section>
+
+    <!-- Beyond UI: technical layers overview -->
+    <section class="cat" id="beyond" data-static>
+      <div class="cat-head"><h3>Ngoài UI: các tầng kỹ thuật</h3><span class="en">Beyond the UI — tổng quan để nắm bức tranh</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Tầng</th><th>Là gì</th><th>QC / nhóm cần biết</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Backend / API</strong></td><td>Logic nghiệp vụ; endpoint REST/GraphQL; validate phía server</td><td>Test API trực tiếp (Postman): mã lỗi, phân quyền, biên dữ liệu</td></tr>
+          <tr><td><strong>Database</strong></td><td>Lưu trữ; schema; migration; index; backup</td><td>Dữ liệu đúng sau thao tác; ràng buộc; không mất dữ liệu</td></tr>
+          <tr><td><strong>DevOps / Hạ tầng</strong></td><td>Hosting; CI/CD; container; CDN; DNS; SSL</td><td>Deploy đúng bản; HTTPS hợp lệ; đúng môi trường</td></tr>
+          <tr><td><strong>Monitoring</strong></td><td>Error tracking (Sentry); logging; uptime; APM</td><td>Lỗi được ghi nhận &amp; cảnh báo; theo dõi sự cố</td></tr>
+          <tr><td><strong>CMS / Content</strong></td><td>Hệ quản trị nội dung</td><td>Nội dung hiển thị đúng; phân quyền biên tập; preview</td></tr>
+          <tr><td><strong>Search</strong></td><td>Tìm kiếm site &amp; đánh chỉ mục</td><td>Kết quả đúng; không dấu tiếng Việt; phân trang; rỗng</td></tr>
+          <tr><td><strong>Hạ tầng Email/Payment</strong></td><td>Dịch vụ gửi mail (SendGrid…); cổng thanh toán</td><td>Xem mục Email &amp; Thanh toán</td></tr>
+          <tr><td><strong>Quy trình dự án</strong></td><td>Requirement; user story; sprint; acceptance criteria</td><td>Test theo acceptance criteria; truy vết yêu cầu ↔ test case</td></tr>
+        </tbody>
+      </table></div></div>
+      <p style="font-size:12.5px;color:var(--muted);margin:12px 2px 0;line-height:1.55">Các tầng này <strong>ngoài phạm vi UI/QC giao diện</strong> — đưa vào đây chỉ để nắm bức tranh tổng thể khi xây dựng web. Chi tiết chuyên sâu nên có tài liệu riêng cho từng mảng.</p>
+    </section>
+
   </main>
 </div>
 
@@ -1210,7 +1356,7 @@ refLbl.className = "lbl";
 refLbl.textContent = "Tham khảo";
 refLbl.style.marginTop = "16px";
 navGroups.appendChild(refLbl);
-[["demo","Demo màn hình"],["landmarks","Cấu trúc trang"],["tokens","Nền tảng thiết kế"],["perf","Hiệu năng & tải dữ liệu"],["a11y","Accessibility"],["responsive","Responsive & thiết bị"],["interaction","Tương tác & cử chỉ"],["errors","Lỗi & biên"],["security","Bảo mật UI"],["content-i18n","Nội dung & i18n"],["vitals","Web Vitals"],["authsession","Đăng nhập & phiên"],["bug","Quy trình báo lỗi"],["states","Trạng thái"],["cheat","Dữ liệu test mẫu"]].forEach(([id,label])=>{
+[["demo","Demo màn hình"],["landmarks","Cấu trúc trang"],["tokens","Nền tảng thiết kế"],["perf","Hiệu năng & tải dữ liệu"],["a11y","Accessibility"],["responsive","Responsive & thiết bị"],["interaction","Tương tác & cử chỉ"],["errors","Lỗi & biên"],["security","Bảo mật UI"],["content-i18n","Nội dung & i18n"],["vitals","Web Vitals"],["authsession","Đăng nhập & phiên"],["bug","Quy trình báo lỗi"],["testtypes","Loại test"],["seo","SEO & Meta"],["analytics","Analytics"],["notify","Email & Notification"],["payment","Thanh toán"],["legal","Consent & Pháp lý"],["release","Môi trường & phát hành"],["beyond","Ngoài UI (tổng quan)"],["states","Trạng thái"],["cheat","Dữ liệu test mẫu"]].forEach(([id,label])=>{
   const a = document.createElement("a");
   a.href = "#"+id;
   a.innerHTML = `<span>${label}</span><span class="n">★</span>`;
