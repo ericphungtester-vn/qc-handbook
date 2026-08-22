@@ -1065,21 +1065,21 @@
 
     <!-- Beyond UI: technical layers overview -->
     <section class="cat" id="beyond" data-static>
-      <div class="cat-head"><h3>Ngoài UI: các tầng kỹ thuật</h3><span class="en">Beyond the UI — tổng quan để nắm bức tranh</span><span class="rule"></span></div>
+      <div class="cat-head"><h3>Ngoài UI: các tầng kỹ thuật</h3><span class="en">Beyond the UI — kiến trúc phân tầng theo đường đi của request</span><span class="rule"></span></div>
       <div class="cheat"><div class="table-scroll"><table>
-        <thead><tr><th>Tầng</th><th>Là gì</th><th>QC / nhóm cần biết</th></tr></thead>
+        <thead><tr><th>#</th><th>Tầng</th><th>Gồm gì</th><th>QC / nhóm cần biết</th></tr></thead>
         <tbody>
-          <tr><td><strong>Backend / API</strong></td><td>Logic nghiệp vụ; endpoint REST/GraphQL; validate phía server</td><td>Test API trực tiếp (Postman): mã lỗi, phân quyền, biên dữ liệu</td></tr>
-          <tr><td><strong>Database</strong></td><td>Lưu trữ; schema; migration; index; backup</td><td>Dữ liệu đúng sau thao tác; ràng buộc; không mất dữ liệu</td></tr>
-          <tr><td><strong>DevOps / Hạ tầng</strong></td><td>Hosting; CI/CD; container; CDN; DNS; SSL</td><td>Deploy đúng bản; HTTPS hợp lệ; đúng môi trường</td></tr>
-          <tr><td><strong>Monitoring</strong></td><td>Error tracking (Sentry); logging; uptime; APM</td><td>Lỗi được ghi nhận &amp; cảnh báo; theo dõi sự cố</td></tr>
-          <tr><td><strong>CMS / Content</strong></td><td>Hệ quản trị nội dung</td><td>Nội dung hiển thị đúng; phân quyền biên tập; preview</td></tr>
-          <tr><td><strong>Search</strong></td><td>Tìm kiếm site &amp; đánh chỉ mục</td><td>Kết quả đúng; không dấu tiếng Việt; phân trang; rỗng</td></tr>
-          <tr><td><strong>Hạ tầng Email/Payment</strong></td><td>Dịch vụ gửi mail (SendGrid…); cổng thanh toán</td><td>Xem mục Email &amp; Thanh toán</td></tr>
-          <tr><td><strong>Quy trình dự án</strong></td><td>Requirement; user story; sprint; acceptance criteria</td><td>Test theo acceptance criteria; truy vết yêu cầu ↔ test case</td></tr>
+          <tr><td>1</td><td><strong>Client / Frontend</strong></td><td>Trình duyệt, UI, render (CSR/SSR) — HTML/CSS/JS, React/Vue…</td><td>Chính là phần handbook này tập trung (tầng 2–8 để phối hợp)</td></tr>
+          <tr><td>2</td><td><strong>Delivery / Network</strong></td><td>DNS, CDN, TLS/HTTPS, load balancer, API gateway</td><td>HTTPS hợp lệ; không mixed content; cache/CDN xoá đúng sau deploy</td></tr>
+          <tr><td>3</td><td><strong>Backend / Application</strong></td><td>Server; API REST/GraphQL; business logic; xác thực</td><td>Test API trực tiếp (Postman): mã lỗi, phân quyền, validate server, biên dữ liệu</td></tr>
+          <tr><td>4</td><td><strong>Data</strong></td><td>CSDL (SQL/NoSQL); cache (Redis); search index; lưu file/đối tượng</td><td>Dữ liệu đúng sau thao tác; ràng buộc; tìm kiếm đúng (kể cả tiếng Việt); không mất dữ liệu</td></tr>
+          <tr><td>5</td><td><strong>Integration / Dịch vụ ngoài</strong></td><td>Thanh toán, email/SMS, bản đồ, API bên thứ ba</td><td>Xem mục Thanh toán &amp; Email; test khi dịch vụ lỗi/timeout, webhook</td></tr>
+          <tr><td>6</td><td><strong>Infrastructure / DevOps</strong></td><td>Hosting/cloud, container, CI/CD, orchestration</td><td>Deploy đúng bản &amp; đúng môi trường (xem Môi trường &amp; phát hành)</td></tr>
+          <tr><td>7</td><td><strong>Observability</strong></td><td>Logging, monitoring, error tracking, uptime, APM</td><td>Lỗi được ghi nhận &amp; cảnh báo; theo dõi sự cố</td></tr>
+          <tr><td>8</td><td><strong>Security</strong> <em>(xuyên suốt)</em></td><td>Auth, mã hoá, WAF, secrets — phủ mọi tầng</td><td>Xem Bảo mật UI; không lộ secret phía client; phân quyền server</td></tr>
         </tbody>
       </table></div></div>
-      <p style="font-size:12.5px;color:var(--muted);margin:12px 2px 0;line-height:1.55">Các tầng này <strong>ngoài phạm vi UI/QC giao diện</strong> — đưa vào đây chỉ để nắm bức tranh tổng thể khi xây dựng web. Chi tiết chuyên sâu nên có tài liệu riêng cho từng mảng.</p>
+      <p style="font-size:12.5px;color:var(--muted);margin:12px 2px 0;line-height:1.55"><strong>Đường đi request:</strong> Client (1) → Delivery (2) → Backend (3) → đọc/ghi Data (4) → gọi Dịch vụ ngoài (5); tất cả chạy trên Infra (6), được Observability (7) giám sát &amp; Security (8) bảo vệ. Tầng 2–8 <strong>ngoài phạm vi UI/QC giao diện</strong> — đưa vào để nắm bức tranh tổng thể; chi tiết nên có tài liệu riêng.</p>
     </section>
 
   </main>
@@ -1369,11 +1369,11 @@ CATS.forEach(cat=>{
 const catMeta = {};
 CATS.forEach(c => catMeta[c.id] = {vi:c.vi, n: COMPS.filter(x=>x.c===c.id).length});
 const PHASES = [
-  ["① Lập kế hoạch", [["ref","plan","Lập kế hoạch (Plan)"]]],
+  ["① Lập kế hoạch", [["ref","plan","Lập kế hoạch (Plan)"],["ref","beyond","Các tầng kỹ thuật"]]],
   ["② Thiết kế", [["ref","tokens","Nền tảng thiết kế"],["ref","landmarks","Cấu trúc trang"]]],
   ["③ Dựng giao diện", [["cat","form"],["cat","action"],["cat","nav"],["cat","feedback"],["cat","layout"],["cat","media"],["ref","demo","Demo màn hình"],["ref","perf","Hiệu năng & tải dữ liệu"]]],
   ["④ Nội dung", [["ref","content-i18n","Nội dung & i18n"],["ref","seo","SEO & Meta"]]],
-  ["⑤ Tích hợp", [["ref","authsession","Đăng nhập & phiên"],["ref","payment","Thanh toán"],["ref","notify","Email & Notification"],["ref","analytics","Analytics"],["ref","beyond","Ngoài UI (tổng quan)"]]],
+  ["⑤ Tích hợp", [["ref","authsession","Đăng nhập & phiên"],["ref","payment","Thanh toán"],["ref","notify","Email & Notification"],["ref","analytics","Analytics"]]],
   ["⑥ Kiểm thử", [["ref","testtypes","Loại test"],["ref","a11y","Accessibility"],["ref","responsive","Responsive & thiết bị"],["ref","interaction","Tương tác & cử chỉ"],["ref","states","Trạng thái"],["ref","errors","Lỗi & biên"],["ref","security","Bảo mật UI"],["ref","vitals","Web Vitals"],["ref","cheat","Dữ liệu test mẫu"],["ref","bug","Quy trình báo lỗi"]]],
   ["⑦ Tuân thủ", [["ref","legal","Consent & Pháp lý"]]],
   ["⑧ Phát hành", [["ref","release","Môi trường & phát hành"]]],
