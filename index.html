@@ -727,6 +727,27 @@
       <p style="font-size:12.5px;color:var(--muted);margin:12px 2px 0;line-height:1.55">Đây là <strong>tầng cấu hình gốc (design tokens)</strong> — đặt một lần, mọi component dùng lại. Nguyên tắc QC: mọi giá trị nên đến từ <strong>token</strong> (biến dùng lại), <strong>không hard-code</strong> — kiểm tra chính là soát tính <strong>nhất quán</strong> đó ở cả light/dark &amp; mọi khổ màn. (Chính trang này cũng dùng token: <code>--accent</code>, <code>--radius</code>, <code>--sans</code>…)</p>
     </section>
 
+    <!-- Hiệu năng & tải dữ liệu (behaviors/patterns) — KHÔNG phải component -->
+    <section class="cat" id="perf" data-static>
+      <div class="cat-head"><h3>Hiệu năng &amp; tải dữ liệu</h3><span class="en">Behaviors &amp; performance patterns — kỹ thuật, không phải component</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Kỹ thuật (EN · VN)</th><th>Là gì</th><th>QC cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Lazy loading</strong> · Tải trễ</td><td>Hoãn tải tài nguyên (ảnh, dữ liệu, module) đến khi cần</td><td>Tải đúng khi phần tử vào viewport; không tải sớm/thừa; có placeholder</td></tr>
+          <tr><td><strong>Lazy rendering / Virtualization</strong> · Render trễ</td><td>Chỉ dựng DOM phần đang thấy (list/table rất dài)</td><td>Cuộn mượt khi nghìn dòng; giữ vị trí cuộn; chọn/tìm/scroll-to vẫn đúng dòng ngoài màn</td></tr>
+          <tr><td><strong>Infinite scroll</strong> · Cuộn tải thêm</td><td>Tự tải trang kế khi chạm đáy</td><td>Không tải trùng; dừng khi hết; có loader; nút "tải thêm" thay thế cho a11y; giữ vị trí khi quay lại</td></tr>
+          <tr><td><strong>Debounce / Throttle</strong> · Gom sự kiện</td><td>Giới hạn tần suất gọi khi gõ / cuộn / resize</td><td>Không gọi API mỗi phím; kết quả cuối cùng đúng; huỷ request cũ (race condition)</td></tr>
+          <tr><td><strong>Prefetch / Preload</strong> · Tải trước</td><td>Nạp sẵn dữ liệu/trang sắp cần</td><td>Chuyển trang thấy tức thì; không tải trước quá nhiều gây tốn băng thông</td></tr>
+          <tr><td><strong>Caching</strong> · Bộ nhớ đệm</td><td>Lưu tạm kết quả, dùng lại &amp; revalidate</td><td>Không hiện dữ liệu cũ (stale) khi đã đổi; làm mới đúng lúc; xoá cache khi logout</td></tr>
+          <tr><td><strong>Optimistic update</strong> · Cập nhật lạc quan</td><td>Cập nhật UI ngay, rollback nếu server lỗi</td><td>UI phản hồi tức thì; <strong>rollback đúng</strong> khi API lỗi; không mất dữ liệu người dùng</td></tr>
+          <tr><td><strong>Retry / Error handling</strong> · Thử lại</td><td>Tự thử lại / cho người dùng thử lại khi lỗi mạng</td><td>Có nút thử lại; không lặp vô hạn; thông báo lỗi rõ; timeout hợp lý</td></tr>
+          <tr><td><strong>Polling / Realtime</strong> · Cập nhật liên tục</td><td>Hỏi lại định kỳ hoặc WebSocket/SSE đẩy dữ liệu</td><td>Cập nhật đúng &amp; realtime; dừng khi rời trang/tab ẩn; tự kết nối lại khi rớt mạng</td></tr>
+          <tr><td><strong>Skeleton / Loading state</strong> · Trạng thái tải</td><td>Placeholder trong lúc đang tải (xem component Skeleton/Spinner)</td><td>Không nhảy layout (CLS); ảnh đặt sẵn kích thước; thay bằng data khi xong, ẩn khi lỗi</td></tr>
+        </tbody>
+      </table></div></div>
+      <p style="font-size:12.5px;color:var(--muted);margin:12px 2px 0;line-height:1.55">Đây là <strong>tầng hành vi / hiệu năng</strong> — <strong>không phải component</strong>, nhưng ảnh hưởng trực tiếp trải nghiệm. Chúng thường đi kèm <a href="#comp-skeleton">Skeleton</a>, <a href="#comp-spinner-loader">Spinner</a>, <a href="#comp-scrollbar-scroll-area">Scroll area</a>, <a href="#comp-image">Image</a>. Điểm QC cốt lõi: <strong>không nhảy layout</strong>, <strong>không gọi trùng</strong>, <strong>xử lý lỗi/rollback</strong> rõ ràng, và luôn có lối cho <strong>bàn phím / screen reader</strong>.</p>
+    </section>
+
   </main>
 </div>
 
@@ -1017,7 +1038,7 @@ CATS.forEach(cat=>{
 });
 
 // nav links to static reference sections
-[["demo","Demo màn hình"],["landmarks","Cấu trúc trang"],["tokens","Nền tảng thiết kế"],["states","Trạng thái"],["cheat","Dữ liệu test mẫu"]].forEach(([id,label])=>{
+[["demo","Demo màn hình"],["landmarks","Cấu trúc trang"],["tokens","Nền tảng thiết kế"],["perf","Hiệu năng & tải dữ liệu"],["states","Trạng thái"],["cheat","Dữ liệu test mẫu"]].forEach(([id,label])=>{
   const a = document.createElement("a");
   a.href = "#"+id;
   a.innerHTML = `<span>${label}</span><span class="n">★</span>`;
