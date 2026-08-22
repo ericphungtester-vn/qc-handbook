@@ -342,18 +342,19 @@
 
     <!-- Demo màn hình: vị trí thường gặp + tương tác (4 màn) -->
     <section class="cat" id="demo" data-static>
-      <div class="cat-head"><h3>Demo màn hình</h3><span class="en">Vị trí thường gặp — 4 màn · rê chuột xem tên · bấm để tới thẻ</span><span class="rule"></span></div>
+      <div class="cat-head"><h3>Demo màn hình</h3><span class="en">Vị trí thường gặp — 5 màn · rê chuột xem tên · bấm để tới thẻ</span><span class="rule"></span></div>
       <div class="demo-wrap">
-        <div class="demo-hint">💡 4 màn mẫu cho thấy <b>vị trí quy ước</b> của cả 60 component. Rê chuột xem <b>tên chuẩn</b>, bấm để tới thẻ chi tiết. Ở màn <b>Lớp phủ</b>, các nút <b>bấm để mở thật</b> (Modal, Drawer, Menu, Popover, Toast, chuột phải).</div>
+        <div class="demo-hint">💡 5 màn mẫu cho thấy <b>vị trí quy ước</b> của các thành phần. Rê chuột xem <b>tên chuẩn</b>, bấm để tới thẻ chi tiết. Màn <b>Cấu trúc website</b> chú thích các <b>vùng của trang</b> (Header, Hero, Body, Footer…); màn <b>Lớp phủ</b> có nút <b>bấm để mở thật</b> (Modal, Drawer, Menu, Popover, Toast, chuột phải).</div>
         <div class="demo-tabs" role="tablist">
-          <button class="on" data-scene="0">Bảng điều khiển</button>
-          <button data-scene="1">Đăng nhập</button>
-          <button data-scene="2">Nội dung &amp; Media</button>
-          <button data-scene="3">Lớp phủ &amp; Trạng thái</button>
+          <button class="on" data-scene="structure">Cấu trúc website</button>
+          <button data-scene="dashboard">Bảng điều khiển</button>
+          <button data-scene="auth">Đăng nhập</button>
+          <button data-scene="content">Nội dung &amp; Media</button>
+          <button data-scene="overlays">Lớp phủ &amp; Trạng thái</button>
         </div>
 
-        <!-- ============ SCENE 0: Dashboard ============ -->
-        <div class="scene on"><div class="mock">
+        <!-- ============ SCENE: Dashboard ============ -->
+        <div class="scene" data-scene="dashboard"><div class="mock">
           <div class="ann" data-name="Navbar / Header" data-comp="navbar-header">
             <div class="mrow" style="justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--line);background:var(--surface-2)">
               <div class="mrow" style="gap:16px">
@@ -467,8 +468,8 @@
           <span class="ann" data-name="FAB" data-comp="fab" style="position:absolute;right:16px;bottom:14px;width:46px;height:46px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:24px;box-shadow:var(--shadow);z-index:10">+</span>
         </div></div>
 
-        <!-- ============ SCENE 1: Auth ============ -->
-        <div class="scene"><div class="mock" style="display:grid;place-items:center;padding:26px 16px;background:var(--surface-2)">
+        <!-- ============ SCENE: Auth ============ -->
+        <div class="scene" data-scene="auth"><div class="mock" style="display:grid;place-items:center;padding:26px 16px;background:var(--surface-2)">
           <div class="ann dcard" data-name="Card" data-comp="card" style="width:min(330px,100%);padding:22px">
             <div style="text-align:center;font-weight:800;color:var(--accent-ink);font-size:18px;margin-bottom:14px">◆ Acme</div>
             <div style="margin-bottom:12px">
@@ -494,8 +495,8 @@
           </div>
         </div></div>
 
-        <!-- ============ SCENE 2: Content & Media ============ -->
-        <div class="scene"><div class="mock"><div class="mbody" style="padding:16px">
+        <!-- ============ SCENE: Content & Media ============ -->
+        <div class="scene" data-scene="content"><div class="mock"><div class="mbody" style="padding:16px">
           <div style="flex:1 1 300px;min-width:250px;display:flex;flex-direction:column;gap:13px">
             <div>
               <span class="dlbl">Tìm nhanh</span>
@@ -537,8 +538,8 @@
           </div>
         </div></div></div>
 
-        <!-- ============ SCENE 3: Overlays & States ============ -->
-        <div class="scene"><div class="mock"><div class="mbody" style="padding:16px">
+        <!-- ============ SCENE: Overlays & States ============ -->
+        <div class="scene" data-scene="overlays"><div class="mock"><div class="mbody" style="padding:16px">
           <div style="flex:1 1 320px;min-width:260px;display:flex;flex-direction:column;gap:12px">
             <div style="font-size:12px;color:var(--muted)">Bấm để mở overlay thật:</div>
             <div class="mrow" style="gap:8px;flex-wrap:wrap">
@@ -575,6 +576,52 @@
             <div style="font-size:12px;color:var(--muted)">Nội dung ngăn trượt từ cạnh phải…</div>
           </div>
         </div></div></div>
+
+        <!-- ============ SCENE: Website structure ============ -->
+        <div class="scene on" data-scene="structure"><div class="mock">
+          <div class="ann" data-name="Header (đầu trang)" data-comp="navbar-header">
+            <div class="mrow" style="justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line);background:var(--surface)">
+              <span class="ann" data-name="Logo" style="font-weight:800;color:var(--accent-ink);font-size:16px">◆ Acme</span>
+              <span class="ann mrow" data-name="Nav menu (thanh điều hướng)" data-comp="navbar-header" style="gap:14px;font-size:12.5px;color:var(--muted)"><span style="color:var(--accent-ink);font-weight:600">Trang chủ</span><span>Tính năng</span><span>Bảng giá</span><span>Liên hệ</span></span>
+              <span class="ann" data-name="Call to action / CTA" data-comp="button" style="background:var(--accent);color:#fff;font-weight:600;font-size:12.5px;border-radius:8px;padding:8px 14px">Dùng thử</span>
+            </div>
+          </div>
+          <div class="ann" data-name="Hero / Banner (khu vực nổi bật đầu trang)" style="padding:34px 18px;text-align:center;background:var(--accent-soft)">
+            <div style="font-size:22px;font-weight:800;color:var(--ink);margin-bottom:8px">Giải pháp cho đội QC của bạn</div>
+            <div style="font-size:13px;color:var(--muted);max-width:46ch;margin:0 auto 16px">Quản lý test case, báo lỗi và tra cứu component — tất cả trong một nơi.</div>
+            <span class="ann" data-name="Call to action / CTA" data-comp="button" style="display:inline-block;background:var(--accent);color:#fff;font-weight:600;font-size:13px;border-radius:9px;padding:10px 20px">Bắt đầu miễn phí</span>
+          </div>
+          <div class="ann" data-name="Main content / Body (nội dung chính)">
+            <div class="ann" data-name="Section (khối nội dung)" style="padding:22px 18px">
+              <div style="text-align:center;font-weight:700;font-size:15px;margin-bottom:16px">Tính năng chính</div>
+              <div class="ann mrow" data-name="Card grid (lưới thẻ)" style="gap:14px;flex-wrap:wrap;justify-content:center;align-items:stretch">
+                <div class="ann dcard" data-name="Card" data-comp="card" style="flex:1 1 150px;max-width:200px;padding:16px;text-align:center"><div style="font-size:26px">🗂</div><b style="font-size:13px">Test case</b><div style="font-size:11px;color:var(--muted);margin-top:4px">Tổ chức khoa học</div></div>
+                <div class="ann dcard" data-name="Card" data-comp="card" style="flex:1 1 150px;max-width:200px;padding:16px;text-align:center"><div style="font-size:26px">🐞</div><b style="font-size:13px">Báo lỗi</b><div style="font-size:11px;color:var(--muted);margin-top:4px">Nhanh &amp; rõ ràng</div></div>
+                <div class="ann dcard" data-name="Card" data-comp="card" style="flex:1 1 150px;max-width:200px;padding:16px;text-align:center"><div style="font-size:26px">📚</div><b style="font-size:13px">Handbook</b><div style="font-size:11px;color:var(--muted);margin-top:4px">Tên chuẩn UI</div></div>
+              </div>
+            </div>
+            <div class="mrow" style="align-items:stretch;gap:16px;flex-wrap:wrap;padding:0 18px 22px">
+              <div class="ann" data-name="Article (bài nội dung)" style="flex:2 1 300px;font-size:12.5px;color:var(--ink);line-height:1.6">
+                <b style="font-size:14px;display:block;margin-bottom:6px">Vì sao chọn Acme?</b>
+                Nội dung chính của trang nằm ở khu vực này — văn bản, hình ảnh, mô tả sản phẩm… Đây là phần <b>body</b> quan trọng nhất mà người dùng đọc.
+              </div>
+              <div class="ann" data-name="Aside / Sidebar (nội dung phụ)" style="flex:1 1 180px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:12px;color:var(--muted)"><b style="color:var(--ink);font-size:12.5px">Liên quan</b><div style="margin-top:8px;line-height:1.9">• Hướng dẫn nhanh<br>• Câu hỏi thường gặp<br>• Bảng giá</div></div>
+            </div>
+            <div class="ann" data-name="CTA section (dải kêu gọi hành động)" style="margin:0 18px 22px;background:var(--ink);border-radius:12px;padding:22px;text-align:center">
+              <div style="font-weight:700;font-size:15px;margin-bottom:10px;color:var(--paper)">Sẵn sàng bắt đầu?</div>
+              <span class="ann" data-name="Call to action / CTA" data-comp="button" style="display:inline-block;background:var(--accent);color:#fff;font-weight:600;font-size:13px;border-radius:9px;padding:10px 20px">Đăng ký ngay</span>
+            </div>
+          </div>
+          <div class="ann" data-name="Footer (chân trang)" style="background:var(--surface-2);border-top:1px solid var(--line)">
+            <div class="mrow" style="gap:24px;flex-wrap:wrap;padding:20px 18px;font-size:12px;color:var(--muted);align-items:flex-start">
+              <div style="flex:1 1 140px"><b style="color:var(--accent-ink)">◆ Acme</b><div style="margin-top:6px">Sổ tay UI cho QC.</div></div>
+              <div style="flex:1 1 100px"><b style="color:var(--ink);font-size:12px">Sản phẩm</b><div style="margin-top:6px;line-height:1.9">Tính năng<br>Bảng giá</div></div>
+              <div style="flex:1 1 100px"><b style="color:var(--ink);font-size:12px">Công ty</b><div style="margin-top:6px;line-height:1.9">Giới thiệu<br>Liên hệ</div></div>
+              <span class="ann mrow" data-name="Social links (liên kết mạng xã hội)" style="gap:8px"><span style="width:30px;height:30px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center">f</span><span style="width:30px;height:30px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center">in</span></span>
+            </div>
+            <div class="ann" data-name="Sub-footer / Copyright (dòng bản quyền)" style="border-top:1px solid var(--line);padding:12px 18px;text-align:center;font-size:11px;color:var(--muted)">© 2026 Acme. Bảo lưu mọi quyền.</div>
+          </div>
+        </div></div>
 
       </div>
     </section>
@@ -619,6 +666,28 @@
           <tr><td>File</td><td>đúng định dạng · sai định dạng đổi đuôi · vượt dung lượng · file 0 byte · tên file dài / ký tự lạ</td></tr>
         </tbody>
       </table></div></div>
+    </section>
+
+    <!-- Cấu trúc trang & Landmarks (KHÔNG phải component — tầng bố cục) -->
+    <section class="cat" id="landmarks" data-static>
+      <div class="cat-head"><h3>Cấu trúc trang &amp; Landmarks</h3><span class="en">Page structure &amp; landmarks — vùng bố cục, không phải component</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Vùng (EN · VN)</th><th>Thẻ HTML5</th><th>ARIA landmark</th><th>Cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Header</strong> · Đầu trang</td><td><code>&lt;header&gt;</code></td><td>banner</td><td>Logo về trang chủ; nav chính; sticky khi cuộn; thu gọn hamburger trên mobile</td></tr>
+          <tr><td><strong>Navigation</strong> · Điều hướng</td><td><code>&lt;nav&gt;</code></td><td>navigation</td><td>Nhiều <code>&lt;nav&gt;</code> phải có <code>aria-label</code> phân biệt; đi lại bằng bàn phím; mục active</td></tr>
+          <tr><td><strong>Hero / Banner</strong> · Khu vực nổi bật</td><td><code>&lt;section&gt;</code></td><td>— (region nếu có nhãn)</td><td>Chỉ 1 <code>&lt;h1&gt;</code>/trang; ảnh nền không che chữ; CTA rõ; responsive không vỡ chữ</td></tr>
+          <tr><td><strong>Main content / Body</strong> · Nội dung chính</td><td><code>&lt;main&gt;</code></td><td>main</td><td>Chỉ <strong>1</strong> <code>&lt;main&gt;</code>/trang; có <em>skip-to-content</em>; là nơi focus sau điều hướng</td></tr>
+          <tr><td><strong>Section</strong> · Khối nội dung</td><td><code>&lt;section&gt;</code></td><td>region (khi có nhãn)</td><td>Có heading riêng; đừng lạm dụng thay <code>&lt;div&gt;</code>; khoảng cách nhất quán</td></tr>
+          <tr><td><strong>Article</strong> · Bài nội dung</td><td><code>&lt;article&gt;</code></td><td>article</td><td>Tự chứa, đứng riêng vẫn hiểu (bài viết, thẻ tin); lặp lại nhiều lần đồng nhất</td></tr>
+          <tr><td><strong>Aside / Sidebar</strong> · Nội dung phụ</td><td><code>&lt;aside&gt;</code></td><td>complementary</td><td>Là phụ trợ (không phải nội dung chính); ẩn/dời xuống dưới trên mobile</td></tr>
+          <tr><td><strong>Footer</strong> · Chân trang</td><td><code>&lt;footer&gt;</code></td><td>contentinfo</td><td>Chỉ 1 contentinfo cấp trang; link & bản quyền; xuống cột gọn trên mobile</td></tr>
+          <tr><td><strong>Search</strong> · Khu tìm kiếm</td><td><code>&lt;search&gt;</code> / <code>role="search"</code></td><td>search</td><td>Bao ô tìm kiếm chính của trang; screen reader nhận diện được</td></tr>
+          <tr><td><strong>Container / Wrapper</strong> · Khung chứa</td><td><code>&lt;div&gt;</code></td><td>— (không landmark)</td><td>Giới hạn <code>max-width</code> & canh giữa; padding hai bên trên mobile; không tràn ngang</td></tr>
+          <tr><td><strong>Skip link</strong> · Link bỏ qua</td><td><code>&lt;a href="#main"&gt;</code></td><td>—</td><td>Hiện khi Tab lần đầu; nhảy thẳng tới <code>&lt;main&gt;</code> (bỏ qua header/nav)</td></tr>
+        </tbody>
+      </table></div></div>
+      <p style="font-size:12.5px;color:var(--muted);margin:12px 2px 0;line-height:1.55">Đây là <strong>tầng bố cục (landmark)</strong>, được <strong>ghép nên từ các component</strong> — không tính vào danh sách 60 component. Kiểm tra chung: mỗi trang chỉ <strong>một</strong> <code>&lt;h1&gt;</code> và <strong>một</strong> <code>&lt;main&gt;</code>; screen reader nhảy được giữa các landmark; bố cục <strong>responsive</strong> đúng ở mọi khổ màn. Xem trực quan ở tab <a href="#demo">Demo màn hình → Cấu trúc website</a>.</p>
     </section>
 
   </main>
@@ -900,7 +969,7 @@ CATS.forEach(cat=>{
 });
 
 // nav links to static reference sections
-[["demo","Demo màn hình"],["states","Trạng thái"],["cheat","Dữ liệu test mẫu"]].forEach(([id,label])=>{
+[["demo","Demo màn hình"],["landmarks","Cấu trúc trang"],["states","Trạng thái"],["cheat","Dữ liệu test mẫu"]].forEach(([id,label])=>{
   const a = document.createElement("a");
   a.href = "#"+id;
   a.innerHTML = `<span>${label}</span><span class="n">★</span>`;
@@ -972,9 +1041,9 @@ tbtn.addEventListener("click", ()=>{
 // Chuyển màn (tabs)
 document.querySelectorAll(".demo-tabs button").forEach(btn=>{
   btn.addEventListener("click", ()=>{
-    const i = btn.dataset.scene;
+    const id = btn.dataset.scene;
     document.querySelectorAll(".demo-tabs button").forEach(b=>b.classList.toggle("on", b===btn));
-    document.querySelectorAll("#demo .scene").forEach((s,idx)=>s.classList.toggle("on", String(idx)===i));
+    document.querySelectorAll("#demo .scene").forEach(s=>s.classList.toggle("on", s.dataset.scene===id));
   });
 });
 
