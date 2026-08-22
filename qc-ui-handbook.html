@@ -995,12 +995,12 @@
       <div class="cheat"><div class="table-scroll"><table>
         <thead><tr><th>Luồng</th><th>Cần kiểm tra</th></tr></thead>
         <tbody>
-          <tr><td>Đăng nhập</td><td>Sai mật khẩu; khoá sau N lần thử; hiện/ẩn mật khẩu; Caps Lock</td></tr>
-          <tr><td>Đăng ký</td><td>Validate; email đã tồn tại; đo độ mạnh mật khẩu</td></tr>
+          <tr><td>Đăng nhập</td><td>Sai mật khẩu; khoá / HTTP 429 sau ~5 lần thử (OWASP ASVS); hiện/ẩn mật khẩu; Caps Lock</td></tr>
+          <tr><td>Đăng ký</td><td>Validate; email đã tồn tại; độ mạnh mật khẩu — NIST 800-63B: tối thiểu 8 ký tự (cho tới ≥64), không ép đổi định kỳ</td></tr>
           <tr><td>Quên / đặt lại mật khẩu</td><td>Link hết hạn; dùng 1 lần; không lộ email tồn tại</td></tr>
-          <tr><td>OTP / 2FA</td><td>Mã hết hạn; gửi lại tạo mã mới; giới hạn số lần sai</td></tr>
+          <tr><td>OTP / 2FA</td><td>Mã hết hạn (SMS/email ~5 phút, TOTP 30s); gửi lại tạo mã mới; giới hạn 3–5 lần sai</td></tr>
           <tr><td>Ghi nhớ đăng nhập</td><td>Remember me / auto-login đúng; hết hạn hợp lý</td></tr>
-          <tr><td>Hết phiên</td><td>Cảnh báo trước; gia hạn; chuyển login giữ URL đích</td></tr>
+          <tr><td>Hết phiên</td><td>Idle timeout theo policy (thường 15–30 phút); cảnh báo trước; gia hạn; chuyển login giữ URL đích</td></tr>
           <tr><td>Đăng xuất</td><td>Xoá token; back không vào lại trang cần auth</td></tr>
           <tr><td>Đa tab</td><td>Login/logout đồng bộ giữa các tab</td></tr>
           <tr><td>Phân quyền</td><td>Theo vai trò (role); truy cập thẳng URL cấm bị chặn</td></tr>
@@ -1050,7 +1050,7 @@
       <div class="cheat"><div class="table-scroll"><table>
         <thead><tr><th>Hạng mục</th><th>Cần kiểm tra</th></tr></thead>
         <tbody>
-          <tr><td>Title &amp; meta description</td><td>Mỗi trang riêng biệt, độ dài hợp lý, có từ khoá</td></tr>
+          <tr><td>Title &amp; meta description</td><td>Mỗi trang riêng biệt, có từ khoá; title ~50–60 ký tự, description ~150–160 ký tự</td></tr>
           <tr><td>Heading</td><td>Đúng 1 <code>&lt;h1&gt;</code>/trang, phân cấp hợp lý</td></tr>
           <tr><td>OpenGraph / Twitter card</td><td>Chia sẻ link hiện đúng ảnh + tiêu đề + mô tả</td></tr>
           <tr><td>Canonical URL</td><td>Tránh nội dung trùng lặp</td></tr>
@@ -1111,7 +1111,7 @@
           <tr><td>Timeout / mất mạng</td><td>Trạng thái đơn đúng (pending), không mất tiền</td></tr>
           <tr><td>Hoàn / huỷ</td><td>Refund &amp; cancel đúng số tiền &amp; trạng thái</td></tr>
           <tr><td>Số tiền &amp; tiền tệ</td><td>Làm tròn, thuế, phí, đổi tiền đúng</td></tr>
-          <tr><td>Bảo mật (PCI)</td><td>Không lưu số thẻ; dùng cổng/token; HTTPS</td></tr>
+          <tr><td>Bảo mật (PCI)</td><td>Tuân thủ PCI DSS: không lưu số thẻ (dùng cổng/token hoá); HTTPS toàn luồng</td></tr>
           <tr><td>Webhook &amp; hoá đơn</td><td>Xác nhận từ cổng thanh toán; biên nhận/hoá đơn đúng</td></tr>
         </tbody>
       </table></div></div>
@@ -1805,7 +1805,7 @@ const LOGIN_TC = [
   {sub:"Cơ bản", lay:"both", tc:"Account bị khoá / chưa kích hoạt", pre:"Tài khoản bị khoá", exp:"HTTP 403; thông báo đúng trạng thái; không tạo phiên", pr:"P1", steps:["Đăng nhập bằng tài khoản bị khoá/chưa kích hoạt", "Kiểm tra thông báo & HTTP 403", "Xác nhận không tạo phiên"]},
   {sub:"Bảo mật", lay:"api", tc:"Chống enumeration tài khoản", pre:"Thử email tồn tại vs không tồn tại", exp:"Thông báo lỗi & thời gian phản hồi giống nhau; không lộ tài khoản tồn tại", pr:"P1", steps:["Gửi login email tồn tại + mật khẩu sai", "Gửi login email không tồn tại", "So sánh nội dung lỗi & response time"]},
   {sub:"Bảo mật", lay:"both", tc:"XSS / SQLi ở ô email & mật khẩu", pre:"Ở màn Login", exp:"Payload không thực thi; server validate; đăng nhập thất bại an toàn", pr:"P1", steps:["Nhập payload XSS (thẻ script) & SQLi ' OR 1=1-- vào 2 ô", "Đăng nhập", "Xác nhận không thực thi, không bypass"]},
-  {sub:"Bảo mật", lay:"api", tc:"Rate limit khi sai nhiều lần", pre:"Sai N lần liên tiếp", exp:"Khoá tạm / captcha / HTTP 429; báo rõ thời gian chờ", pr:"P1", steps:["Đăng nhập sai liên tiếp N lần", "Kiểm tra bị khoá/captcha/HTTP 429", "Xác nhận thông báo chờ"]},
+  {sub:"Bảo mật", lay:"api", tc:"Rate limit khi sai nhiều lần", pre:"Sai N lần liên tiếp", exp:"Sau số lần sai theo policy (thường 5): khoá tạm / captcha / HTTP 429 + báo thời gian chờ (OWASP ASVS: bắt buộc chống brute-force)", pr:"P1", steps:["Đăng nhập sai liên tiếp tới ngưỡng (vd 5 lần)", "Kiểm tra bị khoá/captcha/HTTP 429", "Xác nhận thông báo thời gian chờ"]},
   {sub:"Bảo mật", lay:"api", tc:"CSRF token trên form login", pre:"Gửi request thiếu / sai CSRF token", exp:"Server từ chối (HTTP 403)", pr:"P2", steps:["Gửi login thiếu/sai CSRF token (Postman)", "Kiểm tra server trả 403"]},
   {sub:"Bảo mật", lay:"api", tc:"Không trả dữ liệu nhạy cảm trong response", pre:"Login thành công", exp:"Response không chứa mật khẩu / hash / dữ liệu nhạy cảm", pr:"P1", steps:["Đăng nhập thành công", "Xem body response", "Xác nhận không có mật khẩu/hash/PII"]},
   {sub:"Bảo mật", lay:"api", tc:"HTTPS & không lộ credential", pre:"Gửi request login", exp:"Chỉ qua HTTPS; credential ở body, không ở URL/log", pr:"P1", steps:["Bắt request login", "Xác nhận HTTPS & credential ở body", "Kiểm tra không ở URL/log"]},
@@ -1819,8 +1819,8 @@ const LOGIN_TC = [
   {sub:"Mật khẩu & UX", lay:"both", tc:"Ghi nhớ đăng nhập (remember me)", pre:"Tick \"Ghi nhớ\" rồi login", exp:"Phiên / refresh token kéo dài đúng thời hạn cấu hình", pr:"P2", steps:["Tick Ghi nhớ & đăng nhập", "Đóng & mở lại trình duyệt", "Xác nhận vẫn đăng nhập trong hạn"]},
   {sub:"2FA / OTP", lay:"both", tc:"OTP đúng", pre:"Đã qua bước 1, 2FA bật", exp:"Nhập OTP đúng → đăng nhập thành công", pr:"P1", steps:["Đăng nhập bước 1", "Nhập OTP đúng", "Xác nhận thành công"]},
   {sub:"2FA / OTP", lay:"both", tc:"OTP sai", pre:"Ở màn nhập OTP", exp:"Báo \"Mã không đúng\"; không đăng nhập", pr:"P1", steps:["Nhập OTP sai", "Xác nhận báo lỗi & không đăng nhập"]},
-  {sub:"2FA / OTP", lay:"both", tc:"OTP hết hạn", pre:"OTP đã quá hạn", exp:"Báo hết hạn; yêu cầu gửi lại mã", pr:"P1", steps:["Chờ OTP quá hạn", "Nhập mã hết hạn", "Xác nhận báo hết hạn & cho gửi lại"]},
-  {sub:"2FA / OTP", lay:"api", tc:"Brute force OTP", pre:"Nhập sai OTP nhiều lần", exp:"Giới hạn số lần; khoá / HTTP 429", pr:"P1", steps:["Gửi sai OTP nhiều lần", "Xác nhận bị giới hạn/khoá"]},
+  {sub:"2FA / OTP", lay:"both", tc:"OTP hết hạn", pre:"OTP đã quá hạn", exp:"Báo hết hạn & cho gửi lại (chuẩn: OTP qua SMS/email ~5 phút, TOTP 30s)", pr:"P1", steps:["Chờ OTP quá hạn", "Nhập mã hết hạn", "Xác nhận báo hết hạn & cho gửi lại"]},
+  {sub:"2FA / OTP", lay:"api", tc:"Brute force OTP", pre:"Nhập sai OTP nhiều lần", exp:"Giới hạn số lần thử (thường 3–5); sau đó khoá / HTTP 429 & vô hiệu OTP hiện tại", pr:"P1", steps:["Gửi sai OTP liên tiếp tới ngưỡng", "Xác nhận bị giới hạn/khoá & OTP bị vô hiệu"]},
   {sub:"2FA / OTP", lay:"both", tc:"Không nhập OTP", pre:"Ở màn OTP", exp:"Không cho tiếp; báo bắt buộc; server cũng chặn", pr:"P2", steps:["Bỏ trống OTP & bấm tiếp", "Xác nhận báo bắt buộc", "Gửi request không OTP → server chặn"]},
   {sub:"2FA / OTP", lay:"api", tc:"Reuse OTP", pre:"OTP đã dùng một lần", exp:"Dùng lại mã cũ → từ chối", pr:"P1", steps:["Dùng OTP đăng nhập OK", "Dùng lại mã đó", "Xác nhận bị từ chối"]},
   {sub:"2FA / OTP", lay:"api", tc:"Gửi lại OTP", pre:"Bấm \"Gửi lại mã\"", exp:"Mã mới hợp lệ; mã cũ bị vô hiệu", pr:"P2", steps:["Bấm Gửi lại mã", "Nhập mã cũ → từ chối", "Nhập mã mới → hợp lệ"]},
@@ -1828,8 +1828,8 @@ const LOGIN_TC = [
   {sub:"Phiên & thiết bị", lay:"both", tc:"Đăng nhập lại trên cùng thiết bị → phiên cũ của thiết bị đó bị thay", pre:"Đang có phiên trên thiết bị A", exp:"Đăng nhập lại trên A → phiên/token cũ trên A bị vô hiệu; thiết bị khác KHÔNG bị ảnh hưởng", pr:"P1", steps:["Đăng nhập trên thiết bị A", "Đăng nhập lại cùng tài khoản trên chính A", "Dùng token/phiên cũ của A", "Xác nhận phiên cũ vô hiệu; thiết bị khác vẫn giữ phiên"]},
   {sub:"Phiên & thiết bị", lay:"both", tc:"Dùng phiên đã bị thay (trên cùng thiết bị) → bị chặn", pre:"Phiên cũ trên A đã bị thay bởi lần đăng nhập mới trên chính A", exp:"Request bằng token cũ → HTTP 401; chuyển về màn login", pr:"P1", steps:["Đăng nhập lại trên A (phiên cũ bị thay)", "Dùng token cũ gọi API", "Xác nhận HTTP 401 & chuyển login"]},
   {sub:"Phiên & thiết bị", lay:"both", tc:"Đăng xuất", pre:"Đã đăng nhập", exp:"Xoá token; nút Back không vào lại trang cần auth", pr:"P1", steps:["Đăng xuất", "Kiểm tra token bị xoá", "Bấm Back", "Xác nhận không vào lại trang cần auth"]},
-  {sub:"Phiên & thiết bị", lay:"both", tc:"Idle timeout", pre:"Không thao tác quá ngưỡng", exp:"Tự đăng xuất; chuyển login, giữ URL đích", pr:"P2", steps:["Đăng nhập & để yên quá ngưỡng", "Thao tác lại", "Xác nhận bị đăng xuất & chuyển login"]},
-  {sub:"Phiên & thiết bị", lay:"api", tc:"Refresh token", pre:"Access token hết hạn, refresh còn hạn", exp:"Cấp access token mới hợp lệ", pr:"P2", steps:["Để access token hết hạn", "Gọi refresh", "Xác nhận access token mới hợp lệ"]},
+  {sub:"Phiên & thiết bị", lay:"both", tc:"Idle timeout", pre:"Không thao tác quá ngưỡng", exp:"Tự đăng xuất sau ngưỡng idle theo policy (thường 15–30 phút); chuyển login, giữ URL đích", pr:"P2", steps:["Đăng nhập & để yên quá ngưỡng idle", "Thao tác lại", "Xác nhận bị đăng xuất & chuyển login"]},
+  {sub:"Phiên & thiết bị", lay:"api", tc:"Refresh token", pre:"Access token hết hạn, refresh còn hạn", exp:"Cấp access token mới hợp lệ (chuẩn: access TTL ngắn ~15 phút, refresh dài hơn & nên xoay vòng)", pr:"P2", steps:["Để access token hết hạn", "Gọi refresh", "Xác nhận access token mới hợp lệ"]},
   {sub:"Phiên & thiết bị", lay:"both", tc:"Revoke all sessions", pre:"Đã đăng nhập", exp:"\"Đăng xuất mọi nơi\" → mọi phiên bị vô hiệu", pr:"P2", steps:["Vào quản lý phiên", "Bấm Đăng xuất mọi nơi", "Xác nhận các phiên/token vô hiệu"]},
   {sub:"Phiên & thiết bị", lay:"api", tc:"device_id gắn đúng phiên", pre:"Login có gửi device_id", exp:"Phiên lưu đúng device_id nhận được", pr:"P3", steps:["Đăng nhập kèm device_id", "Kiểm tra phiên lưu đúng device_id"]},
   {sub:"Phiên & thiết bị", lay:"ui", tc:"Redirect deep-link sau login", pre:"Mở URL cần auth khi chưa login", exp:"Sau khi login → về đúng URL đích ban đầu", pr:"P2", steps:["Mở URL cần auth khi chưa login", "Bị chuyển tới Login", "Đăng nhập", "Xác nhận quay về URL đích"]},
@@ -1844,10 +1844,10 @@ const LOGIN_TC = [
   {sub:"Đa nền tảng", lay:"api", tc:"Header platform gửi đúng", pre:"Gửi login từ web/mobile", exp:"Header platform = web/mobile đúng", pr:"P3", steps:["Bắt request login web & mobile", "Kiểm tra header platform đúng"]},
   {sub:"Đa nền tảng", lay:"api", tc:"Token không dùng chéo nền tảng", pre:"Policy tách token theo nền tảng", exp:"Token web không dùng được cho mobile (nếu policy vậy)", pr:"P3", steps:["Lấy token Web", "Dùng gọi API mobile", "Xác nhận bị từ chối nếu policy tách"]},
   {sub:"Trình duyệt", lay:"ui", tc:"Login trên Chrome / Firefox / Edge", pre:"Mỗi trình duyệt", exp:"Đăng nhập OK, hiển thị đúng", pr:"P2", steps:["Đăng nhập lần lượt Chrome/Firefox/Edge", "Xác nhận đều OK & giao diện đúng"]},
-  {sub:"Trình duyệt", lay:"api", tc:"Cookie đúng thuộc tính", pre:"Login thành công", exp:"Cookie đúng domain; có Secure + HttpOnly + SameSite", pr:"P1", steps:["Đăng nhập", "Xem cookie ở DevTools", "Xác nhận domain & Secure/HttpOnly/SameSite"]},
+  {sub:"Trình duyệt", lay:"api", tc:"Cookie đúng thuộc tính", pre:"Login thành công", exp:"Cookie đúng domain; Secure + HttpOnly + SameSite=Lax/Strict (chuẩn OWASP)", pr:"P1", steps:["Đăng nhập", "Xem cookie ở DevTools", "Xác nhận domain & Secure/HttpOnly/SameSite"]},
   {sub:"Trình duyệt", lay:"ui", tc:"Private / Incognito", pre:"Cửa sổ ẩn danh", exp:"Login OK; đóng cửa sổ → không còn phiên/lưu", pr:"P3", steps:["Mở ẩn danh & đăng nhập", "Đóng & mở lại", "Xác nhận không còn phiên"]},
-  {sub:"Hiệu năng", lay:"perf", tc:"Response time đăng nhập", pre:"Tải bình thường", exp:"Thời gian phản hồi ≤ ngưỡng (vd 1s)", pr:"P2", steps:["Đo thời gian phản hồi API login", "Xác nhận ≤ ngưỡng"]},
-  {sub:"Hiệu năng", lay:"perf", tc:"Stress nhiều login đồng thời", pre:"N người dùng đồng thời", exp:"Hệ thống ổn định, không lỗi / không rớt", pr:"P2", steps:["Chạy tải N login đồng thời (JMeter/k6)", "Theo dõi lỗi & thời gian", "Xác nhận ổn định"]},
+  {sub:"Hiệu năng", lay:"perf", tc:"Response time đăng nhập", pre:"Tải bình thường", exp:"API login ≤ 1s ở p95 (lý tưởng < 500ms median) — chuẩn UX Nielsen (≤1s giữ luồng thao tác)", pr:"P2", steps:["Đo p50/p95 thời gian phản hồi API login dưới tải dự kiến", "Xác nhận p95 ≤ 1s (median < 500ms)"]},
+  {sub:"Hiệu năng", lay:"perf", tc:"Stress nhiều login đồng thời", pre:"N người dùng đồng thời", exp:"Ổn định: error rate < 1%, p95 trong ngưỡng SLA, không rớt/timeout", pr:"P2", steps:["Chạy tải N login đồng thời (JMeter/k6)", "Theo dõi error rate & p95", "Xác nhận error rate < 1% & p95 đạt SLA"]},
 ];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
 const FEATURE_IDS = ["authsession","payment","notify","seo","analytics","legal","errors","interaction","responsive","a11y","security","content-i18n","perf","vitals","release"];
