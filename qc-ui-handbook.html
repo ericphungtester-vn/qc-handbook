@@ -236,6 +236,22 @@
   .apim.del{color:var(--fail); border-color:color-mix(in srgb,var(--fail) 42%,transparent); background:color-mix(in srgb,var(--fail) 12%,transparent)}
   .apim.none{color:var(--muted); border-color:var(--line); background:var(--surface-2)}
   .apinote{color:var(--muted); flex-basis:100%; line-height:1.42}
+  /* layer badge (UI / API) */
+  .lay{font:700 10px var(--mono); padding:1px 6px; border-radius:5px; border:1px solid; white-space:nowrap; letter-spacing:.02em}
+  .lay.ui{color:var(--accent-ink); border-color:color-mix(in srgb,var(--accent) 40%,transparent); background:var(--accent-soft)}
+  .lay.api{color:var(--warn); border-color:color-mix(in srgb,var(--warn) 42%,transparent); background:color-mix(in srgb,var(--warn) 12%,transparent)}
+  .lay.both{color:var(--pass); border-color:color-mix(in srgb,var(--pass) 42%,transparent); background:color-mix(in srgb,var(--pass) 12%,transparent)}
+  .lay.perf{color:var(--muted); border-color:var(--line); background:var(--surface-2)}
+  .prio{font:700 10px var(--mono); padding:1px 6px; border-radius:5px; border:1px solid}
+  .prio.p1{color:var(--fail); border-color:color-mix(in srgb,var(--fail) 42%,transparent); background:color-mix(in srgb,var(--fail) 12%,transparent)}
+  .prio.p2{color:var(--warn); border-color:color-mix(in srgb,var(--warn) 42%,transparent); background:color-mix(in srgb,var(--warn) 12%,transparent)}
+  .prio.p3{color:var(--muted); border-color:var(--line); background:var(--surface-2)}
+  .stepbtn{border:1px solid var(--accent); background:var(--accent-soft); color:var(--accent-ink); width:28px; height:26px; border-radius:7px; cursor:pointer; font-size:15px; line-height:1; display:grid; place-items:center; font-weight:700}
+  .stepbtn:hover{background:var(--accent); color:#fff}
+  .stepbtn[aria-expanded="true"]{background:var(--accent); color:#fff; border-color:transparent}
+  tr.tc-steps > td{background:var(--surface-2); font-size:12px; color:var(--ink)}
+  tr.tc-steps ol{margin:4px 0; padding-left:20px; display:flex; flex-direction:column; gap:3px}
+  tr.tc-steps .lbl-steps{font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); font-weight:700}
 
   /* Annotated screen demo (multi-scene, interactive) */
   .demo-wrap{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden}
@@ -1169,6 +1185,9 @@
     <div class="tc-controls">
       <input id="tcSearch" type="search" placeholder="Tìm test case…" autocomplete="off" aria-label="Tìm test case">
       <select id="tcFilter" aria-label="Lọc"><option value="">Tất cả</option></select>
+      <select id="tcSub" aria-label="Lọc hạng mục"><option value="">Tất cả hạng mục</option></select>
+      <select id="tcLay" aria-label="Lọc lớp" hidden><option value="">Tất cả lớp</option></select>
+      <select id="tcPrio" aria-label="Lọc ưu tiên" hidden><option value="">Tất cả ưu tiên</option></select>
       <button class="dbtn sec" id="tcExport" type="button">⬇︎ Xuất CSV</button>
     </div>
     <div class="tc-table-wrap"><div class="tc-scroll">
@@ -1774,22 +1793,75 @@ const TC_COMP = [];
 let n1 = 0;
 CATS.forEach(cat => COMPS.filter(x=>x.c===cat.id).forEach(x=>{
   const api = (API[x.n] || ["—"])[0];
-  x.t.forEach(item=>{ n1++; TC_COMP.push({ id:"TC-C-"+String(n1).padStart(3,"0"), group:x.n, sub:cat.vi, text:item, api }); });
+  x.t.forEach(item=>{ n1++; TC_COMP.push({ id:"TC-C-"+String(n1).padStart(3,"0"), group:x.n, sub:cat.vi, text:item, api, expected:EXPECT, priority:"" }); });
 }));
 
-// Nguồn 2 — Feature: từ các mục checklist tính năng / luồng
+const LOGIN_TC = [
+  {sub:"Cơ bản", lay:"both", tc:"Login thành công (email + mật khẩu đúng)", pre:"Ở màn Login; tài khoản hợp lệ", exp:"Vào đúng trang/redirect; tạo 1 phiên; HTTP 200 + token hợp lệ", pr:"P1", steps:["Mở màn Login", "Nhập email & mật khẩu đúng", "Bấm Đăng nhập", "Kiểm tra redirect, token & phiên được tạo"]},
+  {sub:"Cơ bản", lay:"both", tc:"Sai mật khẩu", pre:"Ở màn Login", exp:"HTTP 401; báo \"Email hoặc mật khẩu không đúng\"; không tạo phiên", pr:"P1", steps:["Nhập email đúng, mật khẩu sai", "Bấm Đăng nhập", "Kiểm tra thông báo lỗi & HTTP 401", "Xác nhận không có session/token"]},
+  {sub:"Cơ bản", lay:"ui", tc:"Thiếu email / thiếu mật khẩu", pre:"Ở màn Login", exp:"Chặn submit hoặc báo lỗi trường bắt buộc; không gọi API", pr:"P1", steps:["Để trống email hoặc mật khẩu", "Bấm Đăng nhập", "Kiểm tra báo lỗi trường bắt buộc", "Xác nhận không có request gửi đi"]},
+  {sub:"Cơ bản", lay:"ui", tc:"Email sai định dạng", pre:"Ở màn Login", exp:"Báo lỗi định dạng ngay tại trường email", pr:"P2", steps:["Nhập email sai định dạng (vd 'abc@')", "Rời trường (blur) hoặc submit", "Kiểm tra báo lỗi định dạng"]},
+  {sub:"Cơ bản", lay:"both", tc:"Email có khoảng trắng / khác hoa-thường", pre:"Tài khoản \"User@x.com\" tồn tại", exp:"Nhập ' user@x.com ' vẫn đăng nhập đúng (server trim & case-insensitive)", pr:"P2", steps:["Nhập email có khoảng trắng đầu/cuối & viết hoa", "Nhập mật khẩu đúng", "Đăng nhập", "Xác nhận đăng nhập thành công"]},
+  {sub:"Cơ bản", lay:"both", tc:"Account bị khoá / chưa kích hoạt", pre:"Tài khoản bị khoá", exp:"HTTP 403; thông báo đúng trạng thái; không tạo phiên", pr:"P1", steps:["Đăng nhập bằng tài khoản bị khoá/chưa kích hoạt", "Kiểm tra thông báo & HTTP 403", "Xác nhận không tạo phiên"]},
+  {sub:"Bảo mật", lay:"api", tc:"Chống enumeration tài khoản", pre:"Thử email tồn tại vs không tồn tại", exp:"Thông báo lỗi & thời gian phản hồi giống nhau; không lộ tài khoản tồn tại", pr:"P1", steps:["Gửi login email tồn tại + mật khẩu sai", "Gửi login email không tồn tại", "So sánh nội dung lỗi & response time"]},
+  {sub:"Bảo mật", lay:"both", tc:"XSS / SQLi ở ô email & mật khẩu", pre:"Ở màn Login", exp:"Payload không thực thi; server validate; đăng nhập thất bại an toàn", pr:"P1", steps:["Nhập payload XSS (thẻ script) & SQLi ' OR 1=1-- vào 2 ô", "Đăng nhập", "Xác nhận không thực thi, không bypass"]},
+  {sub:"Bảo mật", lay:"api", tc:"Rate limit khi sai nhiều lần", pre:"Sai N lần liên tiếp", exp:"Khoá tạm / captcha / HTTP 429; báo rõ thời gian chờ", pr:"P1", steps:["Đăng nhập sai liên tiếp N lần", "Kiểm tra bị khoá/captcha/HTTP 429", "Xác nhận thông báo chờ"]},
+  {sub:"Bảo mật", lay:"api", tc:"CSRF token trên form login", pre:"Gửi request thiếu / sai CSRF token", exp:"Server từ chối (HTTP 403)", pr:"P2", steps:["Gửi login thiếu/sai CSRF token (Postman)", "Kiểm tra server trả 403"]},
+  {sub:"Bảo mật", lay:"api", tc:"Không trả dữ liệu nhạy cảm trong response", pre:"Login thành công", exp:"Response không chứa mật khẩu / hash / dữ liệu nhạy cảm", pr:"P1", steps:["Đăng nhập thành công", "Xem body response", "Xác nhận không có mật khẩu/hash/PII"]},
+  {sub:"Bảo mật", lay:"api", tc:"HTTPS & không lộ credential", pre:"Gửi request login", exp:"Chỉ qua HTTPS; credential ở body, không ở URL/log", pr:"P1", steps:["Bắt request login", "Xác nhận HTTPS & credential ở body", "Kiểm tra không ở URL/log"]},
+  {sub:"Bảo mật", lay:"api", tc:"Reuse token sau logout bị từ chối", pre:"Đã logout (blacklist / token TTL ngắn)", exp:"Dùng lại token cũ → HTTP 401 (JWT thuần: chặn qua blacklist/short-TTL)", pr:"P1", steps:["Đăng nhập lấy token", "Đăng xuất", "Gọi API bằng token cũ", "Xác nhận HTTP 401"]},
+  {sub:"Bảo mật", lay:"api", tc:"Chống session fixation", pre:"Có session ID trước khi login", exp:"Session ID được cấp mới sau khi đăng nhập", pr:"P2", steps:["Ghi session ID trước login", "Đăng nhập", "So sánh session ID đã đổi mới"]},
+  {sub:"Mật khẩu & UX", lay:"ui", tc:"Hiện / ẩn mật khẩu", pre:"Đã nhập mật khẩu", exp:"Bấm icon mắt → hiện/ẩn đúng ký tự", pr:"P3", steps:["Nhập mật khẩu", "Bấm icon con mắt", "Xác nhận hiện/ẩn đúng"]},
+  {sub:"Mật khẩu & UX", lay:"ui", tc:"Cảnh báo Caps Lock", pre:"Con trỏ ở ô mật khẩu, Caps Lock bật", exp:"Hiện cảnh báo Caps Lock", pr:"P3", steps:["Bật Caps Lock", "Focus ô mật khẩu & gõ", "Xác nhận có cảnh báo"]},
+  {sub:"Mật khẩu & UX", lay:"ui", tc:"Trình quản lý mật khẩu tự điền", pre:"Trình duyệt đã lưu tài khoản", exp:"Gợi ý & tự điền được vào 2 ô", pr:"P3", steps:["Đã lưu tài khoản", "Mở lại màn Login", "Chọn gợi ý → xác nhận tự điền"]},
+  {sub:"Mật khẩu & UX", lay:"ui", tc:"Enter submit; loading; chống double-submit", pre:"Ở màn Login", exp:"Enter gửi; nút loading & khoá; bấm 2 lần không gửi 2 request", pr:"P2", steps:["Nhập thông tin, nhấn Enter", "Bấm Đăng nhập 2 lần nhanh", "Xác nhận chỉ 1 request & nút loading"]},
+  {sub:"Mật khẩu & UX", lay:"ui", tc:"Accessibility (a11y)", pre:"Điều hướng bằng bàn phím", exp:"Tab đúng thứ tự; screen reader đọc nhãn; focus nhảy vào lỗi", pr:"P2", steps:["Tab qua các trường", "Bật screen reader kiểm nhãn", "Gây lỗi & xác nhận focus tới lỗi"]},
+  {sub:"Mật khẩu & UX", lay:"both", tc:"Ghi nhớ đăng nhập (remember me)", pre:"Tick \"Ghi nhớ\" rồi login", exp:"Phiên / refresh token kéo dài đúng thời hạn cấu hình", pr:"P2", steps:["Tick Ghi nhớ & đăng nhập", "Đóng & mở lại trình duyệt", "Xác nhận vẫn đăng nhập trong hạn"]},
+  {sub:"2FA / OTP", lay:"both", tc:"OTP đúng", pre:"Đã qua bước 1, 2FA bật", exp:"Nhập OTP đúng → đăng nhập thành công", pr:"P1", steps:["Đăng nhập bước 1", "Nhập OTP đúng", "Xác nhận thành công"]},
+  {sub:"2FA / OTP", lay:"both", tc:"OTP sai", pre:"Ở màn nhập OTP", exp:"Báo \"Mã không đúng\"; không đăng nhập", pr:"P1", steps:["Nhập OTP sai", "Xác nhận báo lỗi & không đăng nhập"]},
+  {sub:"2FA / OTP", lay:"both", tc:"OTP hết hạn", pre:"OTP đã quá hạn", exp:"Báo hết hạn; yêu cầu gửi lại mã", pr:"P1", steps:["Chờ OTP quá hạn", "Nhập mã hết hạn", "Xác nhận báo hết hạn & cho gửi lại"]},
+  {sub:"2FA / OTP", lay:"api", tc:"Brute force OTP", pre:"Nhập sai OTP nhiều lần", exp:"Giới hạn số lần; khoá / HTTP 429", pr:"P1", steps:["Gửi sai OTP nhiều lần", "Xác nhận bị giới hạn/khoá"]},
+  {sub:"2FA / OTP", lay:"both", tc:"Không nhập OTP", pre:"Ở màn OTP", exp:"Không cho tiếp; báo bắt buộc; server cũng chặn", pr:"P2", steps:["Bỏ trống OTP & bấm tiếp", "Xác nhận báo bắt buộc", "Gửi request không OTP → server chặn"]},
+  {sub:"2FA / OTP", lay:"api", tc:"Reuse OTP", pre:"OTP đã dùng một lần", exp:"Dùng lại mã cũ → từ chối", pr:"P1", steps:["Dùng OTP đăng nhập OK", "Dùng lại mã đó", "Xác nhận bị từ chối"]},
+  {sub:"2FA / OTP", lay:"api", tc:"Gửi lại OTP", pre:"Bấm \"Gửi lại mã\"", exp:"Mã mới hợp lệ; mã cũ bị vô hiệu", pr:"P2", steps:["Bấm Gửi lại mã", "Nhập mã cũ → từ chối", "Nhập mã mới → hợp lệ"]},
+  {sub:"2FA / OTP", lay:"both", tc:"Bật / tắt 2FA", pre:"Đã đăng nhập", exp:"Bật/tắt lưu đúng; lần đăng nhập sau áp dụng đúng", pr:"P2", steps:["Vào cài đặt bảo mật", "Bật/tắt 2FA", "Đăng xuất & đăng nhập lại", "Xác nhận yêu cầu OTP đúng"]},
+  {sub:"Phiên & thiết bị", lay:"both", tc:"Đăng nhập lại trên cùng thiết bị → phiên cũ của thiết bị đó bị thay", pre:"Đang có phiên trên thiết bị A", exp:"Đăng nhập lại trên A → phiên/token cũ trên A bị vô hiệu; thiết bị khác KHÔNG bị ảnh hưởng", pr:"P1", steps:["Đăng nhập trên thiết bị A", "Đăng nhập lại cùng tài khoản trên chính A", "Dùng token/phiên cũ của A", "Xác nhận phiên cũ vô hiệu; thiết bị khác vẫn giữ phiên"]},
+  {sub:"Phiên & thiết bị", lay:"both", tc:"Dùng phiên đã bị thay (trên cùng thiết bị) → bị chặn", pre:"Phiên cũ trên A đã bị thay bởi lần đăng nhập mới trên chính A", exp:"Request bằng token cũ → HTTP 401; chuyển về màn login", pr:"P1", steps:["Đăng nhập lại trên A (phiên cũ bị thay)", "Dùng token cũ gọi API", "Xác nhận HTTP 401 & chuyển login"]},
+  {sub:"Phiên & thiết bị", lay:"both", tc:"Đăng xuất", pre:"Đã đăng nhập", exp:"Xoá token; nút Back không vào lại trang cần auth", pr:"P1", steps:["Đăng xuất", "Kiểm tra token bị xoá", "Bấm Back", "Xác nhận không vào lại trang cần auth"]},
+  {sub:"Phiên & thiết bị", lay:"both", tc:"Idle timeout", pre:"Không thao tác quá ngưỡng", exp:"Tự đăng xuất; chuyển login, giữ URL đích", pr:"P2", steps:["Đăng nhập & để yên quá ngưỡng", "Thao tác lại", "Xác nhận bị đăng xuất & chuyển login"]},
+  {sub:"Phiên & thiết bị", lay:"api", tc:"Refresh token", pre:"Access token hết hạn, refresh còn hạn", exp:"Cấp access token mới hợp lệ", pr:"P2", steps:["Để access token hết hạn", "Gọi refresh", "Xác nhận access token mới hợp lệ"]},
+  {sub:"Phiên & thiết bị", lay:"both", tc:"Revoke all sessions", pre:"Đã đăng nhập", exp:"\"Đăng xuất mọi nơi\" → mọi phiên bị vô hiệu", pr:"P2", steps:["Vào quản lý phiên", "Bấm Đăng xuất mọi nơi", "Xác nhận các phiên/token vô hiệu"]},
+  {sub:"Phiên & thiết bị", lay:"api", tc:"device_id gắn đúng phiên", pre:"Login có gửi device_id", exp:"Phiên lưu đúng device_id nhận được", pr:"P3", steps:["Đăng nhập kèm device_id", "Kiểm tra phiên lưu đúng device_id"]},
+  {sub:"Phiên & thiết bị", lay:"ui", tc:"Redirect deep-link sau login", pre:"Mở URL cần auth khi chưa login", exp:"Sau khi login → về đúng URL đích ban đầu", pr:"P2", steps:["Mở URL cần auth khi chưa login", "Bị chuyển tới Login", "Đăng nhập", "Xác nhận quay về URL đích"]},
+  {sub:"Đổi mật khẩu", lay:"both", tc:"Đổi mật khẩu → vô hiệu phiên khác", pre:"Đã đăng nhập, đổi mật khẩu", exp:"Mọi phiên khác (nếu từng tồn tại) bị vô hiệu, buộc đăng nhập lại; phiên hiện tại xử lý theo thiết kế", pr:"P1", steps:["Đổi mật khẩu khi đang đăng nhập", "Kiểm tra phiên khác bị vô hiệu", "Xác nhận phiên hiện tại theo thiết kế"]},
+  {sub:"Đổi mật khẩu", lay:"both", tc:"Login bằng mật khẩu cũ sau khi đổi", pre:"Vừa đổi mật khẩu", exp:"Dùng mật khẩu cũ → thất bại (HTTP 401)", pr:"P1", steps:["Đổi mật khẩu", "Đăng xuất", "Đăng nhập bằng mật khẩu cũ", "Xác nhận thất bại 401"]},
+  {sub:"OAuth (Google)", lay:"both", tc:"Login Google thành công", pre:"Có tài khoản Google hợp lệ", exp:"Tạo / liên kết tài khoản; đăng nhập thành công", pr:"P1", steps:["Bấm Đăng nhập bằng Google", "Chọn tài khoản & cấp quyền", "Xác nhận tạo/liên kết & đăng nhập"]},
+  {sub:"OAuth (Google)", lay:"ui", tc:"User từ chối cấp quyền", pre:"Ở màn cấp quyền Google", exp:"Từ chối → quay lại login, báo nhẹ, không crash", pr:"P2", steps:["Bắt đầu login Google", "Bấm Từ chối", "Xác nhận quay lại login, không crash"]},
+  {sub:"OAuth (Google)", lay:"both", tc:"Callback thiếu code / lỗi", pre:"Callback không có code", exp:"Báo lỗi thân thiện; không crash; không tạo phiên", pr:"P2", steps:["Gọi callback thiếu code", "Xác nhận báo lỗi & không tạo phiên"]},
+  {sub:"OAuth (Google)", lay:"api", tc:"OAuth token hết hạn", pre:"Token Google hết hạn", exp:"Refresh hoặc yêu cầu đăng nhập lại", pr:"P2", steps:["Để OAuth token hết hạn", "Thao tác cần token", "Xác nhận refresh hoặc yêu cầu login lại"]},
+  {sub:"Đa nền tảng", lay:"both", tc:"Login trên Web & Mobile App", pre:"Tài khoản hợp lệ", exp:"Đăng nhập đúng trên cả 2 nền tảng", pr:"P1", steps:["Đăng nhập Web", "Đăng nhập Mobile App", "Xác nhận cả 2 đúng"]},
+  {sub:"Đa nền tảng", lay:"both", tc:"Web & Mobile đăng nhập đồng thời, phiên độc lập", pre:"Có tài khoản hợp lệ", exp:"Đăng nhập cả Web & Mobile cùng lúc → cả hai giữ phiên độc lập, KHÔNG đá nhau", pr:"P1", steps:["Đăng nhập trên Web", "Đăng nhập cùng tài khoản trên Mobile", "Thao tác ở cả hai", "Xác nhận cả hai phiên vẫn hoạt động"]},
+  {sub:"Đa nền tảng", lay:"api", tc:"Header platform gửi đúng", pre:"Gửi login từ web/mobile", exp:"Header platform = web/mobile đúng", pr:"P3", steps:["Bắt request login web & mobile", "Kiểm tra header platform đúng"]},
+  {sub:"Đa nền tảng", lay:"api", tc:"Token không dùng chéo nền tảng", pre:"Policy tách token theo nền tảng", exp:"Token web không dùng được cho mobile (nếu policy vậy)", pr:"P3", steps:["Lấy token Web", "Dùng gọi API mobile", "Xác nhận bị từ chối nếu policy tách"]},
+  {sub:"Trình duyệt", lay:"ui", tc:"Login trên Chrome / Firefox / Edge", pre:"Mỗi trình duyệt", exp:"Đăng nhập OK, hiển thị đúng", pr:"P2", steps:["Đăng nhập lần lượt Chrome/Firefox/Edge", "Xác nhận đều OK & giao diện đúng"]},
+  {sub:"Trình duyệt", lay:"api", tc:"Cookie đúng thuộc tính", pre:"Login thành công", exp:"Cookie đúng domain; có Secure + HttpOnly + SameSite", pr:"P1", steps:["Đăng nhập", "Xem cookie ở DevTools", "Xác nhận domain & Secure/HttpOnly/SameSite"]},
+  {sub:"Trình duyệt", lay:"ui", tc:"Private / Incognito", pre:"Cửa sổ ẩn danh", exp:"Login OK; đóng cửa sổ → không còn phiên/lưu", pr:"P3", steps:["Mở ẩn danh & đăng nhập", "Đóng & mở lại", "Xác nhận không còn phiên"]},
+  {sub:"Hiệu năng", lay:"perf", tc:"Response time đăng nhập", pre:"Tải bình thường", exp:"Thời gian phản hồi ≤ ngưỡng (vd 1s)", pr:"P2", steps:["Đo thời gian phản hồi API login", "Xác nhận ≤ ngưỡng"]},
+  {sub:"Hiệu năng", lay:"perf", tc:"Stress nhiều login đồng thời", pre:"N người dùng đồng thời", exp:"Hệ thống ổn định, không lỗi / không rớt", pr:"P2", steps:["Chạy tải N login đồng thời (JMeter/k6)", "Theo dõi lỗi & thời gian", "Xác nhận ổn định"]},
+];
+// Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
 const FEATURE_IDS = ["authsession","payment","notify","seo","analytics","legal","errors","interaction","responsive","a11y","security","content-i18n","perf","vitals","release"];
 const TC_FEAT = [];
 let n2 = 0;
+LOGIN_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Login", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 FEATURE_IDS.forEach(id=>{
   const sec = document.getElementById(id); if(!sec) return;
   const h = sec.querySelector("h3");
   const title = h ? h.textContent.trim() : id;
   sec.querySelectorAll("tbody tr").forEach(tr=>{
     const cells = [...tr.querySelectorAll("td")]; if(cells.length < 2) return;
-    const sub = cells[0].textContent.trim().replace(/\s+/g," ");
-    const text = cells[cells.length-1].textContent.trim().replace(/\s+/g," ");
-    n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:title, sub, text, api:"—" });
+    const clean = el => el.textContent.trim().replace(/\s+/g," ");
+    n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:title, sub:clean(cells[0]), text:clean(cells[cells.length-1]), api:"—", expected:EXPECT, priority:"" });
   });
 });
 
@@ -1800,24 +1872,64 @@ const tcBody = document.getElementById("tcBody");
 const tcCount = document.getElementById("tcCount");
 const tcSearch = document.getElementById("tcSearch");
 const tcFilter = document.getElementById("tcFilter");
+const tcSub = document.getElementById("tcSub");
+const tcLay = document.getElementById("tcLay");
+const tcPrio = document.getElementById("tcPrio");
 const tcApiChips = api => api.split(",").map(m=>m.trim()).filter(Boolean)
   .map(m => m==="—" ? '<span class="apim none">—</span>' : `<span class="apim ${tcCls(m)}">${m}</span>`).join(" ");
+const LAY_LABEL = {both:"UI+API", ui:"UI", api:"API", perf:"Perf"};
 
+// đổ options cho 1 select; ẩn select nếu không có giá trị; keyFn lấy value, labelFn hiển thị
+function tcFillSelect(sel, values, allLabel, labelFn){
+  const uniq = [...new Set(values.filter(Boolean))];
+  sel.hidden = uniq.length === 0;
+  sel.innerHTML = `<option value="">${allLabel}</option>` + uniq.map(v=>`<option value="${escHtml(v)}">${escHtml(labelFn?labelFn(v):v)}</option>`).join("");
+}
+// dữ liệu đã lọc theo Feature/Component đang chọn (để cascade 3 filter con)
+function tcScopedData(){
+  const g = tcFilter.value;
+  return tcData().filter(t => !g || t.group===g);
+}
+// đổ lại options Hạng mục / Lớp / Ưu tiên theo feature đang chọn
+function tcRefreshDependent(){
+  const isComp = tcMode==="component";
+  const data = tcScopedData();
+  tcFillSelect(tcSub, data.map(t=>t.sub), isComp?"Tất cả nhóm":"Tất cả hạng mục");
+  tcFillSelect(tcLay, data.map(t=>t.lay), "Tất cả lớp", v=>LAY_LABEL[v]||v);
+  tcFillSelect(tcPrio, data.map(t=>t.priority).filter(Boolean).sort(), "Tất cả ưu tiên");
+}
 function tcSetupMode(){
   const isComp = tcMode==="component";
-  tcHead.innerHTML = `<tr><th>ID</th><th>${isComp?"Component":"Feature"}</th><th>${isComp?"Nhóm":"Hạng mục"}</th><th>Nội dung kiểm thử</th><th>API</th><th>Kết quả mong đợi</th></tr>`;
-  const groups = [...new Set(tcData().map(t=>t.group))];
-  tcFilter.innerHTML = `<option value="">Tất cả ${isComp?"component":"feature"}</option>` + groups.map(g=>`<option value="${escHtml(g)}">${escHtml(g)}</option>`).join("");
+  tcHead.innerHTML = `<tr><th>ID</th><th>${isComp?"Component":"Feature"}</th><th>${isComp?"Nhóm":"Hạng mục"}</th><th>Nội dung kiểm thử</th><th>${isComp?"API":"Lớp"}</th><th>Kết quả mong đợi</th><th>Ưu tiên</th><th>Bước</th></tr>`;
+  tcFillSelect(tcFilter, tcData().map(t=>t.group), `Tất cả ${isComp?"component":"feature"}`);
+  tcRefreshDependent();
   renderTC();
 }
 function tcFiltered(){
   const term = tcSearch.value.trim().toLowerCase();
-  const g = tcFilter.value;
-  return tcData().filter(t => (!g || t.group===g) && (!term || (t.id+" "+t.group+" "+t.sub+" "+t.text).toLowerCase().includes(term)));
+  const g = tcFilter.value, sub = tcSub.value, lay = tcLay.value, prio = tcPrio.value;
+  return tcData().filter(t =>
+    (!g || t.group===g) &&
+    (!sub || t.sub===sub) &&
+    (!lay || t.lay===lay) &&
+    (!prio || t.priority===prio) &&
+    (!term || (t.id+" "+t.group+" "+t.sub+" "+t.text).toLowerCase().includes(term)));
 }
 function renderTC(){
+  const isComp = tcMode==="component";
   const rows = tcFiltered();
-  tcBody.innerHTML = rows.map(t=>`<tr><td class="id">${t.id}</td><td class="comp-c">${escHtml(t.group)}</td><td>${escHtml(t.sub)}</td><td>${escHtml(t.text)}</td><td>${tcApiChips(t.api)}</td><td style="color:var(--muted)">${EXPECT}</td></tr>`).join("");
+  tcBody.innerHTML = rows.map(t=>{
+    const col5 = isComp
+      ? tcApiChips(t.api)
+      : (t.lay ? `<span class="lay ${t.lay}">${LAY_LABEL[t.lay]||t.lay}</span>` : `<span class="apim none">—</span>`);
+    const prioBadge = t.priority ? `<span class="prio ${t.priority.toLowerCase()}">${escHtml(t.priority)}</span>` : "";
+    const stepBtn = (t.steps && t.steps.length) ? `<button class="stepbtn" type="button" aria-expanded="false" aria-label="Xem bước thực hiện">⋯</button>` : "";
+    let row = `<tr><td class="id">${t.id}</td><td class="comp-c">${escHtml(t.group)}</td><td>${escHtml(t.sub)}</td><td>${escHtml(t.text)}</td><td>${col5}</td><td style="color:var(--muted)">${escHtml(t.expected||EXPECT)}</td><td>${prioBadge}</td><td>${stepBtn}</td></tr>`;
+    if(t.steps && t.steps.length){
+      row += `<tr class="tc-steps" hidden><td colspan="8"><span class="lbl-steps">Bước thực hiện</span><ol>${t.steps.map(s=>`<li>${escHtml(s)}</li>`).join("")}</ol></td></tr>`;
+    }
+    return row;
+  }).join("");
   tcCount.textContent = `${rows.length} / ${tcData().length} test case`;
 }
 document.querySelectorAll(".tc-seg-b").forEach(b=> b.addEventListener("click", ()=>{
@@ -1827,16 +1939,27 @@ document.querySelectorAll(".tc-seg-b").forEach(b=> b.addEventListener("click", (
   tcSetupMode();
 }));
 tcSearch.addEventListener("input", renderTC);
-tcFilter.addEventListener("change", renderTC);
+tcFilter.addEventListener("change", ()=>{ tcRefreshDependent(); renderTC(); });
+[tcSub, tcLay, tcPrio].forEach(sel=> sel.addEventListener("change", renderTC));
+// Nút ⋯ bung/thu bước thực hiện (delegate vì bảng render lại khi lọc)
+tcBody.addEventListener("click", e=>{
+  const btn = e.target.closest(".stepbtn"); if(!btn) return;
+  const steps = btn.closest("tr").nextElementSibling;
+  if(!steps || !steps.classList.contains("tc-steps")) return;
+  const willOpen = steps.hidden;
+  steps.hidden = !willOpen;
+  btn.setAttribute("aria-expanded", String(willOpen));
+  btn.textContent = willOpen ? "▾" : "⋯";
+});
 tcSetupMode();
 
 document.getElementById("tcExport").addEventListener("click", ()=>{
   const isComp = tcMode==="component";
   const rows = tcFiltered();
-  const head = ["ID", isComp?"Component":"Feature", isComp?"Nhóm":"Hạng mục", "Nội dung kiểm thử","API","Kết quả mong đợi","Trạng thái","Ghi chú"];
+  const head = ["ID", isComp?"Component":"Feature", isComp?"Nhóm":"Hạng mục", "Lớp","Nội dung kiểm thử","API","Kết quả mong đợi","Ưu tiên","Bước thực hiện","Trạng thái","Ghi chú"];
   const cell = s => '"' + String(s).replace(/"/g,'""') + '"';
   const csv = [head.map(cell).join(",")]
-    .concat(rows.map(t => [t.id,t.group,t.sub,t.text,t.api,EXPECT,"",""].map(cell).join(",")))
+    .concat(rows.map(t => [t.id,t.group,t.sub,(t.lay?(LAY_LABEL[t.lay]||t.lay):""),t.text,t.api,(t.expected||EXPECT),(t.priority||""),(t.steps&&t.steps.length?t.steps.map((s,i)=>(i+1)+". "+s).join(" | "):""),"",""].map(cell).join(",")))
     .join("\r\n");
   const blob = new Blob(["﻿"+csv], {type:"text/csv;charset=utf-8"});
   const url = URL.createObjectURL(blob);
