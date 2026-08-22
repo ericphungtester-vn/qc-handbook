@@ -336,7 +336,7 @@
       <button id="tgGroups" type="button" class="on" aria-selected="true">Nhóm</button>
       <button id="tgComps" type="button" aria-selected="false">Component</button>
     </div>
-    <div id="navGroups"><p class="lbl">Danh mục</p></div>
+    <div id="navGroups"><p class="lbl">Component</p></div>
     <div id="navComps" hidden><p class="lbl">Tất cả component (A→Z)</p></div>
   </nav>
 
@@ -1204,7 +1204,12 @@ CATS.forEach(cat=>{
   content.appendChild(sec);
 });
 
-// nav links to static reference sections
+// nav links to static reference sections (nhóm "Tham khảo", tách khỏi Component)
+const refLbl = document.createElement("p");
+refLbl.className = "lbl";
+refLbl.textContent = "Tham khảo";
+refLbl.style.marginTop = "16px";
+navGroups.appendChild(refLbl);
 [["demo","Demo màn hình"],["landmarks","Cấu trúc trang"],["tokens","Nền tảng thiết kế"],["perf","Hiệu năng & tải dữ liệu"],["a11y","Accessibility"],["responsive","Responsive & thiết bị"],["interaction","Tương tác & cử chỉ"],["errors","Lỗi & biên"],["security","Bảo mật UI"],["content-i18n","Nội dung & i18n"],["vitals","Web Vitals"],["authsession","Đăng nhập & phiên"],["bug","Quy trình báo lỗi"],["states","Trạng thái"],["cheat","Dữ liệu test mẫu"]].forEach(([id,label])=>{
   const a = document.createElement("a");
   a.href = "#"+id;
