@@ -703,6 +703,30 @@
       <p style="font-size:12.5px;color:var(--muted);margin:12px 2px 0;line-height:1.55">Đây là <strong>tầng bố cục (landmark)</strong>, được <strong>ghép nên từ các component</strong> — không tính vào danh sách 60 component. Kiểm tra chung: mỗi trang chỉ <strong>một</strong> <code>&lt;h1&gt;</code> và <strong>một</strong> <code>&lt;main&gt;</code>; screen reader nhảy được giữa các landmark; bố cục <strong>responsive</strong> đúng ở mọi khổ màn. Xem trực quan ở tab <a href="#demo">Demo màn hình → Cấu trúc website</a>.</p>
     </section>
 
+    <!-- Nền tảng thiết kế (Design tokens) — cấu hình gốc, KHÔNG phải component -->
+    <section class="cat" id="tokens" data-static>
+      <div class="cat-head"><h3>Nền tảng thiết kế</h3><span class="en">Design tokens &amp; foundations — cấu hình gốc trước khi dựng UI</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Nhóm (EN · VN)</th><th>Cấu hình gì</th><th>QC cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td>🎨 <strong>Color</strong> · Màu</td><td>Màu thương hiệu (primary/secondary/accent); màu ngữ nghĩa (success/warning/error/info); trung tính (text/nền/viền/surface); <strong>dark mode</strong></td><td>Tương phản đủ (WCAG ≥ 4.5:1); dark &amp; light đều đúng; không hard-code màu</td></tr>
+          <tr><td>✍️ <strong>Typography</strong> · Chữ</td><td>Font family (tiêu đề/thân/mono); type scale (h1…caption); độ đậm; line-height; letter-spacing</td><td>Font fallback khi tải lỗi; chữ không vỡ/tràn; tiếng Việt có dấu hiển thị đúng</td></tr>
+          <tr><td>📏 <strong>Spacing</strong> · Khoảng cách</td><td>Thang khoảng cách (bội số 4/8px); padding · margin · gap</td><td>Nhất quán theo thang; không lệch tuỳ tiện</td></tr>
+          <tr><td>🔲 <strong>Layout / Grid</strong> · Bố cục</td><td>Container max-width; số cột · gutter; <strong>breakpoints</strong> (mobile/tablet/desktop)</td><td>Responsive đúng ở mọi khổ; không tràn ngang</td></tr>
+          <tr><td>⬜ <strong>Radius</strong> · Bo góc</td><td>Thang bo góc (nhỏ/vừa/lớn/tròn)</td><td>Đồng nhất giữa các thành phần</td></tr>
+          <tr><td>▩ <strong>Shadow / Elevation</strong> · Đổ bóng</td><td>Cấp độ bóng (card, dropdown, modal…)</td><td>Đúng cả dark mode; phân tầng hợp lý</td></tr>
+          <tr><td>▦ <strong>Border</strong> · Viền</td><td>Độ dày &amp; màu viền/đường kẻ</td><td>Rõ ở cả light/dark; không mất viền</td></tr>
+          <tr><td>🧱 <strong>Z-index / Layering</strong> · Thứ tự lớp</td><td>Thang chồng lớp (dropdown &lt; modal &lt; toast…)</td><td>Overlay không bị che sai; toast luôn trên cùng</td></tr>
+          <tr><td>🎬 <strong>Motion</strong> · Chuyển động</td><td>Thời lượng &amp; kiểu easing của animation/transition</td><td>Tôn trọng <code>prefers-reduced-motion</code>; không giật/lag</td></tr>
+          <tr><td>◆ <strong>Icon</strong> · Biểu tượng</td><td>Bộ icon &amp; cỡ chuẩn</td><td>Đồng bộ nét &amp; kích thước; có nhãn cho a11y</td></tr>
+          <tr><td>♿ <strong>State / A11y</strong> · Trạng thái &amp; tiếp cận</td><td>Focus ring; độ mờ disabled; vùng chạm ≥ 44px; cỡ chữ tối thiểu</td><td>Focus thấy rõ khi Tab; chạm được trên mobile</td></tr>
+          <tr><td>🌐 <strong>i18n</strong> · Đa ngôn ngữ</td><td>Ngôn ngữ; <strong>RTL</strong>; định dạng ngày/số/tiền tệ</td><td>Bố cục không vỡ khi chữ dịch dài / chế độ RTL</td></tr>
+          <tr><td>🖼 <strong>Assets</strong> · Tài nguyên</td><td>Logo, favicon, ảnh thương hiệu</td><td>Hiển thị đúng; có bản @2x/retina; favicon đúng</td></tr>
+        </tbody>
+      </table></div></div>
+      <p style="font-size:12.5px;color:var(--muted);margin:12px 2px 0;line-height:1.55">Đây là <strong>tầng cấu hình gốc (design tokens)</strong> — đặt một lần, mọi component dùng lại. Nguyên tắc QC: mọi giá trị nên đến từ <strong>token</strong> (biến dùng lại), <strong>không hard-code</strong> — kiểm tra chính là soát tính <strong>nhất quán</strong> đó ở cả light/dark &amp; mọi khổ màn. (Chính trang này cũng dùng token: <code>--accent</code>, <code>--radius</code>, <code>--sans</code>…)</p>
+    </section>
+
   </main>
 </div>
 
@@ -993,7 +1017,7 @@ CATS.forEach(cat=>{
 });
 
 // nav links to static reference sections
-[["demo","Demo màn hình"],["landmarks","Cấu trúc trang"],["states","Trạng thái"],["cheat","Dữ liệu test mẫu"]].forEach(([id,label])=>{
+[["demo","Demo màn hình"],["landmarks","Cấu trúc trang"],["tokens","Nền tảng thiết kế"],["states","Trạng thái"],["cheat","Dữ liệu test mẫu"]].forEach(([id,label])=>{
   const a = document.createElement("a");
   a.href = "#"+id;
   a.innerHTML = `<span>${label}</span><span class="n">★</span>`;
