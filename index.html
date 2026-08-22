@@ -284,6 +284,9 @@
   .tc-wrap{padding:24px 20px 80px}
   .tc-head{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:6px}
   .tc-head h2{margin:0; font-size:20px; letter-spacing:-.01em}
+  .tc-seg{display:inline-flex; gap:3px; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:3px; margin:14px 0 0}
+  .tc-seg-b{font:600 13px var(--sans); padding:7px 14px; border:0; border-radius:6px; background:transparent; color:var(--muted); cursor:pointer}
+  .tc-seg-b.on{background:var(--surface); color:var(--accent-ink); box-shadow:var(--shadow)}
   .tc-controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:16px 0}
   .tc-controls input, .tc-controls select{font:14px var(--sans); padding:8px 11px; border:1px solid var(--line); border-radius:9px; background:var(--surface); color:var(--ink)}
   .tc-controls input{flex:1 1 240px; min-width:180px}
@@ -1159,14 +1162,18 @@
   <div class="wrap tc-wrap">
     <div class="tc-head"><h2>Test case</h2><span class="tc-count" id="tcCount"></span></div>
     <p style="color:var(--muted);font-size:13px;margin:2px 0 0;max-width:72ch">Tự sinh từ checklist "cần test" của các component — mỗi mục kiểm = 1 test case. Nhớ chạy kèm <a href="#baseline">Checklist nền</a> cho mọi component. Lọc theo component hoặc từ khoá, rồi <strong>Xuất CSV</strong> để nhập vào Excel / công cụ quản lý test.</p>
+    <div class="tc-seg" role="tablist" aria-label="Kiểu test case">
+      <button class="tc-seg-b on" data-mode="component" type="button">Theo Component</button>
+      <button class="tc-seg-b" data-mode="feature" type="button">Theo Feature</button>
+    </div>
     <div class="tc-controls">
       <input id="tcSearch" type="search" placeholder="Tìm test case…" autocomplete="off" aria-label="Tìm test case">
-      <select id="tcComp" aria-label="Lọc theo component"><option value="">Tất cả component</option></select>
+      <select id="tcFilter" aria-label="Lọc"><option value="">Tất cả</option></select>
       <button class="dbtn sec" id="tcExport" type="button">⬇︎ Xuất CSV</button>
     </div>
     <div class="tc-table-wrap"><div class="tc-scroll">
       <table class="tc">
-        <thead><tr><th>ID</th><th>Component</th><th>Nhóm</th><th>Nội dung kiểm thử</th><th>API</th><th>Kết quả mong đợi</th></tr></thead>
+        <thead id="tcHead"></thead>
         <tbody id="tcBody"></tbody>
       </table>
     </div></div>
@@ -1757,49 +1764,84 @@ mmTabs.forEach(b=> b.addEventListener("click", ()=>{
   scrollTo({top:0});
 }));
 
-// ===== TestCase: sinh từ checklist component =====
+// ===== TestCase: 2 chế độ — Theo Component & Theo Feature =====
 const tcCls = m => ({GET:"get",POST:"post",PUT:"put",PATCH:"put",DELETE:"del"}[m] || "none");
-const TESTCASES = [];
-let tcn = 0;
+const escHtml = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const EXPECT = "Đúng như mô tả · không lỗi";
+
+// Nguồn 1 — Component: từ checklist của 65 component
+const TC_COMP = [];
+let n1 = 0;
 CATS.forEach(cat => COMPS.filter(x=>x.c===cat.id).forEach(x=>{
   const api = (API[x.n] || ["—"])[0];
-  x.t.forEach(item=>{
-    tcn++;
-    TESTCASES.push({ id:"TC-"+String(tcn).padStart(3,"0"), comp:x.n, cat:cat.vi, text:item, api });
-  });
+  x.t.forEach(item=>{ n1++; TC_COMP.push({ id:"TC-C-"+String(n1).padStart(3,"0"), group:x.n, sub:cat.vi, text:item, api }); });
 }));
-const tcCompSel = document.getElementById("tcComp");
-[...new Set(TESTCASES.map(t=>t.comp))].forEach(n=>{ const o=document.createElement("option"); o.value=n; o.textContent=n; tcCompSel.appendChild(o); });
+
+// Nguồn 2 — Feature: từ các mục checklist tính năng / luồng
+const FEATURE_IDS = ["authsession","payment","notify","seo","analytics","legal","errors","interaction","responsive","a11y","security","content-i18n","perf","vitals","release"];
+const TC_FEAT = [];
+let n2 = 0;
+FEATURE_IDS.forEach(id=>{
+  const sec = document.getElementById(id); if(!sec) return;
+  const h = sec.querySelector("h3");
+  const title = h ? h.textContent.trim() : id;
+  sec.querySelectorAll("tbody tr").forEach(tr=>{
+    const cells = [...tr.querySelectorAll("td")]; if(cells.length < 2) return;
+    const sub = cells[0].textContent.trim().replace(/\s+/g," ");
+    const text = cells[cells.length-1].textContent.trim().replace(/\s+/g," ");
+    n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:title, sub, text, api:"—" });
+  });
+});
+
+let tcMode = "component";
+const tcData = ()=> tcMode==="component" ? TC_COMP : TC_FEAT;
+const tcHead = document.getElementById("tcHead");
 const tcBody = document.getElementById("tcBody");
 const tcCount = document.getElementById("tcCount");
 const tcSearch = document.getElementById("tcSearch");
-const EXPECT = "Đúng như mô tả · không lỗi";
-const escHtml = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-const tcApiChips = api => api.split(",").map(m=>m.trim()).filter(Boolean).map(m=>`<span class="apim ${tcCls(m)}">${m}</span>`).join(" ");
+const tcFilter = document.getElementById("tcFilter");
+const tcApiChips = api => api.split(",").map(m=>m.trim()).filter(Boolean)
+  .map(m => m==="—" ? '<span class="apim none">—</span>' : `<span class="apim ${tcCls(m)}">${m}</span>`).join(" ");
+
+function tcSetupMode(){
+  const isComp = tcMode==="component";
+  tcHead.innerHTML = `<tr><th>ID</th><th>${isComp?"Component":"Feature"}</th><th>${isComp?"Nhóm":"Hạng mục"}</th><th>Nội dung kiểm thử</th><th>API</th><th>Kết quả mong đợi</th></tr>`;
+  const groups = [...new Set(tcData().map(t=>t.group))];
+  tcFilter.innerHTML = `<option value="">Tất cả ${isComp?"component":"feature"}</option>` + groups.map(g=>`<option value="${escHtml(g)}">${escHtml(g)}</option>`).join("");
+  renderTC();
+}
 function tcFiltered(){
   const term = tcSearch.value.trim().toLowerCase();
-  const comp = tcCompSel.value;
-  return TESTCASES.filter(t => (!comp || t.comp===comp) && (!term || (t.id+" "+t.comp+" "+t.cat+" "+t.text).toLowerCase().includes(term)));
+  const g = tcFilter.value;
+  return tcData().filter(t => (!g || t.group===g) && (!term || (t.id+" "+t.group+" "+t.sub+" "+t.text).toLowerCase().includes(term)));
 }
 function renderTC(){
   const rows = tcFiltered();
-  tcBody.innerHTML = rows.map(t=>`<tr><td class="id">${t.id}</td><td class="comp-c">${escHtml(t.comp)}</td><td>${escHtml(t.cat)}</td><td>${escHtml(t.text)}</td><td>${tcApiChips(t.api)}</td><td style="color:var(--muted)">${EXPECT}</td></tr>`).join("");
-  tcCount.textContent = `${rows.length} / ${TESTCASES.length} test case`;
+  tcBody.innerHTML = rows.map(t=>`<tr><td class="id">${t.id}</td><td class="comp-c">${escHtml(t.group)}</td><td>${escHtml(t.sub)}</td><td>${escHtml(t.text)}</td><td>${tcApiChips(t.api)}</td><td style="color:var(--muted)">${EXPECT}</td></tr>`).join("");
+  tcCount.textContent = `${rows.length} / ${tcData().length} test case`;
 }
+document.querySelectorAll(".tc-seg-b").forEach(b=> b.addEventListener("click", ()=>{
+  tcMode = b.dataset.mode;
+  document.querySelectorAll(".tc-seg-b").forEach(x=> x.classList.toggle("on", x===b));
+  tcSearch.value = "";
+  tcSetupMode();
+}));
 tcSearch.addEventListener("input", renderTC);
-tcCompSel.addEventListener("change", renderTC);
-renderTC();
+tcFilter.addEventListener("change", renderTC);
+tcSetupMode();
+
 document.getElementById("tcExport").addEventListener("click", ()=>{
+  const isComp = tcMode==="component";
   const rows = tcFiltered();
-  const head = ["ID","Component","Nhóm","Nội dung kiểm thử","API","Kết quả mong đợi","Trạng thái","Ghi chú"];
+  const head = ["ID", isComp?"Component":"Feature", isComp?"Nhóm":"Hạng mục", "Nội dung kiểm thử","API","Kết quả mong đợi","Trạng thái","Ghi chú"];
   const cell = s => '"' + String(s).replace(/"/g,'""') + '"';
   const csv = [head.map(cell).join(",")]
-    .concat(rows.map(t => [t.id,t.comp,t.cat,t.text,t.api,EXPECT,"",""].map(cell).join(",")))
+    .concat(rows.map(t => [t.id,t.group,t.sub,t.text,t.api,EXPECT,"",""].map(cell).join(",")))
     .join("\r\n");
   const blob = new Blob(["﻿"+csv], {type:"text/csv;charset=utf-8"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = "testcases.csv";
+  a.href = url; a.download = isComp ? "testcases-component.csv" : "testcases-feature.csv";
   document.body.appendChild(a); a.click(); a.remove();
   URL.revokeObjectURL(url);
 });
