@@ -1172,6 +1172,7 @@ const COMPS = [
   // MEDIA
   {c:"media", n:"Image", vn:"Hình ảnh", d:"Ảnh hiển thị trong trang.", t:["Có alt text mô tả","Ảnh lỗi (broken) → xử lý gọn","Lazy-load khi cuộn","Không méo tỉ lệ","Responsive theo màn"]},
   {c:"media", n:"Lightbox", vn:"Phóng to ảnh", d:"Pop-up nền tối phóng to ảnh/media, có next/prev.", t:["Mở đúng ảnh được bấm","Next / Prev & phím mũi tên","Đóng bằng ESC / bấm nền / nút ×","Zoom & vuốt (nếu có)","Ảnh lớn có trạng thái tải","Không cuộn nền khi mở"]},
+  {c:"media", n:"Image zoom / Magnifier", vn:"Zoom ảnh (kính lúp)", d:"Rê chuột/chạm để phóng to chi tiết ảnh (ảnh sản phẩm) hoặc zoom trong trình xem.", t:["Rê chuột hiện vùng phóng to đúng vị trí","Mức zoom hợp lý & mượt","Kéo (pan) khi đang zoom","Mobile: chụm 2 ngón (pinch) & double-tap","Ảnh độ phân giải cao có trạng thái tải","Reset về mức 1:1"]},
   {c:"media", n:"Avatar", vn:"Ảnh đại diện", d:"Ảnh/chữ cái đại diện người dùng.", t:["Ảnh lỗi → fallback chữ cái","Bo tròn đúng","Nhiều kích thước","Ảnh nhóm xếp chồng"]},
   {c:"media", n:"Video player", vn:"Trình phát video", d:"Phát video có điều khiển.", t:["Play / pause","Tua & thanh thời gian","Âm lượng / tắt tiếng","Toàn màn hình","Phụ đề (nếu có)","Chính sách autoplay"]},
 ];
@@ -1245,6 +1246,7 @@ const PREVIEWS = {
   // MEDIA
   "Image":`<div class="pv"><span class="pvimg" style="height:52px">🖼</span></div>`,
   "Lightbox":`<div class="pv" style="background:#0e141a;padding:0;min-height:64px;position:relative"><span style="position:absolute;top:6px;right:8px;color:#fff;font-size:14px">×</span><div class="mrow" style="width:100%;justify-content:space-between;padding:0 8px"><span style="color:#fff;opacity:.8">‹</span><span style="width:80px;height:46px;background:#1c2731;border-radius:6px;display:grid;place-items:center;font-size:22px">🖼</span><span style="color:#fff;opacity:.8">›</span></div></div>`,
+  "Image zoom / Magnifier":`<div class="pv"><span class="pvimg" style="height:56px;position:relative;overflow:hidden">🖼<span style="position:absolute;top:8px;right:16px;width:30px;height:30px;border-radius:50%;border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent);display:grid;place-items:center;font-size:15px">🔍</span></span></div>`,
   "Avatar":`<div class="pv"><span class="pvav">AN</span><span class="pvav" style="margin-left:-12px;background:var(--warn)">BT</span><span class="pvav" style="margin-left:-12px;background:var(--muted)">+3</span></div>`,
   "Video player":`<div class="pv col"><div class="pvimg" style="height:52px;position:relative;background:#0e141a;color:#fff">▶︎<span style="position:absolute;left:0;right:0;bottom:0;height:12px;background:rgba(255,255,255,.15);display:flex;align-items:center;padding:0 6px"><span style="height:3px;flex:1;background:var(--accent);border-radius:2px"></span></span></div></div>`,
 };
@@ -1319,6 +1321,7 @@ const API = {
   // MEDIA
   "Image":["GET","Tải ảnh (GET file/CDN). Test 404 ảnh, lazy-load, ảnh nặng/độ phân giải."],
   "Lightbox":["GET","Tải ảnh độ phân giải cao khi mở (GET). Test lazy-load, ảnh lỗi, prefetch ảnh kế."],
+  "Image zoom / Magnifier":["GET","Tải ảnh độ phân giải cao khi zoom (GET). Test lazy-load ảnh lớn, ảnh lỗi, không tải sớm."],
   "Avatar":["GET","Tải ảnh user (GET); lỗi → fallback chữ cái. Test 404, cache, ảnh riêng tư cần quyền."],
   "Video player":["GET","Stream video (GET có Range). Test tua (range request), lỗi mạng, phụ đề, autoplay."],
 };
