@@ -1103,6 +1103,7 @@ const COMPS = [
   // FORM
   {c:"form", n:"Label", vn:"Nhãn trường", d:"Nhãn mô tả cho một trường nhập; bấm vào nên focus đúng ô.", t:["Bấm label → focus đúng ô (for/id khớp)","Đánh dấu bắt buộc (*) rõ ràng","Không bị cắt khi chữ dài","Gắn đúng với ô cho screen reader (a11y)","Đổi màu theo trạng thái lỗi (nếu có)"]},
   {c:"form", n:"Helper text", vn:"Dòng gợi ý", d:"Dòng chú thích mờ dưới ô, hướng dẫn cách điền.", t:["Hiển thị đúng dưới ô","Bị thay bằng lỗi khi nhập sai?","Không quá dài che layout","Screen reader đọc được (aria-describedby)"]},
+  {c:"form", n:"Placeholder", vn:"Chữ gợi ý trong ô", d:"Chữ mờ bên trong ô rỗng, biến mất khi gõ — gợi ý định dạng, KHÔNG thay Label.", t:["Mờ hơn text thật nhưng đủ tương phản","Biến mất khi gõ, trở lại khi xoá","Không dùng thay cho Label","Không đặt thông tin quan trọng chỉ ở placeholder","Ví dụ định dạng rõ (vd 0912 345 678)"]},
   {c:"form", n:"Error / Validation message", vn:"Báo lỗi nhập liệu", d:"Dòng lỗi (thường đỏ) dưới ô khi giá trị không hợp lệ.", t:["Hiện đúng lúc (blur / submit)","Nội dung rõ: sai gì + sửa sao","Viền ô đổi đỏ đồng bộ","Ẩn khi sửa đúng","Screen reader thông báo (aria-live / aria-invalid)","Lỗi từ server hiển thị đúng ô"]},
   {c:"form", n:"Required indicator", vn:"Dấu bắt buộc (*)", d:"Dấu * hoặc chữ \"bắt buộc\" đánh dấu trường phải điền.", t:["Đánh dấu đúng trường bắt buộc","Nhất quán toàn form (* hay chữ)","Chú thích ý nghĩa dấu * ở đầu form","Screen reader báo required (aria-required)"]},
   {c:"form", n:"Character counter", vn:"Bộ đếm ký tự", d:"Hiển thị số ký tự đã gõ / giới hạn (vd 24/100).", t:["Đếm đúng realtime khi gõ","Cảnh báo khi gần / vượt giới hạn","Đếm đúng emoji & ký tự nhiều byte","Đồng bộ với max length thật của ô"]},
@@ -1182,6 +1183,7 @@ const PREVIEWS = {
   // FORM
   "Label":`<div class="pv col"><span style="font-size:12px;color:var(--ink);font-weight:600;margin-bottom:5px">Email <span style="color:var(--fail)">*</span></span><div class="pvf mut">ban@congty.com</div></div>`,
   "Helper text":`<div class="pv col"><div class="pvf mut">••••••••</div><span style="font-size:10.5px;color:var(--muted);margin-top:5px">Tối thiểu 8 ký tự</span></div>`,
+  "Placeholder":`<div class="pv col"><span class="pvlbl">Số điện thoại</span><div class="pvf mut">VD: 0912 345 678</div></div>`,
   "Error / Validation message":`<div class="pv col"><div class="pvf err">sai@</div><span class="pverr" style="margin-top:5px">⚠︎ Email không hợp lệ</span></div>`,
   "Required indicator":`<div class="pv col"><span style="font-size:12px;color:var(--ink);font-weight:600;margin-bottom:5px">Số điện thoại <span style="color:var(--fail)">*</span></span><div class="pvf mut">Bắt buộc</div></div>`,
   "Character counter":`<div class="pv col"><div class="pvf" style="height:36px">Nội dung ngắn…</div><span style="font-size:10.5px;color:var(--muted);margin-top:5px;text-align:right">24 / 100</span></div>`,
@@ -1257,6 +1259,7 @@ const API = {
   // FORM
   "Label":["—","Chỉ hiển thị nhãn — không gọi API. Quan trọng cho a11y: đảm bảo for/id khớp đúng ô nhập."],
   "Helper text":["—","Chỉ hiển thị hướng dẫn — không gọi API."],
+  "Placeholder":["—","Chỉ gợi ý hiển thị — không gọi API; không gửi placeholder như giá trị thật."],
   "Error / Validation message":["—","Validate ở client không gọi API; nhưng lỗi từ server (POST/PUT trả 4xx) phải map đúng vào ô. Test hiển thị lỗi field-level từ response."],
   "Required indicator":["—","Chỉ đánh dấu hiển thị — không gọi API. Server vẫn phải tự validate required (đừng tin client)."],
   "Character counter":["—","Chỉ hiển thị đếm — không gọi API. Nhưng giới hạn thật phải được server enforce."],
