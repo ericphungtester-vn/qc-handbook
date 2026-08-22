@@ -748,6 +748,173 @@
       <p style="font-size:12.5px;color:var(--muted);margin:12px 2px 0;line-height:1.55">Đây là <strong>tầng hành vi / hiệu năng</strong> — <strong>không phải component</strong>, nhưng ảnh hưởng trực tiếp trải nghiệm. Chúng thường đi kèm <a href="#comp-skeleton">Skeleton</a>, <a href="#comp-spinner-loader">Spinner</a>, <a href="#comp-scrollbar-scroll-area">Scroll area</a>, <a href="#comp-image">Image</a>. Điểm QC cốt lõi: <strong>không nhảy layout</strong>, <strong>không gọi trùng</strong>, <strong>xử lý lỗi/rollback</strong> rõ ràng, và luôn có lối cho <strong>bàn phím / screen reader</strong>.</p>
     </section>
 
+    <!-- Accessibility -->
+    <section class="cat" id="a11y" data-static>
+      <div class="cat-head"><h3>Accessibility (a11y)</h3><span class="en">Khả năng tiếp cận — kiểm thử cho mọi người dùng</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Hạng mục</th><th>Cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td>Bàn phím</td><td>Tab qua mọi phần tử tương tác theo thứ tự hợp lý; ESC đóng overlay; Enter/Space kích hoạt; không bẫy focus</td></tr>
+          <tr><td>Focus nhìn thấy</td><td>Mọi phần tử khi focus có viền rõ (focus ring); KHÔNG dùng <code>outline:none</code> mà không thay thế</td></tr>
+          <tr><td>Screen reader</td><td>Nhãn đúng (<code>aria-label</code>/<code>labelledby</code>); trạng thái đọc được (<code>aria-expanded/selected/invalid</code>); vùng động dùng <code>aria-live</code></td></tr>
+          <tr><td>Tương phản màu</td><td>Chữ thường ≥ 4.5:1; chữ lớn/icon ≥ 3:1 (cả light &amp; dark)</td></tr>
+          <tr><td>Hình ảnh</td><td>Có <code>alt</code> mô tả; ảnh trang trí để <code>alt=""</code></td></tr>
+          <tr><td>Cấu trúc</td><td>Heading đúng cấp (h1→h2…); đủ landmark; có skip-to-content</td></tr>
+          <tr><td>Không chỉ dựa vào màu</td><td>Lỗi/trạng thái có kèm icon/chữ (cho người mù màu)</td></tr>
+          <tr><td>Form</td><td>Label gắn đúng ô (for/id); báo lỗi liên kết <code>aria-describedby</code>; <code>aria-invalid</code></td></tr>
+          <tr><td>Chuyển động</td><td>Tôn trọng <code>prefers-reduced-motion</code></td></tr>
+          <tr><td>Vùng chạm</td><td>Nút/link đủ lớn ≥ 44×44px, đủ khoảng cách</td></tr>
+        </tbody>
+      </table></div></div>
+    </section>
+
+    <!-- Responsive & devices -->
+    <section class="cat" id="responsive" data-static>
+      <div class="cat-head"><h3>Responsive &amp; đa thiết bị</h3><span class="en">Kiểm thử màn hình, trình duyệt, thiết bị</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Hạng mục</th><th>Cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td>Breakpoints</td><td>Mobile (~360) · tablet (~768) · desktop (~1280+) — không vỡ layout ở khoảng chuyển</td></tr>
+          <tr><td>Xoay màn</td><td>Portrait ↔ landscape hiển thị đúng</td></tr>
+          <tr><td>Zoom / phóng chữ</td><td>Zoom trình duyệt 200% &amp; tăng cỡ chữ hệ thống — không mất nội dung/không tràn</td></tr>
+          <tr><td>Không cuộn ngang</td><td>Không xuất hiện thanh cuộn ngang ngoài ý muốn</td></tr>
+          <tr><td>Touch vs chuột</td><td>Target đủ lớn; hover không phải cách tương tác duy nhất</td></tr>
+          <tr><td>Ảnh responsive</td><td><code>srcset</code>/kích thước theo màn; không méo; retina @2x</td></tr>
+          <tr><td>Ma trận trình duyệt</td><td>Chrome · Safari · Firefox · Edge; iOS &amp; Android</td></tr>
+          <tr><td>Bàn phím ảo (mobile)</td><td>Không che ô đang gõ; trang tự cuộn tới ô</td></tr>
+          <tr><td>Safe area</td><td>Notch/tai thỏ &amp; thanh điều hướng không che nội dung</td></tr>
+        </tbody>
+      </table></div></div>
+    </section>
+
+    <!-- Interaction & gestures -->
+    <section class="cat" id="interaction" data-static>
+      <div class="cat-head"><h3>Tương tác &amp; cử chỉ</h3><span class="en">Chuột, cảm ứng, bàn phím, điều hướng trình duyệt</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Hạng mục</th><th>Cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td>Hover vs touch</td><td>Không phụ thuộc hover (mobile không có); có trạng thái thay thế</td></tr>
+          <tr><td>Kéo-thả (drag &amp; drop)</td><td>Phản hồi khi kéo; huỷ được; thả sai chỗ xử lý gọn</td></tr>
+          <tr><td>Cử chỉ cảm ứng</td><td>Swipe/vuốt; nhấn giữ (long-press) → context menu; pinch-zoom nếu có</td></tr>
+          <tr><td>Phím tắt</td><td>Shortcut hoạt động &amp; không xung đột; có thể xem danh sách</td></tr>
+          <tr><td>Copy / paste / cut</td><td>Trong ô nhập; dán chuỗi dài/định dạng</td></tr>
+          <tr><td>Điều hướng trình duyệt</td><td>Back/Forward/Refresh giữ đúng trạng thái, không mất dữ liệu đang nhập</td></tr>
+          <tr><td>Deep-link / URL</td><td>Bookmark &amp; URL phản ánh trạng thái (tab, filter, trang)</td></tr>
+          <tr><td>Chống lặp</td><td>Double-click/double-submit không tạo bản ghi trùng</td></tr>
+          <tr><td>Cuộn</td><td>Giữ vị trí khi quay lại; auto-scroll tới lỗi/kết quả hợp lý</td></tr>
+        </tbody>
+      </table></div></div>
+    </section>
+
+    <!-- Error & edge states -->
+    <section class="cat" id="errors" data-static>
+      <div class="cat-head"><h3>Trạng thái lỗi &amp; biên</h3><span class="en">Page-level error &amp; edge cases</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Tình huống</th><th>Cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td>404 Không tìm thấy</td><td>Có trang riêng thân thiện; lối quay lại trang chủ/tìm kiếm</td></tr>
+          <tr><td>500 / lỗi server</td><td>Thông báo thân thiện (không lộ stack trace); nút thử lại</td></tr>
+          <tr><td>Offline / mất mạng</td><td>Báo rõ; hàng đợi/thử lại khi có mạng; không mất thao tác</td></tr>
+          <tr><td>Hết phiên (session expired)</td><td>Chuyển đăng nhập; giữ URL đích &amp; dữ liệu đang nhập nếu được</td></tr>
+          <tr><td>Không có quyền (403)</td><td>Thông báo rõ; KHÔNG lộ dữ liệu/không render nút cấm</td></tr>
+          <tr><td>Mạng chậm / timeout</td><td>Có loader; không treo vô hạn; timeout &amp; thông báo</td></tr>
+          <tr><td>Rỗng (empty)</td><td>Khác màn lỗi; có hướng dẫn/nút hành động</td></tr>
+          <tr><td>Dữ liệu 1 phần lỗi</td><td>Hiển thị phần chạy được; đánh dấu phần lỗi</td></tr>
+          <tr><td>Lỗi form từ server</td><td>Map đúng vào ô; giữ dữ liệu đã nhập</td></tr>
+        </tbody>
+      </table></div></div>
+    </section>
+
+    <!-- Security (UI) -->
+    <section class="cat" id="security" data-static>
+      <div class="cat-head"><h3>Bảo mật phía UI</h3><span class="en">Client-side security checklist</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Hạng mục</th><th>Cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td>XSS</td><td>Nhập <code>&lt;script&gt;</code> không thực thi; escape đúng khi hiển thị lại</td></tr>
+          <tr><td>Injection</td><td>Ô nhập không phá query; server luôn validate (không tin client)</td></tr>
+          <tr><td>CSRF</td><td>Form/thao tác đổi dữ liệu có token chống CSRF</td></tr>
+          <tr><td>Clickjacking</td><td>Chặn nhúng iframe (X-Frame-Options / CSP frame-ancestors)</td></tr>
+          <tr><td>Dữ liệu nhạy cảm</td><td>Che mật khẩu/thẻ; không log; không lộ trong URL/console</td></tr>
+          <tr><td>Autocomplete</td><td><code>autocomplete=off</code> cho field nhạy cảm; không lưu cache trang riêng tư</td></tr>
+          <tr><td>Phân quyền</td><td>UI ẩn nút không có quyền NHƯNG server vẫn chặn thật sự</td></tr>
+          <tr><td>Kết nối</td><td>HTTPS toàn trang; không mixed content</td></tr>
+          <tr><td>Rò rỉ thông tin</td><td>Message lỗi không tiết lộ chi tiết hệ thống/tài khoản tồn tại</td></tr>
+        </tbody>
+      </table></div></div>
+    </section>
+
+    <!-- Content & i18n -->
+    <section class="cat" id="content-i18n" data-static>
+      <div class="cat-head"><h3>Nội dung &amp; đa ngôn ngữ</h3><span class="en">Content &amp; i18n / L10n</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Hạng mục</th><th>Cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td>Microcopy</td><td>Rõ ràng, nhất quán giọng điệu; không lỗi chính tả</td></tr>
+          <tr><td>Cắt chữ (truncate)</td><td>Chữ dài cắt gọn (…) &amp; có tooltip/xem đầy đủ; không vỡ layout</td></tr>
+          <tr><td>Số nhiều (plural)</td><td>"1 mục" vs "2 mục"; đúng theo ngôn ngữ</td></tr>
+          <tr><td>Ngày / giờ</td><td>Định dạng theo vùng &amp; đúng múi giờ (local vs UTC)</td></tr>
+          <tr><td>Số / tiền tệ</td><td>Dấu phân cách nghìn/thập phân, ký hiệu tiền đúng locale</td></tr>
+          <tr><td>Dịch dài hơn</td><td>Tiếng Đức/Việt dài hơn — nút &amp; nhãn không vỡ</td></tr>
+          <tr><td>RTL</td><td>Ngôn ngữ phải-sang-trái (Ả Rập) — bố cục lật đúng</td></tr>
+          <tr><td>Ký tự</td><td>Emoji, tiếng Việt có dấu, Unicode hiển thị đúng</td></tr>
+          <tr><td>Không hard-code</td><td>Mọi chuỗi qua key dịch; không lẫn ngôn ngữ</td></tr>
+        </tbody>
+      </table></div></div>
+    </section>
+
+    <!-- Web Vitals -->
+    <section class="cat" id="vitals" data-static>
+      <div class="cat-head"><h3>Chỉ số hiệu năng (Web Vitals)</h3><span class="en">Performance metrics — đo lường trải nghiệm</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Chỉ số</th><th>Ngưỡng tốt · ý nghĩa</th></tr></thead>
+        <tbody>
+          <tr><td><strong>LCP</strong> — Largest Contentful Paint</td><td>≤ 2.5s · nội dung chính hiện nhanh</td></tr>
+          <tr><td><strong>CLS</strong> — Cumulative Layout Shift</td><td>&lt; 0.1 · không nhảy layout khi tải</td></tr>
+          <tr><td><strong>INP</strong> — Interaction to Next Paint</td><td>&lt; 200ms · phản hồi tương tác nhanh</td></tr>
+          <tr><td><strong>TTFB</strong> — Time To First Byte</td><td>Server phản hồi nhanh</td></tr>
+          <tr><td>Kích thước bundle / ảnh</td><td>Nén &amp; tối ưu; ảnh đúng độ phân giải</td></tr>
+          <tr><td>Số request</td><td>Hợp lý, gộp/loại bỏ request thừa</td></tr>
+          <tr><td>Cache tài nguyên tĩnh</td><td>JS/CSS/ảnh được cache; tải lại nhanh</td></tr>
+        </tbody>
+      </table></div></div>
+    </section>
+
+    <!-- Auth & Session -->
+    <section class="cat" id="authsession" data-static>
+      <div class="cat-head"><h3>Đăng nhập &amp; phiên</h3><span class="en">Auth &amp; session</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Luồng</th><th>Cần kiểm tra</th></tr></thead>
+        <tbody>
+          <tr><td>Đăng nhập</td><td>Sai mật khẩu; khoá sau N lần thử; hiện/ẩn mật khẩu; Caps Lock</td></tr>
+          <tr><td>Đăng ký</td><td>Validate; email đã tồn tại; đo độ mạnh mật khẩu</td></tr>
+          <tr><td>Quên / đặt lại mật khẩu</td><td>Link hết hạn; dùng 1 lần; không lộ email tồn tại</td></tr>
+          <tr><td>OTP / 2FA</td><td>Mã hết hạn; gửi lại tạo mã mới; giới hạn số lần sai</td></tr>
+          <tr><td>Ghi nhớ đăng nhập</td><td>Remember me / auto-login đúng; hết hạn hợp lý</td></tr>
+          <tr><td>Hết phiên</td><td>Cảnh báo trước; gia hạn; chuyển login giữ URL đích</td></tr>
+          <tr><td>Đăng xuất</td><td>Xoá token; back không vào lại trang cần auth</td></tr>
+          <tr><td>Đa tab</td><td>Login/logout đồng bộ giữa các tab</td></tr>
+          <tr><td>Phân quyền</td><td>Theo vai trò (role); truy cập thẳng URL cấm bị chặn</td></tr>
+        </tbody>
+      </table></div></div>
+    </section>
+
+    <!-- Bug process -->
+    <section class="cat" id="bug" data-static>
+      <div class="cat-head"><h3>Quy trình báo lỗi</h3><span class="en">Bug report &amp; severity/priority</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Mức độ (Severity)</th><th>Nghĩa · xử lý</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Blocker / Critical</strong></td><td>Chặn luồng chính, sập app, mất dữ liệu, lỗ hổng bảo mật → sửa ngay</td></tr>
+          <tr><td><strong>Major / High</strong></td><td>Tính năng chính lỗi, không có cách né (workaround)</td></tr>
+          <tr><td><strong>Minor / Medium</strong></td><td>Lỗi nhỏ, có workaround; ảnh hưởng hạn chế</td></tr>
+          <tr><td><strong>Trivial / Low</strong></td><td>Mỹ thuật, lệch pixel, chính tả</td></tr>
+          <tr><td>Priority (P1–P4)</td><td>Thứ tự <em>ưu tiên sửa</em> — khác severity (mức nghiêm trọng); P1 = sửa trước</td></tr>
+        </tbody>
+      </table></div></div>
+      <p style="font-size:12.5px;color:var(--muted);margin:12px 2px 0;line-height:1.55"><strong>Một bug report tốt gồm:</strong> tiêu đề rõ (cái gì + ở đâu) · môi trường (trình duyệt/OS/thiết bị/phiên bản) · <strong>các bước tái hiện</strong> · kết quả <strong>mong đợi vs thực tế</strong> · ảnh/video/log console · mức độ (severity) &amp; ưu tiên (priority) · tần suất (luôn/thỉnh thoảng).</p>
+    </section>
+
   </main>
 </div>
 
@@ -1038,7 +1205,7 @@ CATS.forEach(cat=>{
 });
 
 // nav links to static reference sections
-[["demo","Demo màn hình"],["landmarks","Cấu trúc trang"],["tokens","Nền tảng thiết kế"],["perf","Hiệu năng & tải dữ liệu"],["states","Trạng thái"],["cheat","Dữ liệu test mẫu"]].forEach(([id,label])=>{
+[["demo","Demo màn hình"],["landmarks","Cấu trúc trang"],["tokens","Nền tảng thiết kế"],["perf","Hiệu năng & tải dữ liệu"],["a11y","Accessibility"],["responsive","Responsive & thiết bị"],["interaction","Tương tác & cử chỉ"],["errors","Lỗi & biên"],["security","Bảo mật UI"],["content-i18n","Nội dung & i18n"],["vitals","Web Vitals"],["authsession","Đăng nhập & phiên"],["bug","Quy trình báo lỗi"],["states","Trạng thái"],["cheat","Dữ liệu test mẫu"]].forEach(([id,label])=>{
   const a = document.createElement("a");
   a.href = "#"+id;
   a.innerHTML = `<span>${label}</span><span class="n">★</span>`;
