@@ -190,9 +190,9 @@
   .pvtg.off{background:var(--line)}
   .pvtg.off::after{left:2px;right:auto}
   /* slider */
-  .pvsl{width:100%;height:4px;border-radius:2px;background:var(--line);position:relative;margin:8px 0}
-  .pvsl::before{content:"";position:absolute;left:0;top:0;height:100%;width:55%;background:var(--accent);border-radius:2px}
-  .pvsl::after{content:"";position:absolute;left:calc(55% - 8px);top:-6px;width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);box-shadow:var(--shadow)}
+  .pvsl{width:100%;height:4px;border-radius:2px;background:var(--line);position:relative;margin:8px 0;cursor:pointer;touch-action:none}
+  .pvsl::before{content:"";position:absolute;left:0;top:0;height:100%;width:var(--v,55%);background:var(--accent);border-radius:2px}
+  .pvsl::after{content:"";position:absolute;left:calc(var(--v,55%) - 8px);top:-6px;width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);box-shadow:var(--shadow)}
   /* chips / tags */
   .pvchip{display:inline-flex;align-items:center;gap:5px;font-size:11px;background:var(--accent-soft);color:var(--accent-ink);border-radius:999px;padding:3px 9px;white-space:nowrap}
   .pvchip .x{opacity:.55;font-weight:700}
@@ -273,6 +273,30 @@
   .dtoast.on{transform:none}
   @media (prefers-reduced-motion:reduce){ .ov-drawer,.dtoast{transition:none} }
 
+  /* Main menu (tab bar) */
+  .mainmenu{background:var(--surface-2); border-bottom:1px solid var(--line)}
+  .mainmenu .wrap{display:flex; gap:4px; padding:0 20px}
+  .mm-tab{font:600 13.5px var(--sans); padding:12px 16px; border:0; background:transparent; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px}
+  .mm-tab.on{color:var(--accent-ink); border-bottom-color:var(--accent)}
+  .mm-tab:hover{color:var(--ink)}
+  .view[hidden]{display:none}
+  /* TestCase view */
+  .tc-wrap{padding:24px 20px 80px}
+  .tc-head{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:6px}
+  .tc-head h2{margin:0; font-size:20px; letter-spacing:-.01em}
+  .tc-controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:16px 0}
+  .tc-controls input, .tc-controls select{font:14px var(--sans); padding:8px 11px; border:1px solid var(--line); border-radius:9px; background:var(--surface); color:var(--ink)}
+  .tc-controls input{flex:1 1 240px; min-width:180px}
+  .tc-count{font-size:12.5px; color:var(--muted); margin-left:auto; font-variant-numeric:tabular-nums}
+  .tc-table-wrap{border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow)}
+  .tc-scroll{overflow-x:auto; max-height:74vh; overflow-y:auto}
+  table.tc{width:100%; border-collapse:collapse; font-size:13px}
+  table.tc th, table.tc td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); vertical-align:top}
+  table.tc th{background:var(--surface-2); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:700; position:sticky; top:0; z-index:1}
+  table.tc tr:last-child td{border-bottom:none}
+  table.tc td.id{font-family:var(--mono); font-size:12px; color:var(--accent-ink); white-space:nowrap}
+  table.tc td.comp-c{white-space:nowrap; font-weight:600}
+
   /* States block */
   .states-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px}
   .state{
@@ -347,6 +371,14 @@
 
 <div class="nav-backdrop" id="navBackdrop"></div>
 
+<nav class="mainmenu" aria-label="Menu chính">
+  <div class="wrap">
+    <button class="mm-tab on" data-view="handbook" type="button">📘 Sổ tay</button>
+    <button class="mm-tab" data-view="testcase" type="button">✅ TestCase</button>
+  </div>
+</nav>
+
+<div id="view-handbook" class="view">
 <div class="wrap shell">
   <nav class="side" id="nav" aria-label="Danh mục">
     <div class="navtoggle" role="tablist" aria-label="Kiểu hiển thị menu">
@@ -1121,6 +1153,25 @@
 
   </main>
 </div>
+</div><!-- /view-handbook -->
+
+<div id="view-testcase" class="view" hidden>
+  <div class="wrap tc-wrap">
+    <div class="tc-head"><h2>Test case</h2><span class="tc-count" id="tcCount"></span></div>
+    <p style="color:var(--muted);font-size:13px;margin:2px 0 0;max-width:72ch">Tự sinh từ checklist "cần test" của các component — mỗi mục kiểm = 1 test case. Nhớ chạy kèm <a href="#baseline">Checklist nền</a> cho mọi component. Lọc theo component hoặc từ khoá, rồi <strong>Xuất CSV</strong> để nhập vào Excel / công cụ quản lý test.</p>
+    <div class="tc-controls">
+      <input id="tcSearch" type="search" placeholder="Tìm test case…" autocomplete="off" aria-label="Tìm test case">
+      <select id="tcComp" aria-label="Lọc theo component"><option value="">Tất cả component</option></select>
+      <button class="dbtn sec" id="tcExport" type="button">⬇︎ Xuất CSV</button>
+    </div>
+    <div class="tc-table-wrap"><div class="tc-scroll">
+      <table class="tc">
+        <thead><tr><th>ID</th><th>Component</th><th>Nhóm</th><th>Nội dung kiểm thử</th><th>API</th><th>Kết quả mong đợi</th></tr></thead>
+        <tbody id="tcBody"></tbody>
+      </table>
+    </div></div>
+  </div>
+</div>
 
 <footer>Sổ tay QC · dùng nội bộ · tên component theo chuẩn ngành để trao đổi với dev nhanh &amp; chính xác · <span id="metaFoot"></span></footer>
 
@@ -1226,20 +1277,20 @@ const PREVIEWS = {
   "Character counter":`<div class="pv col"><div class="pvf" style="height:36px">Nội dung ngắn…</div><span style="font-size:10.5px;color:var(--muted);margin-top:5px;text-align:right">24 / 100</span></div>`,
   "Text field":`<div class="pv col"><span class="pvlbl">Họ tên</span><div class="pvf focus">Nguyễn Văn A<span class="pvcaret">|</span></div></div>`,
   "Textarea":`<div class="pv col"><div class="pvf" style="height:46px;white-space:normal;line-height:1.4">Ghi chú nhiều dòng…<br>xuống dòng được<span class="pvcaret">|</span></div></div>`,
-  "Dropdown / Select":`<div class="pv col"><div class="pvf pvbetween"><span class="mut">Chọn tỉnh / thành</span><span>▾</span></div></div>`,
+  "Dropdown / Select":`<div class="pv col"><div data-sel><div class="pvf pvbetween pvsel-t" style="cursor:pointer"><span class="pvsel-v mut">Chọn tỉnh / thành</span><span>▾</span></div><div class="pvsel-list pvcard" style="display:none;margin-top:5px;padding:5px"><div class="pvsel-o pvpill" style="padding:5px 8px;cursor:pointer">Hà Nội</div><div class="pvsel-o pvpill" style="padding:5px 8px;cursor:pointer">Đà Nẵng</div><div class="pvsel-o pvpill" style="padding:5px 8px;cursor:pointer">TP. Hồ Chí Minh</div></div></div></div>`,
   "Combobox":`<div class="pv col"><div class="pvf pvbetween">Hà N<span class="pvcaret">|</span><span>▾</span></div><div class="pvcard" style="margin-top:5px;padding:5px 0"><div class="pvpill on" style="margin:0 5px">Hà Nội</div><div class="pvpill" style="padding:4px 13px">Hà Nam</div></div></div>`,
   "Multi-select":`<div class="pv col"><div class="pvf" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"><span class="pvchip">Đỏ <span class="x">×</span></span><span class="pvchip">Xanh <span class="x">×</span></span><span class="mut">+ thêm</span></div></div>`,
   "Checkbox":`<div class="pv col"><div class="pvrow"><span class="pvck on">✓</span> Nhận email</div><div class="pvrow"><span class="pvck"></span> Nhận SMS</div></div>`,
   "Radio button":`<div class="pv col"><div class="pvrow"><span class="pvrd on"></span> Nam</div><div class="pvrow"><span class="pvrd"></span> Nữ</div></div>`,
   "Switch":`<div class="pv"><span class="pvrow"><span class="pvtg"></span> Bật</span><span class="pvrow" style="margin-left:12px"><span class="pvtg off"></span> Tắt</span></div>`,
-  "Slider":`<div class="pv col"><div class="pvsl"></div><div class="pvbetween mut" style="font-size:11px"><span>0</span><span style="color:var(--accent-ink);font-weight:600">55</span><span>100</span></div></div>`,
+  "Slider":`<div class="pv col"><div class="pvsl" style="--v:55%"></div><div class="pvbetween mut" style="font-size:11px"><span>0</span><span class="pvsl-val" style="color:var(--accent-ink);font-weight:600">55</span><span>100</span></div></div>`,
   "Date picker":`<div class="pv col"><div class="pvf pvbetween">22/08/2026 <span>📅</span></div></div>`,
   "File upload":`<div class="pv col"><div class="pvf" style="border-style:dashed;text-align:center;padding:12px;color:var(--muted)">⬆︎ Kéo-thả hoặc <span style="color:var(--accent-ink);font-weight:600">chọn file</span></div></div>`,
   "Search box":`<div class="pv col"><div class="pvf pvbetween"><span>🔍 màn hình</span><span class="mut">×</span></div></div>`,
   "Number input":`<div class="pv"><span class="pvic">−</span><span class="pvf" style="width:52px;text-align:center;padding:7px 4px">10</span><span class="pvic">+</span></div>`,
   "Password field":`<div class="pv col"><span class="pvlbl">Mật khẩu</span><div class="pvf pvbetween"><span style="letter-spacing:2px">••••••••</span><span>👁</span></div></div>`,
   "OTP / PIN input":`<div class="pv"><span class="pvf" style="width:34px;text-align:center;padding:8px 0">3</span><span class="pvf" style="width:34px;text-align:center;padding:8px 0">7</span><span class="pvf focus" style="width:34px;text-align:center;padding:8px 0"><span class="pvcaret">|</span></span><span class="pvf" style="width:34px;text-align:center;padding:8px 0"></span></div>`,
-  "Rating":`<div class="pv" style="font-size:24px;letter-spacing:3px"><span style="color:var(--warn)">★★★</span><span style="color:var(--line)">★★</span></div>`,
+  "Rating":`<div class="pv" style="font-size:24px;letter-spacing:3px"><span class="pvrate" data-v="3"><span class="pvstar" data-i="1" style="cursor:pointer;color:var(--warn)">★</span><span class="pvstar" data-i="2" style="cursor:pointer;color:var(--warn)">★</span><span class="pvstar" data-i="3" style="cursor:pointer;color:var(--warn)">★</span><span class="pvstar" data-i="4" style="cursor:pointer;color:var(--line)">★</span><span class="pvstar" data-i="5" style="cursor:pointer;color:var(--line)">★</span></span></div>`,
   // ACTION
   "Button":`<div class="pv"><span class="pvb pri">Lưu thay đổi</span></div>`,
   "Primary / Secondary":`<div class="pv"><span class="pvb pri">Lưu</span><span class="pvb sec">Huỷ</span></div>`,
@@ -1275,8 +1326,8 @@ const PREVIEWS = {
   "Empty state":`<div class="pv col" style="align-items:center;gap:5px;text-align:center"><span style="font-size:22px">📭</span><span class="mut" style="font-size:11px">Chưa có dữ liệu</span><span class="pvb pri" style="padding:5px 11px">Tạo mới</span></div>`,
   // LAYOUT
   "Card":`<div class="pv"><div class="pvcard"><div class="pvimg" style="height:30px;margin-bottom:7px">🖼</div><b style="font-size:12px">Tiêu đề thẻ</b><div class="mut" style="font-size:10.5px">Mô tả ngắn nội dung.</div></div></div>`,
-  "Accordion":`<div class="pv col"><div class="pvcard" style="padding:0"><div class="pvbetween" style="padding:8px 11px;border-bottom:1px solid var(--line)"><b style="font-size:11.5px">Câu hỏi 1</b><span>▴</span></div><div class="mut" style="padding:7px 11px;font-size:10.5px">Nội dung trả lời…</div><div class="pvbetween" style="padding:8px 11px;border-top:1px solid var(--line)"><b style="font-size:11.5px">Câu hỏi 2</b><span>▾</span></div></div></div>`,
-  "Collapse / Disclosure":`<div class="pv col" style="align-items:flex-start;gap:6px"><div style="font-size:11px;color:var(--ink);line-height:1.4">Đoạn văn bản ngắn hiển thị trước…</div><span style="font-size:11.5px;color:var(--accent-ink);font-weight:600">Xem thêm ▾</span></div>`,
+  "Accordion":`<div class="pv col"><div class="pvcard" style="padding:0" data-acc><div class="pvacc-h pvbetween" style="padding:8px 11px;cursor:pointer"><b style="font-size:11.5px">Câu hỏi 1</b><span class="pvacc-i">▴</span></div><div class="pvacc-c mut" style="padding:0 11px 8px;font-size:10.5px">Nội dung trả lời câu 1…</div><div class="pvacc-h pvbetween" style="padding:8px 11px;border-top:1px solid var(--line);cursor:pointer"><b style="font-size:11.5px">Câu hỏi 2</b><span class="pvacc-i">▾</span></div><div class="pvacc-c mut" style="padding:0 11px 8px;font-size:10.5px;display:none">Nội dung trả lời câu 2…</div></div></div>`,
+  "Collapse / Disclosure":`<div class="pv col" style="align-items:flex-start;gap:6px"><div style="font-size:11px;color:var(--ink);line-height:1.4">Đoạn văn bản ngắn hiển thị trước…<span class="pvdis-more" style="display:none"> Và đây là phần nội dung mở rộng hiện ra khi bấm Xem thêm.</span></div><span class="pvdis-t" style="font-size:11.5px;color:var(--accent-ink);font-weight:600;cursor:pointer">Xem thêm ▾</span></div>`,
   "Table / Data grid":`<div class="pv col"><div class="pvcard" style="padding:0;overflow:hidden;font-size:10.5px"><div class="pvbetween" style="padding:6px 10px;background:var(--surface-2);font-weight:700"><span>Tên</span><span>Số</span></div><div class="pvbetween" style="padding:6px 10px;border-top:1px solid var(--line)"><span>An</span><span>1.200</span></div><div class="pvbetween" style="padding:6px 10px;border-top:1px solid var(--line)"><span>Bình</span><span>980</span></div></div></div>`,
   "Carousel":`<div class="pv col"><div class="pvbetween"><span class="pvic" style="width:26px;height:26px">‹</span><div class="pvimg" style="height:34px;margin:0 6px">🏞</div><span class="pvic" style="width:26px;height:26px">›</span></div><div style="display:flex;gap:5px;justify-content:center;margin-top:6px"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent)"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--line)"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--line)"></span></div></div>`,
   "Divider":`<div class="pv col" style="gap:8px;font-size:11px;color:var(--ink)"><span>Phần trên</span><span style="height:1px;background:var(--line);width:100%"></span><span>Phần dưới</span></div>`,
@@ -1638,7 +1689,7 @@ document.querySelectorAll("#demo .scene").forEach(scene=>{
   });
 });
 
-// Preview động: các preview trong thẻ component bấm tương tác được (switch/checkbox/radio/tab)
+// Preview động: các preview trong thẻ component bấm tương tác được
 document.querySelectorAll(".comp .pv").forEach(pv=>{
   pv.addEventListener("click", e=>{
     const tg = e.target.closest(".pvtg");
@@ -1649,6 +1700,107 @@ document.querySelectorAll(".comp .pv").forEach(pv=>{
     if(rd){ pv.querySelectorAll(".pvrd").forEach(r=>r.classList.remove("on")); rd.classList.add("on"); return; }
     const tab = e.target.closest(".pvtab");
     if(tab){ pv.querySelectorAll(".pvtab").forEach(t=>t.classList.remove("on")); tab.classList.add("on"); return; }
+    // Accordion (chỉ mở 1)
+    const accH = e.target.closest(".pvacc-h");
+    if(accH){
+      const acc = accH.closest("[data-acc]");
+      const content = accH.nextElementSibling;
+      const isOpen = content.style.display !== "none";
+      acc.querySelectorAll(".pvacc-c").forEach(c=> c.style.display="none");
+      acc.querySelectorAll(".pvacc-i").forEach(i=> i.textContent="▾");
+      if(!isOpen){ content.style.display=""; accH.querySelector(".pvacc-i").textContent="▴"; }
+      return;
+    }
+    // Collapse / Disclosure
+    const dis = e.target.closest(".pvdis-t");
+    if(dis){
+      const more = pv.querySelector(".pvdis-more");
+      const open = more.style.display !== "none";
+      more.style.display = open ? "none" : "";
+      dis.textContent = open ? "Xem thêm ▾" : "Thu gọn ▴";
+      return;
+    }
+    // Dropdown / Select
+    const selT = e.target.closest(".pvsel-t");
+    if(selT){ const list = selT.parentElement.querySelector(".pvsel-list"); list.style.display = list.style.display==="none" ? "" : "none"; return; }
+    const opt = e.target.closest(".pvsel-o");
+    if(opt){ const sel = opt.closest("[data-sel]"); const v = sel.querySelector(".pvsel-v"); v.textContent = opt.textContent; v.classList.remove("mut"); sel.querySelector(".pvsel-list").style.display="none"; return; }
+    // Rating (bấm chọn sao)
+    const star = e.target.closest(".pvstar");
+    if(star){ const rate = star.closest(".pvrate"); const v = +star.dataset.i; rate.dataset.v = v;
+      rate.querySelectorAll(".pvstar").forEach(s=> s.style.color = (+s.dataset.i<=v) ? "var(--warn)" : "var(--line)"); return; }
   });
+});
+// Slider: kéo/bấm để đổi giá trị
+document.querySelectorAll(".comp .pv .pvsl").forEach(sl=>{
+  const val = sl.parentElement.querySelector(".pvsl-val");
+  const set = cx=>{ const r=sl.getBoundingClientRect(); let p=Math.round((cx-r.left)/r.width*100); p=Math.max(0,Math.min(100,p)); sl.style.setProperty("--v",p+"%"); if(val) val.textContent=p; };
+  let down=false;
+  sl.addEventListener("pointerdown", e=>{ down=true; try{sl.setPointerCapture(e.pointerId);}catch(_){} set(e.clientX); });
+  sl.addEventListener("pointermove", e=>{ if(down) set(e.clientX); });
+  sl.addEventListener("pointerup", ()=> down=false);
+});
+// Rating: xem trước khi rê chuột
+document.querySelectorAll(".comp .pv .pvrate").forEach(rate=>{
+  const paint = v => rate.querySelectorAll(".pvstar").forEach(s=> s.style.color=(+s.dataset.i<=v)?"var(--warn)":"var(--line)");
+  rate.querySelectorAll(".pvstar").forEach(star=> star.addEventListener("mouseenter", ()=> paint(+star.dataset.i)));
+  rate.addEventListener("mouseleave", ()=> paint(+rate.dataset.v));
+});
+
+// ===== Thanh menu: chuyển view Sổ tay / TestCase =====
+const mmTabs = document.querySelectorAll(".mm-tab");
+const views = { handbook: document.getElementById("view-handbook"), testcase: document.getElementById("view-testcase") };
+mmTabs.forEach(b=> b.addEventListener("click", ()=>{
+  const v = b.dataset.view;
+  mmTabs.forEach(x=> x.classList.toggle("on", x===b));
+  Object.entries(views).forEach(([k,el])=> el.hidden = k!==v);
+  scrollTo({top:0});
+}));
+
+// ===== TestCase: sinh từ checklist component =====
+const tcCls = m => ({GET:"get",POST:"post",PUT:"put",PATCH:"put",DELETE:"del"}[m] || "none");
+const TESTCASES = [];
+let tcn = 0;
+CATS.forEach(cat => COMPS.filter(x=>x.c===cat.id).forEach(x=>{
+  const api = (API[x.n] || ["—"])[0];
+  x.t.forEach(item=>{
+    tcn++;
+    TESTCASES.push({ id:"TC-"+String(tcn).padStart(3,"0"), comp:x.n, cat:cat.vi, text:item, api });
+  });
+}));
+const tcCompSel = document.getElementById("tcComp");
+[...new Set(TESTCASES.map(t=>t.comp))].forEach(n=>{ const o=document.createElement("option"); o.value=n; o.textContent=n; tcCompSel.appendChild(o); });
+const tcBody = document.getElementById("tcBody");
+const tcCount = document.getElementById("tcCount");
+const tcSearch = document.getElementById("tcSearch");
+const EXPECT = "Đúng như mô tả · không lỗi";
+const escHtml = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const tcApiChips = api => api.split(",").map(m=>m.trim()).filter(Boolean).map(m=>`<span class="apim ${tcCls(m)}">${m}</span>`).join(" ");
+function tcFiltered(){
+  const term = tcSearch.value.trim().toLowerCase();
+  const comp = tcCompSel.value;
+  return TESTCASES.filter(t => (!comp || t.comp===comp) && (!term || (t.id+" "+t.comp+" "+t.cat+" "+t.text).toLowerCase().includes(term)));
+}
+function renderTC(){
+  const rows = tcFiltered();
+  tcBody.innerHTML = rows.map(t=>`<tr><td class="id">${t.id}</td><td class="comp-c">${escHtml(t.comp)}</td><td>${escHtml(t.cat)}</td><td>${escHtml(t.text)}</td><td>${tcApiChips(t.api)}</td><td style="color:var(--muted)">${EXPECT}</td></tr>`).join("");
+  tcCount.textContent = `${rows.length} / ${TESTCASES.length} test case`;
+}
+tcSearch.addEventListener("input", renderTC);
+tcCompSel.addEventListener("change", renderTC);
+renderTC();
+document.getElementById("tcExport").addEventListener("click", ()=>{
+  const rows = tcFiltered();
+  const head = ["ID","Component","Nhóm","Nội dung kiểm thử","API","Kết quả mong đợi","Trạng thái","Ghi chú"];
+  const cell = s => '"' + String(s).replace(/"/g,'""') + '"';
+  const csv = [head.map(cell).join(",")]
+    .concat(rows.map(t => [t.id,t.comp,t.cat,t.text,t.api,EXPECT,"",""].map(cell).join(",")))
+    .join("\r\n");
+  const blob = new Blob(["﻿"+csv], {type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "testcases.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
 });
 </script>
