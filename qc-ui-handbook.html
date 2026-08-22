@@ -293,6 +293,19 @@
 
   footer{border-top:1px solid var(--line); padding:26px 0; color:var(--muted); font-size:12.5px; text-align:center}
 
+  /* Back to top button */
+  .to-top{
+    position:fixed; right:20px; bottom:20px; width:44px; height:44px; border-radius:50%;
+    background:var(--accent); color:#fff; border:0; font-size:20px; cursor:pointer;
+    box-shadow:var(--shadow); display:grid; place-items:center; z-index:60;
+    opacity:0; visibility:hidden; transform:translateY(10px);
+    transition:opacity .2s, transform .2s, visibility .2s;
+  }
+  .to-top.show{opacity:1; visibility:visible; transform:none}
+  .to-top:hover{filter:brightness(1.06)}
+  .to-top:focus-visible{outline:2px solid var(--accent-ink); outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){ .to-top{transition:none} }
+
   mark{background:var(--accent-soft); color:var(--ink); border-radius:3px; padding:0 1px}
 
   @media (max-width:860px){
@@ -695,6 +708,8 @@
 
 <footer>Sổ tay UI cho QC · dùng nội bộ · tên component theo chuẩn ngành để trao đổi với dev nhanh &amp; chính xác</footer>
 
+<button class="to-top" id="toTop" type="button" title="Lên đầu trang" aria-label="Lên đầu trang">↑</button>
+
 <script>
 const CATS = [
   {id:"form", vi:"Ô nhập liệu", en:"Form controls"},
@@ -747,14 +762,16 @@ const COMPS = [
   {c:"nav", n:"Tab", vn:"Thẻ chuyển mục", d:"Chuyển qua lại giữa các nhóm nội dung.", t:["Chuyển tab giữ dữ liệu đã nhập","Tab mặc định đúng","Deep-link / nhớ tab khi F5","Tràn khi nhiều tab"]},
   {c:"nav", n:"Pagination", vn:"Phân trang", d:"Chia dữ liệu thành nhiều trang.", t:["Trang đầu/cuối disable đúng","Nhảy tới trang bất kỳ","Đổi số item mỗi trang","Khi 0 item / chỉ 1 trang"]},
   {c:"nav", n:"Wizard / Stepper", vn:"Quy trình nhiều bước", d:"Chia luồng dài thành các bước tuần tự.", t:["Next / Back giữ dữ liệu","Validate từng bước","Không nhảy cóc bước chưa xong","Thanh tiến trình đúng bước"]},
+  {c:"nav", n:"Back to top", vn:"Nút lên đầu trang", d:"Nút nổi hiện khi cuộn xuống, bấm để cuộn về đầu trang (còn gọi Scroll to top).", t:["Chỉ hiện sau khi cuộn xuống 1 ngưỡng","Ẩn khi đang ở đầu trang","Cuộn mượt về đầu (tôn trọng reduced-motion)","Không che nội dung/nút khác ở góc","Bàn phím focus được & Enter kích hoạt"]},
 
   // FEEDBACK
   {c:"feedback", n:"Tooltip", vn:"Chú thích nhỏ", d:"Gợi ý ngắn khi rê chuột / focus.", t:["Hiện khi hover & focus bàn phím","Tự ẩn khi rời","Không che nội dung / không tràn màn hình","Mobile: cách xem thay thế"]},
   {c:"feedback", n:"Toast / Snackbar", vn:"Thông báo tạm", d:"Thông báo nhỏ hiện rồi tự tắt.", t:["Tự tắt sau X giây","Nhiều toast xếp chồng gọn","Nút đóng thủ công","Không chặn thao tác đang làm"]},
   {c:"feedback", n:"Alert / Banner", vn:"Dải cảnh báo", d:"Dải thông báo theo mức độ (info/warn/error).", t:["Đúng màu theo loại","Đóng được (nếu cho)","Nội dung lỗi rõ: sai gì + sửa sao"]},
-  {c:"feedback", n:"Modal / Dialog", vn:"Hộp thoại", d:"Pop-up chặn nền, buộc xử lý trước khi tiếp.", t:["Mở / đóng đúng","Đóng bằng ESC & click nền (nếu cho)","Focus trap: Tab không thoát ra ngoài","Khoá cuộn nền","Nút Xác nhận / Huỷ hoạt động đúng"]},
+  {c:"feedback", n:"Modal / Dialog", vn:"Hộp thoại", d:"Pop-up chặn nền, buộc xử lý trước khi tiếp (gồm cả hộp xác nhận / cảnh báo — alert dialog, role \"alertdialog\").", t:["Mở / đóng đúng","Đóng bằng ESC & click nền (nếu cho)","Focus trap: Tab không thoát ra ngoài","Khoá cuộn nền","Nút Xác nhận / Huỷ hoạt động đúng","Hộp xác nhận: focus mặc định an toàn (không phải nút Xoá)"]},
   {c:"feedback", n:"Popover", vn:"Bảng bật nhỏ", d:"Bảng nhỏ nội dung bật ra khi bấm.", t:["Mở / đóng đúng","Vị trí đúng, không tràn màn hình","Click ra ngoài đóng"]},
   {c:"feedback", n:"Drawer / Side sheet", vn:"Ngăn trượt cạnh", d:"Panel trượt ra từ cạnh màn hình (khác Modal ở giữa, khác Sidebar cố định).", t:["Trượt ra/vào đúng cạnh","Đóng bằng ESC & click nền","Khoá cuộn nền (nếu là overlay)","Focus trap khi mở","Cuộn nội dung bên trong ngăn","Responsive: full màn trên mobile"]},
+  {c:"feedback", n:"Bottom sheet", vn:"Ngăn trượt đáy", d:"Pop-up trượt lên từ đáy màn (thường trên mobile), có thể kéo để đóng.", t:["Trượt lên / xuống đúng","Kéo xuống để đóng (swipe)","Đóng bằng nút / chạm nền","Khoá cuộn nền khi mở","Nhiều nấc chiều cao (snap points) nếu có","Full-width trên mobile"]},
   {c:"feedback", n:"Badge", vn:"Chấm/số thông báo", d:"Số hoặc chấm nhỏ gắn trên icon.", t:["Số lớn hiển thị 99+","Số 0 → ẩn (thường vậy)","Cập nhật realtime đúng"]},
   {c:"feedback", n:"Chip", vn:"Chip tương tác", d:"Thẻ nhỏ tương tác được: lọc, chọn, hoặc xoá bằng ×.", t:["Xoá bằng nút ×","Chọn / bỏ chọn (filter chip)","Tràn nhiều chip xuống dòng","Chip disabled","Bàn phím: xoá bằng Delete / Backspace"]},
   {c:"feedback", n:"Tag", vn:"Nhãn", d:"Nhãn chỉ đọc để phân loại / thể hiện trạng thái (không tương tác).", t:["Đúng màu theo loại / trạng thái","Chữ dài cắt gọn (truncate) hoặc xuống dòng","Không bấm được (khác Chip)","Tương phản đủ (a11y) ở light & dark"]},
@@ -775,6 +792,7 @@ const COMPS = [
 
   // MEDIA
   {c:"media", n:"Image", vn:"Hình ảnh", d:"Ảnh hiển thị trong trang.", t:["Có alt text mô tả","Ảnh lỗi (broken) → xử lý gọn","Lazy-load khi cuộn","Không méo tỉ lệ","Responsive theo màn"]},
+  {c:"media", n:"Lightbox", vn:"Phóng to ảnh", d:"Pop-up nền tối phóng to ảnh/media, có next/prev.", t:["Mở đúng ảnh được bấm","Next / Prev & phím mũi tên","Đóng bằng ESC / bấm nền / nút ×","Zoom & vuốt (nếu có)","Ảnh lớn có trạng thái tải","Không cuộn nền khi mở"]},
   {c:"media", n:"Avatar", vn:"Ảnh đại diện", d:"Ảnh/chữ cái đại diện người dùng.", t:["Ảnh lỗi → fallback chữ cái","Bo tròn đúng","Nhiều kích thước","Ảnh nhóm xếp chồng"]},
   {c:"media", n:"Video player", vn:"Trình phát video", d:"Phát video có điều khiển.", t:["Play / pause","Tua & thanh thời gian","Âm lượng / tắt tiếng","Toàn màn hình","Phụ đề (nếu có)","Chính sách autoplay"]},
 ];
@@ -820,6 +838,7 @@ const PREVIEWS = {
   "Tab":`<div class="pv col"><div class="pvtabs"><span class="pvtab on">Thông tin</span><span class="pvtab">Lịch sử</span><span class="pvtab">Bình luận</span></div></div>`,
   "Pagination":`<div class="pv" style="font-size:12px;gap:4px"><span class="pvic" style="width:28px;height:28px">‹</span><span class="pvb pri" style="padding:5px 10px">1</span><span class="pvic" style="width:28px;height:28px">2</span><span class="pvic" style="width:28px;height:28px">3</span><span class="pvic" style="width:28px;height:28px">›</span></div>`,
   "Wizard / Stepper":`<div class="pv" style="font-size:11px;gap:6px"><span class="pvav" style="width:24px;height:24px;font-size:11px">1</span><span class="mut">──</span><span class="pvav" style="width:24px;height:24px;font-size:11px">2</span><span class="mut">──</span><span class="pvic" style="width:24px;height:24px;border-radius:50%">3</span></div>`,
+  "Back to top":`<div class="pv" style="justify-content:flex-end"><span class="pvb pri" style="width:40px;height:40px;border-radius:50%;padding:0;display:grid;place-items:center;font-size:18px;box-shadow:var(--shadow)">↑</span></div>`,
   // FEEDBACK
   "Tooltip":`<div class="pv col" style="align-items:center;gap:5px"><span class="pvtoast" style="font-size:10.5px;padding:5px 9px">Lưu bản nháp</span><span style="font-size:9px;color:var(--ink)">▾</span><span class="pvic">💾</span></div>`,
   "Toast / Snackbar":`<div class="pv"><span class="pvtoast">✓ Đã lưu thành công</span></div>`,
@@ -827,6 +846,7 @@ const PREVIEWS = {
   "Modal / Dialog":`<div class="pv" style="background:color-mix(in srgb,#000 28%,var(--surface-2))"><div class="pvcard" style="width:80%"><b style="font-size:12px">Xoá mục này?</b><div class="mut" style="font-size:10.5px;margin:3px 0 8px">Không thể hoàn tác.</div><div style="display:flex;gap:6px;justify-content:flex-end"><span class="pvb sec" style="padding:5px 10px">Huỷ</span><span class="pvb pri" style="padding:5px 10px;background:var(--fail)">Xoá</span></div></div></div>`,
   "Popover":`<div class="pv col" style="align-items:flex-start"><span class="pvb sec" style="padding:5px 10px">Bộ lọc ▾</span><div class="pvcard" style="margin-top:5px;width:70%"><div class="pvrow" style="font-size:11px"><span class="pvck on">✓</span> Còn hàng</div></div></div>`,
   "Drawer / Side sheet":`<div class="pv" style="justify-content:flex-end;background:color-mix(in srgb,#000 22%,var(--surface-2));padding:0;min-height:64px"><div style="width:56%;background:var(--surface);border-left:1px solid var(--line);align-self:stretch;padding:10px;font-size:11px"><b style="font-size:11.5px">Bộ lọc</b><div class="mut" style="font-size:10.5px;margin-top:4px">Nội dung ngăn trượt…</div></div></div>`,
+  "Bottom sheet":`<div class="pv" style="align-items:flex-end;padding:0;background:color-mix(in srgb,#000 22%,var(--surface-2));min-height:64px"><div style="width:100%;background:var(--surface);border-top:1px solid var(--line);border-radius:12px 12px 0 0;padding:9px 12px 12px"><div style="width:34px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 8px"></div><b style="font-size:11.5px">Tuỳ chọn</b><div class="mut" style="font-size:10.5px;margin-top:3px">Nội dung ngăn đáy…</div></div></div>`,
   "Badge":`<div class="pv"><span class="pvbadge">🔔<span class="b">9+</span></span></div>`,
   "Chip":`<div class="pv"><span class="pvchip">Đang mở <span class="x">×</span></span><span class="pvchip">Đã đóng <span class="x">×</span></span></div>`,
   "Tag":`<div class="pv"><span class="pvchip" style="background:color-mix(in srgb,var(--pass) 15%,transparent);color:var(--pass)">Hoạt động</span><span class="pvchip" style="background:color-mix(in srgb,var(--warn) 15%,transparent);color:var(--warn)">Chờ</span><span class="pvchip" style="background:color-mix(in srgb,var(--fail) 15%,transparent);color:var(--fail)">Lỗi</span></div>`,
@@ -845,6 +865,7 @@ const PREVIEWS = {
   "Toolbar":`<div class="pv col"><div class="pvcard pvbetween" style="padding:6px 8px"><span style="display:flex;gap:5px"><span class="pvic" style="width:26px;height:26px;background:var(--accent-soft);color:var(--accent-ink);border-color:transparent">✎</span><span class="pvic" style="width:26px;height:26px">T</span><span class="pvic" style="width:26px;height:26px">▧</span></span><span class="pvic" style="width:26px;height:26px">»</span></div></div>`,
   // MEDIA
   "Image":`<div class="pv"><span class="pvimg" style="height:52px">🖼</span></div>`,
+  "Lightbox":`<div class="pv" style="background:#0e141a;padding:0;min-height:64px;position:relative"><span style="position:absolute;top:6px;right:8px;color:#fff;font-size:14px">×</span><div class="mrow" style="width:100%;justify-content:space-between;padding:0 8px"><span style="color:#fff;opacity:.8">‹</span><span style="width:80px;height:46px;background:#1c2731;border-radius:6px;display:grid;place-items:center;font-size:22px">🖼</span><span style="color:#fff;opacity:.8">›</span></div></div>`,
   "Avatar":`<div class="pv"><span class="pvav">AN</span><span class="pvav" style="margin-left:-12px;background:var(--warn)">BT</span><span class="pvav" style="margin-left:-12px;background:var(--muted)">+3</span></div>`,
   "Video player":`<div class="pv col"><div class="pvimg" style="height:52px;position:relative;background:#0e141a;color:#fff">▶︎<span style="position:absolute;left:0;right:0;bottom:0;height:12px;background:rgba(255,255,255,.15);display:flex;align-items:center;padding:0 6px"><span style="height:3px;flex:1;background:var(--accent);border-radius:2px"></span></span></div></div>`,
 };
@@ -891,6 +912,7 @@ const API = {
   "Tab":["GET","Có thể lazy-load nội dung tab (GET). Test chỉ gọi khi mở tab, không gọi lại khi quay lại."],
   "Pagination":["GET","GET ?page=&size=. Test trang ngoài khoảng, tổng số item, size quá lớn."],
   "Wizard / Stepper":["POST,PUT","Lưu từng bước (PUT) hoặc submit ở bước cuối (POST). Test lưu nháp, gián đoạn giữa chừng."],
+  "Back to top":["—","Chỉ cuộn trong trang — không gọi API."],
   // FEEDBACK
   "Tooltip":["—","Chỉ hiển thị, không gọi API."],
   "Toast / Snackbar":["—","Là kết quả của API trước đó. Test hiện đúng message thành công/lỗi từ response."],
@@ -898,6 +920,7 @@ const API = {
   "Modal / Dialog":["POST,PUT,DELETE","Chỉ khi bấm Xác nhận mới gọi API (vd Xoá=DELETE). Test bấm Huỷ thì KHÔNG gọi."],
   "Popover":["GET","Có thể lazy-load nội dung khi mở (GET). Test chỉ tải khi bật."],
   "Drawer / Side sheet":["GET","Nội dung thường lazy-load khi mở (GET). Test chỉ tải khi mở; hành động bên trong theo nút tương ứng."],
+  "Bottom sheet":["GET","Nội dung có thể lazy-load khi mở (GET). Hành động bên trong theo nút tương ứng."],
   "Badge":["GET","Số lấy từ API (đếm thông báo…). Test polling/realtime cập nhật đúng, số lớn 99+."],
   "Chip":["GET,DELETE","Filter (GET ?tag=) hoặc xoá (DELETE). Test bấm × gọi đúng bản ghi, chọn/bỏ chọn cập nhật kết quả."],
   "Tag":["—","Chỉ hiển thị nhãn/trạng thái — không gọi API (dữ liệu trạng thái đến từ GET của phần chứa nó)."],
@@ -916,6 +939,7 @@ const API = {
   "Toolbar":["—","Bản thân thanh chỉ chứa nút — không gọi API; từng nút mới gọi (xem Button / Icon button). Test đúng tool active & dồn overflow khi hẹp."],
   // MEDIA
   "Image":["GET","Tải ảnh (GET file/CDN). Test 404 ảnh, lazy-load, ảnh nặng/độ phân giải."],
+  "Lightbox":["GET","Tải ảnh độ phân giải cao khi mở (GET). Test lazy-load, ảnh lỗi, prefetch ảnh kế."],
   "Avatar":["GET","Tải ảnh user (GET); lỗi → fallback chữ cái. Test 404, cache, ảnh riêng tư cần quyền."],
   "Video player":["GET","Stream video (GET có Range). Test tua (range request), lỗi mạng, phụ đề, autoplay."],
 };
@@ -1035,6 +1059,14 @@ tbtn.addEventListener("click", ()=>{
   const cur = root.getAttribute("data-theme");
   const isDark = cur ? cur==="dark" : matchMedia("(prefers-color-scheme:dark)").matches;
   root.setAttribute("data-theme", isDark ? "light" : "dark");
+});
+
+// Nút "Lên đầu trang" (Back to top)
+const toTop = document.getElementById("toTop");
+addEventListener("scroll", ()=>{ toTop.classList.toggle("show", scrollY > 320); }, {passive:true});
+toTop.addEventListener("click", ()=>{
+  const smooth = !matchMedia("(prefers-reduced-motion:reduce)").matches;
+  scrollTo({top:0, behavior: smooth ? "smooth" : "auto"});
 });
 
 // ===== Demo màn hình =====
