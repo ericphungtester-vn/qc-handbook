@@ -1,4 +1,4 @@
-<title>Sổ tay UI cho QC</title>
+<title>Sổ tay QC</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   :root{
@@ -72,6 +72,12 @@
     display:grid;place-items:center;
   }
   .theme-btn:hover{border-color:var(--accent)}
+  .nav-toggle-btn{display:none; border:1px solid var(--line); background:var(--surface); color:var(--ink); width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:18px; align-items:center;justify-content:center}
+  .nav-toggle-btn:hover{border-color:var(--accent)}
+  .nav-backdrop{display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:99}
+  .nav-backdrop.show{display:block}
+  .intro .meta{margin:14px 0 0; font-size:12px; color:var(--muted)}
+  .comp .pv .pvtg, .comp .pv .pvck, .comp .pv .pvrd, .comp .pv .pvtab{cursor:pointer}
 
   /* Layout */
   .shell{display:grid; grid-template-columns:230px 1fr; gap:34px; padding:28px 0 80px}
@@ -310,25 +316,36 @@
 
   @media (max-width:860px){
     .shell{grid-template-columns:1fr; gap:0}
-    nav.side{display:none}
+    .nav-toggle-btn{display:inline-flex}
+    nav.side{
+      position:fixed; left:0; top:0; bottom:0; width:min(280px,82vw);
+      max-height:none; overflow-y:auto; background:var(--surface); z-index:100;
+      transform:translateX(-100%); transition:transform .22s;
+      box-shadow:var(--shadow); padding:16px 14px; margin:0;
+      border-right:1px solid var(--line);
+    }
+    nav.side.open{transform:none}
   }
-  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto} nav.side{transition:none}}
 </style>
 
 <header class="top">
   <div class="wrap">
+    <button class="nav-toggle-btn" id="navToggle" type="button" aria-label="Mở menu" aria-expanded="false">☰</button>
     <div class="brand">
-      <h1><span class="mark">✓</span> Sổ tay UI cho QC</h1>
-      <p>Tên component chuẩn &amp; checklist "cần test" cho từng thành phần</p>
+      <h1><span class="mark">✓</span> Sổ tay QC</h1>
+      <p>Component, kiểm thử &amp; quy trình làm web/mobile — tra cứu cho QC</p>
     </div>
     <div class="search">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="q" type="search" placeholder="Tìm component… (vd: dropdown, modal, ngày)" autocomplete="off" aria-label="Tìm component">
+      <input id="q" type="search" placeholder="Tìm… (component, a11y, SEO, API…)" autocomplete="off" aria-label="Tìm kiếm">
     </div>
     <span class="count" id="count"></span>
     <button class="theme-btn" id="theme" title="Đổi giao diện sáng/tối" aria-label="Đổi giao diện">◐</button>
   </div>
 </header>
+
+<div class="nav-backdrop" id="navBackdrop"></div>
 
 <div class="wrap shell">
   <nav class="side" id="nav" aria-label="Danh mục">
@@ -351,6 +368,7 @@
         <span><i class="dot" style="background:var(--warn)"></i> Cảnh báo / biên</span>
         <span><i class="dot" style="background:var(--fail)"></i> Fail / lỗi</span>
       </div>
+      <p class="meta" id="metaLine"></p>
     </div>
 
     <!-- Demo màn hình: vị trí thường gặp + tương tác (4 màn) -->
@@ -627,7 +645,7 @@
           </div>
           <div class="ann" data-name="Footer (chân trang)" style="background:var(--surface-2);border-top:1px solid var(--line)">
             <div class="mrow" style="gap:24px;flex-wrap:wrap;padding:20px 18px;font-size:12px;color:var(--muted);align-items:flex-start">
-              <div style="flex:1 1 140px"><b style="color:var(--accent-ink)">◆ Acme</b><div style="margin-top:6px">Sổ tay UI cho QC.</div></div>
+              <div style="flex:1 1 140px"><b style="color:var(--accent-ink)">◆ Acme</b><div style="margin-top:6px">Sổ tay QC.</div></div>
               <div style="flex:1 1 100px"><b style="color:var(--ink);font-size:12px">Sản phẩm</b><div style="margin-top:6px;line-height:1.9">Tính năng<br>Bảng giá</div></div>
               <div style="flex:1 1 100px"><b style="color:var(--ink);font-size:12px">Công ty</b><div style="margin-top:6px;line-height:1.9">Giới thiệu<br>Liên hệ</div></div>
               <span class="ann mrow" data-name="Social links (liên kết mạng xã hội)" style="gap:8px"><span style="width:30px;height:30px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center">f</span><span style="width:30px;height:30px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center">in</span></span>
@@ -1104,7 +1122,7 @@
   </main>
 </div>
 
-<footer>Sổ tay UI cho QC · dùng nội bộ · tên component theo chuẩn ngành để trao đổi với dev nhanh &amp; chính xác</footer>
+<footer>Sổ tay QC · dùng nội bộ · tên component theo chuẩn ngành để trao đổi với dev nhanh &amp; chính xác · <span id="metaFoot"></span></footer>
 
 <button class="to-top" id="toTop" type="button" title="Lên đầu trang" aria-label="Lên đầu trang">↑</button>
 
@@ -1460,6 +1478,11 @@ const total = COMPS.length;
 function updateCount(v){ countEl.textContent = v===total ? `${total} component` : `${v}/${total} khớp`; }
 updateCount(total);
 
+// cache text của các mục tham chiếu tĩnh để tìm kiếm (bỏ demo)
+const refSecs = [...document.querySelectorAll("section.cat[data-static]")]
+  .filter(s => s.id !== "demo")
+  .map(s => ({el:s, txt:(s.textContent||"").toLowerCase()}));
+const demoSec = document.getElementById("demo");
 q.addEventListener("input", ()=>{
   const term = q.value.trim().toLowerCase();
   let visible = 0;
@@ -1472,8 +1495,16 @@ q.addEventListener("input", ()=>{
     });
     sec.style.display = any ? "" : "none";
   });
+  // mục tham chiếu: hiện nếu nội dung khớp
+  let refHits = 0;
+  refSecs.forEach(({el,txt})=>{
+    const hit = !term || txt.includes(term);
+    el.style.display = hit ? "" : "none";
+    if(term && hit) refHits++;
+  });
+  if(demoSec) demoSec.style.display = term ? "none" : "";  // ẩn demo khi đang tìm
   updateCount(visible);
-  noresult.classList.toggle("show", visible===0);
+  noresult.classList.toggle("show", term!=="" && visible===0 && refHits===0);
 });
 
 // Theme toggle
@@ -1484,6 +1515,28 @@ tbtn.addEventListener("click", ()=>{
   const isDark = cur ? cur==="dark" : matchMedia("(prefers-color-scheme:dark)").matches;
   root.setAttribute("data-theme", isDark ? "light" : "dark");
 });
+
+// Menu di động (drawer trượt)
+const navToggle = document.getElementById("navToggle");
+const navSide = document.getElementById("nav");
+const navBackdrop = document.getElementById("navBackdrop");
+function openNav(o){
+  navSide.classList.toggle("open", o);
+  navBackdrop.classList.toggle("show", o);
+  navToggle.setAttribute("aria-expanded", o);
+}
+navToggle.addEventListener("click", ()=> openNav(!navSide.classList.contains("open")));
+navBackdrop.addEventListener("click", ()=> openNav(false));
+navSide.addEventListener("click", e=>{ if(e.target.closest("a")) openNav(false); });
+addEventListener("keydown", e=>{ if(e.key==="Escape") openNav(false); });
+
+// Meta (phiên bản / cập nhật / số component)
+const META = { version: "1.0", updated: "2026-08-23" };
+const metaTxt = `${COMPS.length} component · Phiên bản ${META.version} · Cập nhật ${META.updated}`;
+const metaLine = document.getElementById("metaLine");
+if(metaLine) metaLine.textContent = metaTxt;
+const metaFoot = document.getElementById("metaFoot");
+if(metaFoot) metaFoot.textContent = metaTxt;
 
 // Nút "Lên đầu trang" (Back to top)
 const toTop = document.getElementById("toTop");
@@ -1515,17 +1568,29 @@ function showTip(a){
   annTip.style.top = (r.top - 8) + "px";
   annTip.hidden = false;
 }
+// Cho phép Tab tới & screen reader đọc tên (a11y)
+document.querySelectorAll("#demo .ann").forEach(a=>{
+  a.tabIndex = 0;
+  if(a.dataset.name) a.setAttribute("aria-label", a.dataset.name);
+});
+function highlight(a){
+  if(a === curAnn) return;
+  if(curAnn) curAnn.classList.remove("hi");
+  curAnn = a;
+  if(a){ a.classList.add("hi"); showTip(a); } else { annTip.hidden = true; }
+}
+function clearHi(){ if(curAnn){ curAnn.classList.remove("hi"); curAnn = null; } annTip.hidden = true; }
 document.querySelectorAll("#demo .mock").forEach(mock=>{
-  mock.addEventListener("mouseover", e=>{
-    const a = e.target.closest(".ann");
-    if(a === curAnn) return;
-    if(curAnn) curAnn.classList.remove("hi");
-    curAnn = a;
-    if(a){ a.classList.add("hi"); showTip(a); } else { annTip.hidden = true; }
-  });
-  mock.addEventListener("mouseleave", ()=>{
-    if(curAnn){ curAnn.classList.remove("hi"); curAnn = null; }
-    annTip.hidden = true;
+  mock.addEventListener("mouseover", e=> highlight(e.target.closest(".ann")));
+  mock.addEventListener("mouseleave", clearHi);
+  // bàn phím: hiện tooltip khi focus, kích hoạt bằng Enter/Space
+  mock.addEventListener("focusin", e=>{ const a=e.target.closest(".ann"); if(a) highlight(a); });
+  mock.addEventListener("focusout", clearHi);
+  mock.addEventListener("keydown", e=>{
+    if(e.key==="Enter" || e.key===" "){
+      const a=e.target.closest(".ann");
+      if(a){ e.preventDefault(); a.click(); }
+    }
   });
 });
 
@@ -1570,6 +1635,20 @@ document.querySelectorAll("#demo .scene").forEach(scene=>{
     if(menu && !e.target.closest("[data-open='menu']") && !e.target.closest("[data-menu]")) menu.classList.remove("on");
     if(popover && !e.target.closest("[data-open='popover']") && !e.target.closest("[data-popover]")) popover.classList.remove("on");
     if(ctxMenu && !e.target.closest("[data-ctxmenu]")) ctxMenu.classList.remove("on");
+  });
+});
+
+// Preview động: các preview trong thẻ component bấm tương tác được (switch/checkbox/radio/tab)
+document.querySelectorAll(".comp .pv").forEach(pv=>{
+  pv.addEventListener("click", e=>{
+    const tg = e.target.closest(".pvtg");
+    if(tg){ tg.classList.toggle("off"); return; }
+    const ck = e.target.closest(".pvck");
+    if(ck){ ck.classList.toggle("on"); ck.textContent = ck.classList.contains("on") ? "✓" : ""; return; }
+    const rd = e.target.closest(".pvrd");
+    if(rd){ pv.querySelectorAll(".pvrd").forEach(r=>r.classList.remove("on")); rd.classList.add("on"); return; }
+    const tab = e.target.closest(".pvtab");
+    if(tab){ pv.querySelectorAll(".pvtab").forEach(t=>t.classList.remove("on")); tab.classList.add("on"); return; }
   });
 });
 </script>
