@@ -75,7 +75,7 @@
 
   /* Layout */
   .shell{display:grid; grid-template-columns:230px 1fr; gap:34px; padding:28px 0 80px}
-  nav.side{position:sticky; top:82px; align-self:start; max-height:calc(100vh - 100px); overflow-y:auto; overscroll-behavior:contain; padding-right:4px}
+  nav.side{position:sticky; top:82px; align-self:start; max-height:calc(100vh - 100px); overflow-y:auto; padding-right:4px}
   nav.side .lbl{
     font-size:11px; text-transform:uppercase; letter-spacing:.09em;
     color:var(--muted); font-weight:700; margin:0 0 8px 8px;
@@ -336,7 +336,7 @@
       <button id="tgGroups" type="button" class="on" aria-selected="true">Nhóm</button>
       <button id="tgComps" type="button" aria-selected="false">Component</button>
     </div>
-    <div id="navGroups"><p class="lbl">Component</p></div>
+    <div id="navGroups"></div>
     <div id="navComps" hidden><p class="lbl">Tất cả component (A→Z)</p></div>
   </nav>
 
@@ -642,6 +642,27 @@
     <div id="content"></div>
 
     <div class="noresult" id="noresult">Không tìm thấy component nào khớp. Thử từ khoá khác.</div>
+
+    <!-- Plan / Lập kế hoạch -->
+    <section class="cat" id="plan" data-static>
+      <div class="cat-head"><h3>Lập kế hoạch (Plan)</h3><span class="en">Trước khi thiết kế/code — xác định làm gì &amp; cho ai</span><span class="rule"></span></div>
+      <div class="cheat"><div class="table-scroll"><table>
+        <thead><tr><th>Hạng mục</th><th>Cần làm</th></tr></thead>
+        <tbody>
+          <tr><td>Yêu cầu (requirements)</td><td>Chức năng &amp; phi chức năng; thu thập &amp; chốt với stakeholder</td></tr>
+          <tr><td>User story / Use case</td><td>"Là [ai] muốn [gì] để [đạt gì]" + <strong>acceptance criteria</strong> rõ ràng</td></tr>
+          <tr><td>Phạm vi &amp; MVP</td><td>Ưu tiên tính năng (MoSCoW: Must / Should / Could / Won't); chốt phạm vi</td></tr>
+          <tr><td>Persona &amp; nghiên cứu người dùng</td><td>Đối tượng mục tiêu, nhu cầu, ngữ cảnh sử dụng</td></tr>
+          <tr><td>Information Architecture</td><td>Sitemap, sơ đồ trang, <strong>user flow</strong> (luồng đi)</td></tr>
+          <tr><td>Wireframe → Mockup → Prototype</td><td>Phác thảo tăng dần độ chi tiết trước khi code</td></tr>
+          <tr><td>Tech stack &amp; kiến trúc</td><td>Chọn công nghệ; sơ đồ hệ thống; ràng buộc kỹ thuật</td></tr>
+          <tr><td>Timeline &amp; ước lượng</td><td>Cột mốc (milestone), estimate, phân công</td></tr>
+          <tr><td>KPI / chỉ số thành công</td><td>Đo lường mục tiêu kinh doanh sau khi ra mắt</td></tr>
+          <tr><td>Rủi ro</td><td>Nhận diện &amp; phương án phòng ngừa</td></tr>
+        </tbody>
+      </table></div></div>
+      <p style="font-size:12.5px;color:var(--muted);margin:12px 2px 0;line-height:1.55"><strong>Vai trò QC ngay từ Plan:</strong> soát yêu cầu có <strong>test được không</strong>, chốt <strong>acceptance criteria</strong> rõ, lập <strong>test strategy</strong> &amp; truy vết (requirement ↔ test case) — bắt lỗi sớm rẻ hơn nhiều so với bắt lúc đã code xong.</p>
+    </section>
 
     <!-- States -->
     <section class="cat" id="states" data-static>
@@ -1309,13 +1330,7 @@ const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,
 
 CATS.forEach(cat=>{
   const items = COMPS.filter(x=>x.c===cat.id);
-  // nav (theo nhóm)
-  const a = document.createElement("a");
-  a.href = "#cat-"+cat.id;
-  a.dataset.cat = cat.id;
-  a.innerHTML = `<span>${cat.vi}</span><span class="n">${items.length}</span>`;
-  navGroups.appendChild(a);
-  // section
+  // section (nav links dựng theo quy trình bên dưới)
   const sec = document.createElement("section");
   sec.className = "cat";
   sec.id = "cat-"+cat.id;
@@ -1350,17 +1365,38 @@ CATS.forEach(cat=>{
   content.appendChild(sec);
 });
 
-// nav links to static reference sections (nhóm "Tham khảo", tách khỏi Component)
-const refLbl = document.createElement("p");
-refLbl.className = "lbl";
-refLbl.textContent = "Tham khảo";
-refLbl.style.marginTop = "16px";
-navGroups.appendChild(refLbl);
-[["demo","Demo màn hình"],["landmarks","Cấu trúc trang"],["tokens","Nền tảng thiết kế"],["perf","Hiệu năng & tải dữ liệu"],["a11y","Accessibility"],["responsive","Responsive & thiết bị"],["interaction","Tương tác & cử chỉ"],["errors","Lỗi & biên"],["security","Bảo mật UI"],["content-i18n","Nội dung & i18n"],["vitals","Web Vitals"],["authsession","Đăng nhập & phiên"],["bug","Quy trình báo lỗi"],["testtypes","Loại test"],["seo","SEO & Meta"],["analytics","Analytics"],["notify","Email & Notification"],["payment","Thanh toán"],["legal","Consent & Pháp lý"],["release","Môi trường & phát hành"],["beyond","Ngoài UI (tổng quan)"],["states","Trạng thái"],["cheat","Dữ liệu test mẫu"]].forEach(([id,label])=>{
-  const a = document.createElement("a");
-  a.href = "#"+id;
-  a.innerHTML = `<span>${label}</span><span class="n">★</span>`;
-  navGroups.appendChild(a);
+// Sidebar (chế độ Nhóm) sắp theo QUY TRÌNH làm web
+const catMeta = {};
+CATS.forEach(c => catMeta[c.id] = {vi:c.vi, n: COMPS.filter(x=>x.c===c.id).length});
+const PHASES = [
+  ["① Lập kế hoạch", [["ref","plan","Lập kế hoạch (Plan)"]]],
+  ["② Thiết kế", [["ref","tokens","Nền tảng thiết kế"],["ref","landmarks","Cấu trúc trang"]]],
+  ["③ Dựng giao diện", [["cat","form"],["cat","action"],["cat","nav"],["cat","feedback"],["cat","layout"],["cat","media"],["ref","demo","Demo màn hình"],["ref","perf","Hiệu năng & tải dữ liệu"]]],
+  ["④ Nội dung", [["ref","content-i18n","Nội dung & i18n"],["ref","seo","SEO & Meta"]]],
+  ["⑤ Tích hợp", [["ref","authsession","Đăng nhập & phiên"],["ref","payment","Thanh toán"],["ref","notify","Email & Notification"],["ref","analytics","Analytics"],["ref","beyond","Ngoài UI (tổng quan)"]]],
+  ["⑥ Kiểm thử", [["ref","testtypes","Loại test"],["ref","a11y","Accessibility"],["ref","responsive","Responsive & thiết bị"],["ref","interaction","Tương tác & cử chỉ"],["ref","states","Trạng thái"],["ref","errors","Lỗi & biên"],["ref","security","Bảo mật UI"],["ref","vitals","Web Vitals"],["ref","cheat","Dữ liệu test mẫu"],["ref","bug","Quy trình báo lỗi"]]],
+  ["⑦ Tuân thủ", [["ref","legal","Consent & Pháp lý"]]],
+  ["⑧ Phát hành", [["ref","release","Môi trường & phát hành"]]],
+];
+PHASES.forEach(([title, items], i)=>{
+  const lbl = document.createElement("p");
+  lbl.className = "lbl";
+  lbl.textContent = title;
+  if(i>0) lbl.style.marginTop = "16px";
+  navGroups.appendChild(lbl);
+  items.forEach(it=>{
+    const a = document.createElement("a");
+    if(it[0]==="cat"){
+      const m = catMeta[it[1]];
+      a.href = "#cat-"+it[1];
+      a.dataset.cat = it[1];
+      a.innerHTML = `<span>${m.vi}</span><span class="n">${m.n}</span>`;
+    } else {
+      a.href = "#"+it[1];
+      a.innerHTML = `<span>${it[2]}</span><span class="n">★</span>`;
+    }
+    navGroups.appendChild(a);
+  });
 });
 
 // nav theo tên component (A→Z)
