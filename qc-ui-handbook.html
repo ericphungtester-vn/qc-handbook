@@ -35,6 +35,7 @@
     -webkit-font-smoothing:antialiased;
   }
   a{color:var(--accent-ink)}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:6px}
   .wrap{max-width:1280px; margin:0 auto; padding:0 20px}
 
   /* Header */
@@ -379,8 +380,8 @@
       <p>Component, kiểm thử &amp; quy trình làm web/mobile — tra cứu cho QC</p>
     </div>
     <div class="mm-tabs" role="tablist" aria-label="Menu chính">
-      <button class="mm-tab on" data-view="handbook" type="button">📘 Sổ tay</button>
-      <button class="mm-tab" data-view="testcase" type="button">✅ TestCase</button>
+      <button class="mm-tab on" data-view="handbook" type="button" role="tab" id="tab-handbook" aria-controls="view-handbook" aria-selected="true">📘 Sổ tay</button>
+      <button class="mm-tab" data-view="testcase" type="button" role="tab" id="tab-testcase" aria-controls="view-testcase" aria-selected="false">✅ TestCase</button>
     </div>
     <div class="search">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -393,7 +394,7 @@
 
 <div class="nav-backdrop" id="navBackdrop"></div>
 
-<div id="view-handbook" class="view">
+<div id="view-handbook" class="view" role="tabpanel" aria-labelledby="tab-handbook">
 <div class="wrap shell">
   <nav class="side" id="nav" aria-label="Danh mục">
     <div class="navtoggle" role="tablist" aria-label="Kiểu hiển thị menu">
@@ -1170,7 +1171,7 @@
 </div>
 </div><!-- /view-handbook -->
 
-<div id="view-testcase" class="view" hidden>
+<div id="view-testcase" class="view" role="tabpanel" aria-labelledby="tab-testcase" hidden>
   <div class="wrap tc-wrap">
     <div class="tc-head"><h2>Test case</h2><span class="tc-count" id="tcCount"></span></div>
     <p style="color:var(--muted);font-size:13px;margin:2px 0 0;max-width:74ch">Bộ test case theo 2 chế độ: <strong>Theo Component</strong> (sinh từ checklist của các component) và <strong>Theo Feature</strong> (Login, API GET/POST/PUT/PATCH/DELETE, Thanh toán, Đăng nhập &amp; phiên, a11y…). Lọc theo Feature/Component, Hạng mục, Layer, Ưu tiên hoặc từ khoá; bấm <strong>⋯</strong> để xem Bước thực hiện; <strong>Xuất CSV</strong> để nhập vào Excel / công cụ quản lý test. Với component, nhớ chạy kèm mục <strong>Checklist nền</strong> (tab Sổ tay).</p>
@@ -1589,13 +1590,16 @@ q.addEventListener("input", ()=>{
   noresult.classList.toggle("show", term!=="" && visible===0 && refHits===0);
 });
 
-// Theme toggle
+// Theme toggle (nhớ lựa chọn khi reload)
 const root = document.documentElement;
 const tbtn = document.getElementById("theme");
+try{ const savedTheme = localStorage.getItem("qc-theme"); if(savedTheme) root.setAttribute("data-theme", savedTheme); }catch(e){}
 tbtn.addEventListener("click", ()=>{
   const cur = root.getAttribute("data-theme");
   const isDark = cur ? cur==="dark" : matchMedia("(prefers-color-scheme:dark)").matches;
-  root.setAttribute("data-theme", isDark ? "light" : "dark");
+  const next = isDark ? "light" : "dark";
+  root.setAttribute("data-theme", next);
+  try{ localStorage.setItem("qc-theme", next); }catch(e){}
 });
 
 // Menu di động (drawer trượt)
@@ -1779,14 +1783,39 @@ document.querySelectorAll(".comp .pv .pvrate").forEach(rate=>{
 });
 
 // ===== Thanh menu: chuyển view Sổ tay / TestCase =====
-const mmTabs = document.querySelectorAll(".mm-tab");
+const mmTabs = [...document.querySelectorAll(".mm-tab")];
 const views = { handbook: document.getElementById("view-handbook"), testcase: document.getElementById("view-testcase") };
-mmTabs.forEach(b=> b.addEventListener("click", ()=>{
-  const v = b.dataset.view;
-  mmTabs.forEach(x=> x.classList.toggle("on", x===b));
-  Object.entries(views).forEach(([k,el])=> el.hidden = k!==v);
-  scrollTo({top:0});
-}));
+const viewScroll = { handbook: 0, testcase: 0 };  // nhớ vị trí cuộn từng tab
+const headerSearch = document.querySelector(".search");
+const headerCount = document.getElementById("count");
+let curView = "handbook";
+function switchView(v, focusTab){
+  if(!views[v]) return;
+  if(v !== curView){
+    viewScroll[curView] = window.scrollY;          // lưu vị trí tab đang rời
+    curView = v;
+    mmTabs.forEach(x=>{ const on = x.dataset.view===v; x.classList.toggle("on", on); x.setAttribute("aria-selected", on); x.tabIndex = on?0:-1; });
+    Object.entries(views).forEach(([k,el])=> el.hidden = k!==v);
+    const isHb = v==="handbook";
+    if(headerSearch) headerSearch.hidden = !isHb;   // ẩn ô search khi ở tab TestCase
+    if(headerCount) headerCount.hidden = !isHb;
+    window.scrollTo({top: viewScroll[v] || 0});      // khôi phục vị trí tab mở tới
+    try{ localStorage.setItem("qc-view", v); }catch(e){}
+  }
+  if(focusTab){ const t = mmTabs.find(x=>x.dataset.view===v); if(t) t.focus(); }
+}
+mmTabs.forEach(x=> x.tabIndex = x.dataset.view===curView ? 0 : -1);
+mmTabs.forEach(b=> b.addEventListener("click", ()=> switchView(b.dataset.view)));
+// Bàn phím: mũi tên trái/phải chuyển tab (WAI-ARIA tablist)
+document.querySelector(".mm-tabs").addEventListener("keydown", e=>{
+  if(e.key!=="ArrowRight" && e.key!=="ArrowLeft") return;
+  e.preventDefault();
+  const i = mmTabs.findIndex(x=>x.dataset.view===curView);
+  const ni = e.key==="ArrowRight" ? (i+1)%mmTabs.length : (i-1+mmTabs.length)%mmTabs.length;
+  switchView(mmTabs[ni].dataset.view, true);
+});
+// Nhớ tab đã chọn khi tải lại
+try{ const sv = localStorage.getItem("qc-view"); if(sv && sv!==curView) switchView(sv); }catch(e){}
 
 // ===== TestCase: 2 chế độ — Theo Component & Theo Feature =====
 const tcCls = m => ({GET:"get",POST:"post",PUT:"put",PATCH:"put",DELETE:"del"}[m] || "none");
