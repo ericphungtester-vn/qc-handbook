@@ -2229,6 +2229,8 @@ const PASSWORD_TC = [
   {sub:"Đổi mật khẩu", lay:"both", tc:"Yêu cầu mật khẩu hiện tại đúng", pre:"Đang đăng nhập, đổi mật khẩu", exp:"Phải nhập đúng mật khẩu hiện tại mới cho đổi", pr:"P1", steps:["Đổi mật khẩu", "Nhập sai/đúng mật khẩu hiện tại", "Xác nhận chỉ đúng mới đổi được"]},
   {sub:"Đổi mật khẩu", lay:"both", tc:"Mật khẩu mới ≠ mật khẩu cũ", pre:"Đổi mật khẩu", exp:"Từ chối nếu trùng mật khẩu cũ (password history nếu có)", pr:"P1", steps:["Đặt mật khẩu mới = cũ", "Xác nhận bị từ chối"]},
   {sub:"Đổi mật khẩu", lay:"both", tc:"Đổi mật khẩu → vô hiệu phiên khác + email", pre:"Đổi thành công", exp:"Mọi phiên khác bị vô hiệu; gửi email thông báo đổi mật khẩu", pr:"P1", steps:["Đổi mật khẩu", "Kiểm phiên khác & email", "Xác nhận vô hiệu & có thông báo"]},
+  {sub:"Đổi mật khẩu", lay:"api", tc:"Đổi mật khẩu khi chưa đăng nhập / không token", pre:"Không có phiên/token hợp lệ", exp:"HTTP 401; không cho đổi", pr:"P1", steps:["Gọi đổi mật khẩu không token", "Xác nhận 401"]},
+  {sub:"Đổi mật khẩu", lay:"both", tc:"Mật khẩu mới không đạt policy khi đổi", pre:"Đang đổi mật khẩu", exp:"Chặn theo policy (NIST) khi đặt mật khẩu mới yếu", pr:"P1", steps:["Đổi sang mật khẩu yếu", "Xác nhận bị chặn"]},
   {sub:"Đặt lại mật khẩu", lay:"api", tc:"Yêu cầu reset — không lộ email", pre:"Nhập email tồn tại vs không", exp:"Thông báo giống nhau (chống enumeration); gửi link nếu có", pr:"P1", steps:["Yêu cầu reset 2 loại email", "So sánh thông báo giống nhau"]},
   {sub:"Đặt lại mật khẩu", lay:"api", tc:"Link reset dùng 1 lần & hết hạn", pre:"Có link reset", exp:"Dùng 1 lần; hết hạn theo cấu hình (vd 15–60 phút)", pr:"P1", steps:["Dùng link 2 lần & quá hạn", "Xác nhận bị từ chối"]},
   {sub:"Đặt lại mật khẩu", lay:"both", tc:"Đặt mật khẩu mới qua reset", pre:"Link reset hợp lệ", exp:"Áp policy độ mạnh; đặt xong vô hiệu phiên cũ", pr:"P1", steps:["Đặt mật khẩu mới yếu & mạnh", "Xác nhận áp policy & vô hiệu phiên"]},
@@ -2256,13 +2258,7 @@ const REGISTER_TC = [
 const FORGOT_TC = [
   {sub:"Yêu cầu", lay:"both", tc:"Yêu cầu reset với email tồn tại", pre:"Ở màn quên mật khẩu", exp:"Gửi link/OTP reset tới email; báo đã gửi", pr:"P1", steps:["Nhập email tồn tại & gửi", "Xác nhận nhận link reset"]},
   {sub:"Bảo mật", lay:"api", tc:"Không lộ email tồn tại", pre:"Email tồn tại vs không", exp:"Thông báo giống nhau (chống enumeration)", pr:"P1", steps:["Gửi reset 2 loại email", "So sánh thông báo giống nhau"]},
-  {sub:"Reset", lay:"both", tc:"Link reset hết hạn", pre:"Link quá hạn", exp:"Báo hết hạn & cho gửi lại", pr:"P1", steps:["Dùng link quá hạn", "Xác nhận báo & gửi lại được"]},
-  {sub:"Bảo mật", lay:"api", tc:"Link reset dùng 1 lần", pre:"Link đã dùng", exp:"Dùng lại → từ chối (single-use)", pr:"P1", steps:["Dùng link 2 lần", "Xác nhận bị từ chối"]},
-  {sub:"Reset", lay:"both", tc:"Đặt mật khẩu mới", pre:"Link hợp lệ", exp:"Áp policy độ mạnh; đặt thành công", pr:"P1", steps:["Đặt mật khẩu mới yếu & mạnh", "Xác nhận áp policy"]},
-  {sub:"Reset", lay:"both", tc:"Sau reset: vô hiệu phiên & mật khẩu cũ fail", pre:"Vừa reset", exp:"Vô hiệu các phiên cũ; đăng nhập mật khẩu cũ → 401", pr:"P1", steps:["Reset xong", "Kiểm phiên cũ & đăng nhập mật khẩu cũ", "Xác nhận vô hiệu & fail"]},
   {sub:"Bảo mật", lay:"api", tc:"Rate limit yêu cầu reset", pre:"Gửi nhiều yêu cầu", exp:"Giới hạn tần suất chống spam/lạm dụng", pr:"P2", steps:["Gửi reset liên tục", "Xác nhận rate limit"]},
-  {sub:"Bảo mật", lay:"api", tc:"Token bị sửa/giả mạo", pre:"Sửa token trong link", exp:"Từ chối (invalid); không cho đặt mật khẩu", pr:"P1", steps:["Sửa token & mở", "Xác nhận bị từ chối"]},
-  {sub:"Reset", lay:"both", tc:"Reset tài khoản bị vô hiệu hoá / khoá / chưa xác minh", pre:"Tài khoản disabled/locked/chưa verify", exp:"Xử lý đúng theo policy từng trạng thái (chặn/thông báo phù hợp)", pr:"P2", steps:["Reset cho tài khoản disabled/locked/chưa verify", "Xác nhận xử lý đúng từng trạng thái"]},
   {sub:"Yêu cầu", lay:"both", tc:"Email sai định dạng", pre:"Ở màn Forgot Password", exp:"Báo lỗi định dạng; không gửi yêu cầu", pr:"P2", steps:["Nhập email sai định dạng", "Xác nhận báo lỗi"]},
   {sub:"Yêu cầu", lay:"ui", tc:"Email là trường bắt buộc", pre:"Ở màn Forgot Password", exp:"Bỏ trống → báo bắt buộc, chặn submit", pr:"P2", steps:["Để trống & submit", "Xác nhận báo bắt buộc"]},
   {sub:"Yêu cầu", lay:"both", tc:"Trim khoảng trắng trong email", pre:"Nhập email có khoảng trắng", exp:"Trim đầu/cuối trước khi xử lý", pr:"P3", steps:["Nhập ' a@b.com '", "Xác nhận trim & xử lý đúng"]},
@@ -2533,6 +2529,22 @@ const REMEMBER_TC = [
   {sub:"Quản trị", lay:"api", tc:"Admin vô hiệu hoá tài khoản khi Remember Me hoạt động", pre:"Admin disable tài khoản", exp:"Remember token bị thu hồi ngay; auto-login thất bại", pr:"P1", steps:["Admin vô hiệu hoá", "User auto-login", "Xác nhận bị chặn"]},
   {sub:"Đa thiết bị", lay:"both", tc:"Remember Me trên nhiều thiết bị", pre:"Đăng nhập nhiều thiết bị", exp:"Mỗi thiết bị 1 remember token riêng; thu hồi từng cái độc lập", pr:"P2", steps:["Bật Remember Me ở A & B", "Thu hồi ở A", "Xác nhận B vẫn còn (nếu policy vậy)"]},
 ];
+const RESET_TC = [
+  {sub:"Đặt mật khẩu", lay:"both", tc:"Reset thành công với link hợp lệ", pre:"Có link/token reset hợp lệ", exp:"Đặt mật khẩu mới thành công; đăng nhập được bằng mật khẩu mới", pr:"P1", steps:["Mở link reset hợp lệ", "Đặt mật khẩu mới", "Xác nhận đăng nhập được"]},
+  {sub:"Đặt mật khẩu", lay:"both", tc:"Mật khẩu mới không đạt policy", pre:"Ở màn reset", exp:"Chặn theo policy (NIST: ≥8, không phổ biến/đã lộ)", pr:"P1", steps:["Nhập mật khẩu yếu", "Xác nhận bị chặn"]},
+  {sub:"Đặt mật khẩu", lay:"ui", tc:"Confirm password không khớp", pre:"Ở màn reset", exp:"Không khớp → báo lỗi; chặn submit", pr:"P2", steps:["Nhập confirm khác", "Xác nhận báo lỗi"]},
+  {sub:"Token & Link", lay:"both", tc:"Link reset hết hạn", pre:"Link quá hạn", exp:"Báo hết hạn & cho gửi lại", pr:"P1", steps:["Mở link quá hạn", "Xác nhận báo & gửi lại"]},
+  {sub:"Token & Link", lay:"api", tc:"Link reset đã dùng (single-use)", pre:"Link đã dùng", exp:"Dùng lại → từ chối", pr:"P1", steps:["Reset xong dùng lại link", "Xác nhận từ chối"]},
+  {sub:"Token & Link", lay:"api", tc:"Token bị sửa thủ công", pre:"Sửa token trong URL", exp:"Từ chối (invalid); không cho đặt mật khẩu", pr:"P1", steps:["Sửa token & mở", "Xác nhận từ chối"]},
+  {sub:"Token & Link", lay:"both", tc:"Mở link reset trên nhiều tab", pre:"Mở link ở 2 tab", exp:"Chỉ 1 tab dùng được; tab kia báo đã dùng/không hợp lệ", pr:"P2", steps:["Mở link ở 2 tab", "Reset ở tab A", "Xác nhận tab B báo đã dùng"]},
+  {sub:"Bảo mật", lay:"both", tc:"Reset xong → vô hiệu phiên & mật khẩu cũ fail", pre:"Reset thành công", exp:"Vô hiệu tất cả phiên; đăng nhập mật khẩu cũ → 401", pr:"P1", steps:["Reset", "Kiểm phiên & đăng nhập mật khẩu cũ", "Xác nhận vô hiệu & fail"]},
+  {sub:"Bảo mật", lay:"both", tc:"Reset revoke Remember Me token", pre:"Đang có remember token", exp:"Reset → thu hồi remember-me token, không auto-login", pr:"P1", steps:["Bật Remember Me", "Reset mật khẩu", "Xác nhận remember token vô hiệu"]},
+  {sub:"Bảo mật", lay:"api", tc:"Mật khẩu lưu dạng hash", pre:"Reset thành công", exp:"Mật khẩu mới lưu hash + salt (bcrypt/argon2), không plaintext", pr:"P1", steps:["Kiểm DB sau reset", "Xác nhận là hash"]},
+  {sub:"Bảo mật", lay:"api", tc:"Ghi audit log khi reset", pre:"Reset thành công", exp:"Log sự kiện reset (thời gian, IP); không lộ mật khẩu/token", pr:"P2", steps:["Reset", "Kiểm audit log"]},
+  {sub:"Edge", lay:"both", tc:"Reset tài khoản bị disable / lock", pre:"Tài khoản disabled/locked", exp:"Xử lý đúng policy từng trạng thái (chặn/thông báo)", pr:"P2", steps:["Reset cho tài khoản disable/lock", "Xác nhận xử lý đúng"]},
+  {sub:"Edge", lay:"both", tc:"Reset khi đang login nhiều browser", pre:"Đăng nhập nhiều browser", exp:"Sau reset các browser bị đăng xuất (vô hiệu phiên)", pr:"P2", steps:["Reset", "Kiểm các browser", "Xác nhận bị đăng xuất"]},
+  {sub:"Edge", lay:"ui", tc:"Back button sau khi reset thành công", pre:"Vừa reset xong", exp:"Bấm Back không reset lại/không lộ; xử lý gọn", pr:"P3", steps:["Reset xong bấm Back", "Xác nhận xử lý gọn"]},
+];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
 const FEATURE_IDS = [];
 const TC_FEAT = [];
@@ -2544,6 +2556,7 @@ EMAILFIELD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3
 PASSWORD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Password", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 REGISTER_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Register", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 FORGOT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Forgot password", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+RESET_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Reset password", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 UPLOAD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Upload file", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 SEARCHF_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Search", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 PROFILE_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Profile", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
@@ -2629,7 +2642,7 @@ function tcRefreshDependent(){
   tcFillSelect(tcPrio, data.map(t=>t.priority).filter(Boolean).sort(), "Tất cả ưu tiên");
 }
 // Feature "chuyên biệt" (bộ test case tự viết) vs "từ Sổ tay" (chuyển từ mục kiến thức)
-const DEDICATED_FEATURES = new Set(["Login","Logout","Remember Me","Register","Forgot password","Password","Email","Upload file","Search","Profile","Cart & Checkout","Import / Export","Chat","Dashboard","Notification center","Comment & Review","Booking","Calendar","Map","Media player","Wizard / Multi-step","Onboarding","Settings","Timezone","Number & Currency","Date & Time","Translation & RTL","API GET","API POST","API PUT","API PATCH","API DELETE"]);
+const DEDICATED_FEATURES = new Set(["Login","Logout","Remember Me","Register","Forgot password","Reset password","Password","Email","Upload file","Search","Profile","Cart & Checkout","Import / Export","Chat","Dashboard","Notification center","Comment & Review","Booking","Calendar","Map","Media player","Wizard / Multi-step","Onboarding","Settings","Timezone","Number & Currency","Date & Time","Translation & RTL","API GET","API POST","API PUT","API PATCH","API DELETE"]);
 function tcSetupMode(){
   const isComp = tcMode==="component";
   tcHead.innerHTML = `<tr><th>ID</th><th>${isComp?"Component":"Feature"}</th><th>${isComp?"Group":"Category"}</th><th>Test Case</th><th>Layer</th><th>Expected Result</th><th>Priority</th><th>Steps</th></tr>`;
