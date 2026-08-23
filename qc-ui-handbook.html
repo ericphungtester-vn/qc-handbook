@@ -2545,12 +2545,32 @@ const RESET_TC = [
   {sub:"Edge", lay:"both", tc:"Reset khi đang login nhiều browser", pre:"Đăng nhập nhiều browser", exp:"Sau reset các browser bị đăng xuất (vô hiệu phiên)", pr:"P2", steps:["Reset", "Kiểm các browser", "Xác nhận bị đăng xuất"]},
   {sub:"Edge", lay:"ui", tc:"Back button sau khi reset thành công", pre:"Vừa reset xong", exp:"Bấm Back không reset lại/không lộ; xử lý gọn", pr:"P3", steps:["Reset xong bấm Back", "Xác nhận xử lý gọn"]},
 ];
+const ACCLOCK_TC = [
+  {sub:"Kích hoạt khoá", lay:"both", tc:"Khoá sau X lần đăng nhập sai", pre:"Sai mật khẩu liên tiếp", exp:"Sau X lần (vd 5) → khoá tài khoản; báo rõ (OWASP ASVS)", pr:"P1", steps:["Đăng nhập sai X lần", "Xác nhận bị khoá"]},
+  {sub:"Kích hoạt khoá", lay:"both", tc:"Khoá sau nhiều lần OTP sai", pre:"Nhập OTP sai nhiều lần", exp:"Vượt ngưỡng → khoá/tạm khoá", pr:"P1", steps:["Nhập OTP sai tới ngưỡng", "Xác nhận bị khoá"]},
+  {sub:"Kích hoạt khoá", lay:"api", tc:"Race condition khi kích hoạt lock", pre:"Nhiều request sai đồng thời", exp:"Đếm số lần sai chính xác (atomic); không bỏ sót/không khoá nhầm", pr:"P2", steps:["Gửi nhiều request sai đồng thời", "Xác nhận đếm & khoá đúng"]},
+  {sub:"Kích hoạt khoá", lay:"api", tc:"Hoạt động đáng ngờ kích hoạt khoá", pre:"Có phát hiện bất thường", exp:"Hành vi đáng ngờ (nhiều IP/tốc độ cao) → khoá/thử thách", pr:"P2", steps:["Mô phỏng hành vi đáng ngờ", "Xác nhận khoá/challenge"]},
+  {sub:"Khi bị khoá", lay:"both", tc:"Đăng nhập khi đã bị khoá", pre:"Tài khoản đang khoá", exp:"Chặn đăng nhập kể cả mật khẩu đúng; báo bị khoá", pr:"P1", steps:["Đăng nhập tài khoản đang khoá", "Xác nhận bị chặn"]},
+  {sub:"Khi bị khoá", lay:"api", tc:"API trả status code đúng", pre:"Tài khoản khoá", exp:"Trả mã đúng (423 Locked hoặc 403 theo thiết kế)", pr:"P1", steps:["Gọi login khi khoá", "Xác nhận status code"]},
+  {sub:"Khi bị khoá", lay:"api", tc:"Không tạo session/token khi khoá", pre:"Tài khoản khoá", exp:"Không cấp session/token dù thông tin đúng", pr:"P1", steps:["Đăng nhập khi khoá", "Kiểm session/token", "Xác nhận không cấp"]},
+  {sub:"Khi bị khoá", lay:"both", tc:"Remember Me không hoạt động khi khoá", pre:"Có remember token, tài khoản khoá", exp:"Auto-login qua Remember Me bị chặn khi khoá", pr:"P1", steps:["Khoá tài khoản có remember token", "Xác nhận không auto-login"]},
+  {sub:"Khi bị khoá", lay:"api", tc:"Refresh token khi khoá", pre:"Tài khoản khoá", exp:"Refresh token bị từ chối khi tài khoản khoá", pr:"P1", steps:["Gọi refresh khi khoá", "Xác nhận từ chối"]},
+  {sub:"Mở khoá", lay:"both", tc:"Tự động mở khoá sau timeout", pre:"Đã khoá, hết thời gian", exp:"Tự mở khoá sau thời gian cấu hình (vd 15–30 phút)", pr:"P2", steps:["Chờ hết thời gian khoá", "Xác nhận mở khoá & đăng nhập được"]},
+  {sub:"Mở khoá", lay:"both", tc:"Mở khoá khi reset password", pre:"Đã khoá", exp:"Reset mật khẩu thành công → mở khoá (theo policy)", pr:"P2", steps:["Reset mật khẩu khi khoá", "Xác nhận mở khoá"]},
+  {sub:"Mở khoá", lay:"both", tc:"Admin mở khoá", pre:"Admin có quyền", exp:"Admin mở khoá → user đăng nhập lại được", pr:"P2", steps:["Admin mở khoá", "Xác nhận đăng nhập được"]},
+  {sub:"Khi bị khoá", lay:"both", tc:"Hành vi khoá trên nhiều thiết bị", pre:"Đăng nhập nhiều thiết bị", exp:"Khoá áp cho toàn tài khoản (mọi thiết bị), không chỉ 1", pr:"P2", steps:["Khoá tài khoản", "Thử ở thiết bị khác", "Xác nhận đều bị khoá"]},
+  {sub:"Bảo mật & log", lay:"api", tc:"Audit log khi khoá", pre:"Tài khoản bị khoá", exp:"Ghi log sự kiện khoá (thời gian, IP, lý do); không lộ dữ liệu nhạy cảm", pr:"P2", steps:["Gây khoá", "Kiểm audit log"]},
+  {sub:"Bảo mật & log", lay:"api", tc:"Audit log khi mở khoá", pre:"Tài khoản được mở khoá", exp:"Ghi log sự kiện mở khoá (ai/khi nào/cách)", pr:"P2", steps:["Mở khoá", "Kiểm audit log"]},
+  {sub:"Bảo mật & log", lay:"both", tc:"Thông báo khoá không lộ thông tin nhạy cảm", pre:"Tài khoản khoá", exp:"Thông báo chung; không lộ tài khoản tồn tại hay số lần còn lại theo cách khai thác được", pr:"P1", steps:["Xem thông báo khoá", "Xác nhận không lộ thông tin"]},
+  {sub:"Mở khoá", lay:"ui", tc:"Hiển thị thời gian còn lại để mở khoá", pre:"Có auto-unlock", exp:"Hiển thị đếm ngược/thời gian còn lại (nếu hỗ trợ)", pr:"P3", steps:["Xem màn khoá", "Xác nhận hiển thị thời gian còn lại"]},
+];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
 const FEATURE_IDS = [];
 const TC_FEAT = [];
 let n2 = 0;
 LOGIN_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Login", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 REMEMBER_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Remember Me", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+ACCLOCK_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Account Lock", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 LOGOUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Logout", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 EMAILFIELD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Email", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 PASSWORD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Password", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
@@ -2642,7 +2662,7 @@ function tcRefreshDependent(){
   tcFillSelect(tcPrio, data.map(t=>t.priority).filter(Boolean).sort(), "Tất cả ưu tiên");
 }
 // Feature "chuyên biệt" (bộ test case tự viết) vs "từ Sổ tay" (chuyển từ mục kiến thức)
-const DEDICATED_FEATURES = new Set(["Login","Logout","Remember Me","Register","Forgot password","Reset password","Password","Email","Upload file","Search","Profile","Cart & Checkout","Import / Export","Chat","Dashboard","Notification center","Comment & Review","Booking","Calendar","Map","Media player","Wizard / Multi-step","Onboarding","Settings","Timezone","Number & Currency","Date & Time","Translation & RTL","API GET","API POST","API PUT","API PATCH","API DELETE"]);
+const DEDICATED_FEATURES = new Set(["Login","Logout","Remember Me","Account Lock","Register","Forgot password","Reset password","Password","Email","Upload file","Search","Profile","Cart & Checkout","Import / Export","Chat","Dashboard","Notification center","Comment & Review","Booking","Calendar","Map","Media player","Wizard / Multi-step","Onboarding","Settings","Timezone","Number & Currency","Date & Time","Translation & RTL","API GET","API POST","API PUT","API PATCH","API DELETE"]);
 function tcSetupMode(){
   const isComp = tcMode==="component";
   tcHead.innerHTML = `<tr><th>ID</th><th>${isComp?"Component":"Feature"}</th><th>${isComp?"Group":"Category"}</th><th>Test Case</th><th>Layer</th><th>Expected Result</th><th>Priority</th><th>Steps</th></tr>`;
