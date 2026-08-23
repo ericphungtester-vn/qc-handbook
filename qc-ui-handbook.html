@@ -1964,8 +1964,52 @@ const API_DELETE_TC = [
   {sub:"Đồng thời", lay:"api", tc:"ETag/If-Match (xoá có điều kiện) → 412", pre:"Bản ghi đã đổi", exp:"Xoá trên bản cũ → 412", pr:"P2", steps:["Lấy ETag", "Bản ghi bị đổi", "DELETE If-Match cũ → 412"]},
   {sub:"Hiệu năng", lay:"perf", tc:"Response time & bulk delete", pre:"Tải bình thường / xoá hàng loạt", exp:"p95 ≤ SLA; bulk delete (nếu có) hiệu quả, không timeout", pr:"P2", steps:["Đo p95 DELETE", "Nếu có bulk: đo & kiểm tính đúng"]},
 ];
+const AUTH_TC = [
+  {sub:"Đăng ký", lay:"both", tc:"Đăng ký thành công", pre:"Email chưa tồn tại, payload hợp lệ", exp:"HTTP 201; tạo tài khoản (chưa kích hoạt); gửi email xác minh", pr:"P1", steps:["Điền form đăng ký hợp lệ", "Submit", "Xác nhận tạo tài khoản & nhận email xác minh"]},
+  {sub:"Đăng ký", lay:"api", tc:"Email đã tồn tại", pre:"Email đã đăng ký", exp:"Báo lỗi / HTTP 409; không tạo trùng; không lộ chi tiết thừa", pr:"P1", steps:["Đăng ký với email đã tồn tại", "Xác nhận 409/báo lỗi"]},
+  {sub:"Đăng ký", lay:"both", tc:"Mật khẩu yếu bị chặn", pre:"Nhập mật khẩu ngắn/đơn giản", exp:"Chặn theo NIST 800-63B (tối thiểu 8 ký tự); gợi ý độ mạnh", pr:"P1", steps:["Nhập mật khẩu < 8 ký tự", "Xác nhận bị chặn & báo yêu cầu"]},
+  {sub:"Đăng ký", lay:"ui", tc:"Validate field đăng ký", pre:"Ở form đăng ký", exp:"Email sai định dạng, field bắt buộc trống → báo lỗi tại chỗ", pr:"P2", steps:["Bỏ trống/nhập sai định dạng", "Xác nhận báo lỗi trường"]},
+  {sub:"Xác minh email", lay:"both", tc:"Link xác minh kích hoạt tài khoản", pre:"Có email xác minh", exp:"Bấm link → tài khoản active; đăng nhập được", pr:"P1", steps:["Mở link xác minh", "Xác nhận tài khoản kích hoạt"]},
+  {sub:"Xác minh email", lay:"both", tc:"Link xác minh hết hạn / đã dùng", pre:"Link quá hạn hoặc đã dùng", exp:"Báo lỗi rõ & cho gửi lại link mới", pr:"P2", steps:["Dùng link hết hạn/đã dùng", "Xác nhận báo lỗi & gửi lại được"]},
+  {sub:"Quên / đặt lại mật khẩu", lay:"api", tc:"Gửi link đặt lại — không lộ email", pre:"Nhập email tồn tại vs không", exp:"Thông báo giống nhau (không lộ email tồn tại); gửi link nếu có", pr:"P1", steps:["Yêu cầu reset với email tồn tại & không tồn tại", "So sánh thông báo giống nhau"]},
+  {sub:"Quên / đặt lại mật khẩu", lay:"api", tc:"Link đặt lại dùng 1 lần & hết hạn", pre:"Có link reset", exp:"Link chỉ dùng 1 lần; hết hạn theo cấu hình (vd 15–60 phút)", pr:"P1", steps:["Dùng link reset 2 lần", "Dùng link quá hạn", "Xác nhận bị từ chối"]},
+  {sub:"Quên / đặt lại mật khẩu", lay:"both", tc:"Đặt lại xong → vô hiệu phiên cũ", pre:"Đặt lại mật khẩu thành công", exp:"Các phiên cũ bị vô hiệu; đăng nhập bằng mật khẩu mới OK, mật khẩu cũ fail", pr:"P1", steps:["Đặt lại mật khẩu", "Kiểm phiên cũ bị vô hiệu", "Đăng nhập mật khẩu mới/cũ"]},
+  {sub:"Phiên", lay:"both", tc:"Hết phiên idle & absolute", pre:"Không hoạt động / vượt thời hạn tối đa", exp:"Idle ~15–30 phút và absolute timeout → buộc đăng nhập lại", pr:"P2", steps:["Để idle quá ngưỡng", "Giữ phiên tới mốc tối đa", "Xác nhận buộc đăng nhập lại"]},
+  {sub:"Phiên", lay:"both", tc:"Đăng xuất", pre:"Đã đăng nhập", exp:"Xoá token; Back không vào lại trang cần auth", pr:"P1", steps:["Đăng xuất", "Bấm Back", "Xác nhận không vào lại"]},
+  {sub:"Phiên", lay:"both", tc:"Đa tab đồng bộ login/logout", pre:"Mở 2 tab", exp:"Logout/login ở 1 tab → tab kia đồng bộ trạng thái", pr:"P2", steps:["Mở 2 tab đã đăng nhập", "Logout ở tab A", "Xác nhận tab B cũng đăng xuất"]},
+  {sub:"Phân quyền", lay:"both", tc:"Theo vai trò (role)", pre:"Tài khoản có role hạn chế", exp:"Truy cập thẳng URL/chức năng cấm → 403; UI ẩn nút không có quyền", pr:"P1", steps:["Đăng nhập role hạn chế", "Truy cập URL cấm", "Xác nhận 403 & UI không hiện nút"]},
+  {sub:"Phân quyền", lay:"api", tc:"Đổi quyền áp dụng đúng", pre:"Admin đổi role user", exp:"Quyền mới áp dụng ở phiên mới (hoặc buộc refresh token)", pr:"P2", steps:["Đổi role user", "User thao tác", "Xác nhận quyền mới áp dụng đúng thời điểm"]},
+];
+const PAYMENT_TC = [
+  {sub:"Luồng", lay:"both", tc:"Thanh toán thành công đầu-cuối", pre:"Giỏ hàng hợp lệ, thẻ hợp lệ", exp:"HTTP 200; đơn = paid; sinh biên nhận/hoá đơn", pr:"P1", steps:["Chọn hàng → thanh toán", "Nhập thẻ hợp lệ", "Xác nhận đơn paid & biên nhận"]},
+  {sub:"Thẻ lỗi", lay:"both", tc:"Thẻ từ chối / không đủ tiền", pre:"Thẻ bị từ chối", exp:"Báo lỗi rõ; đơn KHÔNG paid; không trừ tiền", pr:"P1", steps:["Thanh toán bằng thẻ bị từ chối", "Xác nhận báo lỗi & đơn không paid"]},
+  {sub:"Thẻ lỗi", lay:"both", tc:"Thẻ hết hạn / sai số", pre:"Nhập thẻ hết hạn/sai", exp:"Validate → báo lỗi trước khi charge", pr:"P1", steps:["Nhập thẻ hết hạn/sai số", "Xác nhận báo lỗi, không charge"]},
+  {sub:"Luồng", lay:"both", tc:"3D Secure / OTP ngân hàng", pre:"Thẻ yêu cầu 3DS", exp:"Hoàn tất 3DS → paid; huỷ giữa chừng → đơn pending, không trừ tiền", pr:"P1", steps:["Thanh toán thẻ 3DS", "Thử hoàn tất & thử huỷ giữa chừng", "Xác nhận trạng thái đúng"]},
+  {sub:"Đồng thời", lay:"api", tc:"Chống double-charge", pre:"Bấm/refresh 2 lần", exp:"Idempotency-Key → chỉ trừ tiền 1 lần", pr:"P1", steps:["Gửi 2 request thanh toán cùng Idempotency-Key", "Xác nhận chỉ 1 giao dịch"]},
+  {sub:"Đồng thời", lay:"api", tc:"Timeout / mất mạng giữa chừng", pre:"Ngắt giữa lúc charge", exp:"Trạng thái đơn nhất quán (pending); reconcile qua webhook; không mất/nhân đôi tiền", pr:"P1", steps:["Ngắt mạng khi đang charge", "Kiểm trạng thái đơn", "Xác nhận reconcile đúng qua webhook"]},
+  {sub:"Bảo mật", lay:"api", tc:"Webhook xác nhận & verify chữ ký", pre:"Cổng gửi webhook", exp:"Cập nhật đơn theo webhook; verify chữ ký webhook (chống giả mạo)", pr:"P1", steps:["Nhận webhook từ cổng", "Verify chữ ký", "Xác nhận cập nhật đơn đúng & từ chối webhook giả"]},
+  {sub:"Hoàn / huỷ", lay:"both", tc:"Hoàn tiền (refund)", pre:"Đơn đã thanh toán", exp:"Refund đúng số tiền & trạng thái; thông báo người dùng", pr:"P1", steps:["Thực hiện refund", "Xác nhận số tiền & trạng thái đúng"]},
+  {sub:"Hoàn / huỷ", lay:"both", tc:"Huỷ đơn trước thanh toán", pre:"Đơn chưa thanh toán", exp:"Huỷ được; giải phóng giữ hàng (nếu có)", pr:"P2", steps:["Huỷ đơn chưa thanh toán", "Xác nhận trạng thái cancelled"]},
+  {sub:"Bảo mật", lay:"api", tc:"Số tiền / tiền tệ / làm tròn", pre:"Đơn có thuế/phí/đổi tiền", exp:"Tính đúng số tiền, tiền tệ, làm tròn, thuế, phí", pr:"P1", steps:["Tạo đơn có thuế/phí", "Đối chiếu số tiền charge", "Xác nhận khớp"]},
+  {sub:"Bảo mật", lay:"api", tc:"PCI DSS: không lưu số thẻ", pre:"Thanh toán", exp:"Không lưu số thẻ; dùng token hoá của cổng; HTTPS toàn luồng", pr:"P1", steps:["Kiểm luồng & lưu trữ", "Xác nhận không lưu PAN, dùng token"]},
+  {sub:"Luồng", lay:"both", tc:"Hoá đơn / biên nhận", pre:"Thanh toán thành công", exp:"Hoá đơn/biên nhận đúng thông tin & số tiền", pr:"P2", steps:["Sau thanh toán", "Kiểm hoá đơn/biên nhận"]},
+  {sub:"Hiệu năng", lay:"perf", tc:"Response time & retry an toàn", pre:"Tải bình thường", exp:"p95 ≤ SLA; retry không tạo giao dịch trùng", pr:"P2", steps:["Đo p95 thời gian thanh toán", "Thử retry", "Xác nhận không trùng giao dịch"]},
+];
+const EMAIL_TC = [
+  {sub:"Email giao dịch", lay:"both", tc:"Gửi đúng sự kiện", pre:"Kích hoạt sự kiện (đăng ký/reset/đơn hàng/OTP)", exp:"Email gửi đúng loại, đúng thời điểm, đúng người nhận", pr:"P1", steps:["Kích hoạt từng sự kiện", "Xác nhận nhận đúng email tương ứng"]},
+  {sub:"Nội dung", lay:"both", tc:"Cá nhân hoá đúng", pre:"Email có biến", exp:"Tên/link/mã đúng; không trơ biến ({{name}}); đúng dữ liệu", pr:"P1", steps:["Nhận email", "Kiểm biến đã thay đúng"]},
+  {sub:"Nội dung", lay:"both", tc:"Link trong email đúng môi trường", pre:"Email có link", exp:"Link hoạt động & trỏ đúng môi trường (không localhost/staging)", pr:"P1", steps:["Bấm link trong email", "Xác nhận đúng domain môi trường"]},
+  {sub:"Nội dung", lay:"ui", tc:"Hiển thị đa client", pre:"Mở trên nhiều client", exp:"Đúng trên Gmail/Outlook/mobile; dark mode; ảnh bị chặn vẫn đọc được", pr:"P2", steps:["Mở email trên các client", "Kiểm hiển thị & dark mode"]},
+  {sub:"Deliverability", lay:"api", tc:"Không vào spam", pre:"Gửi email", exp:"Cấu hình SPF/DKIM/DMARC đúng → vào inbox, không spam", pr:"P1", steps:["Gửi & kiểm inbox/spam", "Kiểm SPF/DKIM/DMARC"]},
+  {sub:"Deliverability", lay:"both", tc:"Có link unsubscribe", pre:"Email marketing", exp:"Có link huỷ nhận & hoạt động (tuân thủ pháp lý)", pr:"P2", steps:["Mở email marketing", "Bấm unsubscribe", "Xác nhận huỷ nhận"]},
+  {sub:"Deliverability", lay:"api", tc:"Retry & chống gửi trùng", pre:"Gửi lỗi tạm thời", exp:"Retry khi lỗi; không gửi trùng/spam người dùng", pr:"P2", steps:["Giả lập gửi lỗi", "Xác nhận retry & không trùng"]},
+  {sub:"Deliverability", lay:"api", tc:"Rate limit gửi", pre:"Gửi số lượng lớn", exp:"Giới hạn tần suất; chống lạm dụng", pr:"P3", steps:["Kích hoạt gửi hàng loạt", "Xác nhận có rate limit"]},
+  {sub:"Push", lay:"both", tc:"Xin quyền & deep-link", pre:"App có push", exp:"Xin quyền đúng; bấm push mở đúng màn (deep-link); hiện khi app nền", pr:"P2", steps:["Bật push & gửi", "Bấm notification", "Xác nhận mở đúng màn"]},
+  {sub:"Push", lay:"both", tc:"Tôn trọng cài đặt tắt thông báo", pre:"User tắt push", exp:"Không gửi push khi user đã tắt", pr:"P2", steps:["Tắt thông báo", "Kích hoạt sự kiện", "Xác nhận không nhận push"]},
+  {sub:"Nội dung", lay:"both", tc:"i18n theo ngôn ngữ người nhận", pre:"User có ngôn ngữ ưu tiên", exp:"Email đúng ngôn ngữ; không lẫn ngôn ngữ", pr:"P3", steps:["Đặt ngôn ngữ user", "Nhận email", "Xác nhận đúng ngôn ngữ"]},
+];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
-const FEATURE_IDS = ["authsession","payment","notify","seo","analytics","legal","errors","interaction","responsive","a11y","security","content-i18n","perf","vitals","release"];
+const FEATURE_IDS = ["seo","analytics","legal","errors","interaction","responsive","a11y","security","content-i18n","perf","vitals","release"];
 const TC_FEAT = [];
 let n2 = 0;
 LOGIN_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Login", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
@@ -1974,6 +2018,9 @@ API_POST_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"
 API_PUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API PUT", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_PATCH_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API PATCH", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_DELETE_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API DELETE", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+AUTH_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Đăng nhập & phiên", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+PAYMENT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Thanh toán", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+EMAIL_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Email & Notification", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 FEATURE_IDS.forEach(id=>{
   const sec = document.getElementById(id); if(!sec) return;
   const h = sec.querySelector("h3");
