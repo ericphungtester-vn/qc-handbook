@@ -1788,12 +1788,18 @@ const tcCls = m => ({GET:"get",POST:"post",PUT:"put",PATCH:"put",DELETE:"del"}[m
 const escHtml = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 const EXPECT = "Đúng như mô tả · không lỗi";
 
-// Nguồn 1 — Component: từ checklist của 65 component
+// Nguồn 1 — Component: từ checklist của 65 component (gắn Ưu tiên + Bước cho đủ cột như Login)
 const TC_COMP = [];
 let n1 = 0;
+const compPrio = it => {
+  const s = it.toLowerCase();
+  if(/xss|sql|inject|bắt buộc|required|bảo mật|quyền|401|403|mất dữ liệu|double|trùng|rollback|kho[áa]|đủ lớn|44px|tương phản|a11y|aria|screen reader/.test(s)) return "P1";
+  if(/tooltip|light ?& ?dark|đúng cả light|bo tròn|nhấp nháy|placeholder mờ|hover xem trước|retina|@2x|nửa sao|mỹ thuật|visual|phân cách|divider/.test(s)) return "P3";
+  return "P2";
+};
 CATS.forEach(cat => COMPS.filter(x=>x.c===cat.id).forEach(x=>{
   const api = (API[x.n] || ["—"])[0];
-  x.t.forEach(item=>{ n1++; TC_COMP.push({ id:"TC-C-"+String(n1).padStart(3,"0"), group:x.n, sub:cat.vi, text:item, api, expected:EXPECT, priority:"" }); });
+  x.t.forEach(item=>{ n1++; TC_COMP.push({ id:"TC-C-"+String(n1).padStart(3,"0"), group:x.n, sub:cat.vi, text:item, api, expected:EXPECT, priority:compPrio(item), steps:["Đưa "+x.n+" về trạng thái liên quan","Thực hiện kiểm: "+item,"Xác nhận kết quả đúng, không lỗi/không cảnh báo ngoài ý muốn"] }); });
 }));
 
 const LOGIN_TC = [
