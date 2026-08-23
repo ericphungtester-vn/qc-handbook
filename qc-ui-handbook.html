@@ -2312,6 +2312,83 @@ const PROFILE_TC = [
   {sub:"Bảo mật", lay:"both", tc:"Xoá tài khoản", pre:"Có tính năng xoá", exp:"Xác nhận nhiều bước; nêu hệ quả; xử lý dữ liệu (GDPR)", pr:"P2", steps:["Yêu cầu xoá tài khoản", "Xác nhận có bước xác nhận & hệ quả"]},
   {sub:"Xem & sửa", lay:"both", tc:"i18n định dạng", pre:"Đổi locale", exp:"Ngày/số/tiền theo locale; chữ dịch không vỡ", pr:"P3", steps:["Đổi locale", "Xác nhận định dạng đúng"]},
 ];
+const CART_TC = [
+  {sub:"Giỏ hàng", lay:"both", tc:"Thêm sản phẩm vào giỏ", pre:"Có sản phẩm", exp:"Item vào giỏ; số lượng & tổng cập nhật đúng", pr:"P1", steps:["Thêm sản phẩm", "Xác nhận giỏ & tổng đúng"]},
+  {sub:"Giỏ hàng", lay:"both", tc:"Cập nhật số lượng / xoá item", pre:"Giỏ có item", exp:"Đổi SL/xoá → tổng tính lại đúng", pr:"P1", steps:["Đổi SL & xoá item", "Xác nhận tổng đúng"]},
+  {sub:"Giỏ hàng", lay:"both", tc:"Số lượng vượt tồn kho", pre:"Sản phẩm sắp hết", exp:"Chặn/báo khi vượt tồn kho", pr:"P1", steps:["Đặt SL > tồn kho", "Xác nhận bị chặn/báo"]},
+  {sub:"Giỏ hàng", lay:"both", tc:"Giỏ rỗng", pre:"Không có item", exp:"Empty state; không cho checkout", pr:"P2", steps:["Xoá hết item", "Xác nhận empty & chặn checkout"]},
+  {sub:"Giỏ hàng", lay:"both", tc:"Áp mã giảm giá / voucher", pre:"Có mã", exp:"Mã đúng → giảm đúng; sai/hết hạn → báo lỗi", pr:"P2", steps:["Nhập mã đúng & sai", "Xác nhận tính/ báo lỗi"]},
+  {sub:"Giỏ hàng", lay:"api", tc:"Tính tổng (thuế/ship/làm tròn)", pre:"Giỏ có item", exp:"Thuế, phí ship, làm tròn, tiền tệ tính đúng", pr:"P1", steps:["Kiểm tổng với thuế/ship", "Đối chiếu số tiền"]},
+  {sub:"Giỏ hàng", lay:"both", tc:"Giữ giỏ qua phiên / merge guest cart", pre:"Guest có giỏ rồi đăng nhập", exp:"Gộp giỏ guest vào tài khoản đúng", pr:"P2", steps:["Thêm giỏ khi guest → đăng nhập", "Xác nhận giỏ được gộp"]},
+  {sub:"Checkout", lay:"both", tc:"Nhập & validate địa chỉ/ship", pre:"Ở bước checkout", exp:"Validate field bắt buộc/định dạng; báo lỗi rõ", pr:"P1", steps:["Bỏ trống/nhập sai", "Xác nhận báo lỗi"]},
+  {sub:"Checkout", lay:"both", tc:"Chọn phương thức ship/thanh toán", pre:"Ở checkout", exp:"Đổi phương thức → cập nhật tổng đúng", pr:"P2", steps:["Đổi ship/payment", "Xác nhận tổng cập nhật"]},
+  {sub:"Đồng thời & tồn kho", lay:"both", tc:"Hết hàng khi đang checkout", pre:"Tồn kho đổi giữa chừng", exp:"Báo & xử lý (cập nhật giỏ), không đặt vượt tồn", pr:"P1", steps:["Cho hết hàng khi checkout", "Xác nhận báo & chặn"]},
+  {sub:"Checkout", lay:"both", tc:"Đặt hàng thành công", pre:"Thông tin hợp lệ", exp:"Tạo đơn; chuyển sang thanh toán/confirm", pr:"P1", steps:["Đặt hàng", "Xác nhận tạo đơn"]},
+  {sub:"Đồng thời & tồn kho", lay:"api", tc:"Chống double-submit đặt hàng", pre:"Bấm 2 lần", exp:"Idempotency → chỉ tạo 1 đơn", pr:"P1", steps:["Đặt hàng 2 lần nhanh", "Xác nhận 1 đơn"]},
+  {sub:"Bảo mật", lay:"api", tc:"Giá/tổng tính ở server", pre:"Sửa giá phía client", exp:"Server tính lại giá/tổng, không tin client", pr:"P1", steps:["Sửa giá trong request", "Xác nhận server dùng giá đúng"]},
+];
+const IMPEX_TC = [
+  {sub:"Export", lay:"both", tc:"Export CSV/Excel đúng dữ liệu", pre:"Có dữ liệu", exp:"File đúng dữ liệu & cột; mở được", pr:"P1", steps:["Export", "Mở file & đối chiếu"]},
+  {sub:"Export", lay:"both", tc:"Export theo bộ lọc hiện tại", pre:"Đang lọc", exp:"Chỉ export dữ liệu đã lọc", pr:"P2", steps:["Lọc rồi export", "Xác nhận đúng tập"]},
+  {sub:"Export", lay:"perf", tc:"Export dữ liệu lớn", pre:"Tập dữ liệu lớn", exp:"Async/stream; không timeout; có thông báo", pr:"P2", steps:["Export tập lớn", "Xác nhận không treo"]},
+  {sub:"Export", lay:"both", tc:"Encoding & CSV injection", pre:"Dữ liệu có tiếng Việt/công thức", exp:"UTF-8 đúng (BOM); escape ô bắt đầu bằng =,+,-,@ (chống CSV injection)", pr:"P1", steps:["Export dữ liệu có '=cmd' & tiếng Việt", "Xác nhận escape & UTF-8"]},
+  {sub:"Import", lay:"both", tc:"Import file đúng mẫu", pre:"File hợp lệ", exp:"Import thành công; báo số dòng", pr:"P1", steps:["Import file mẫu", "Xác nhận số dòng"]},
+  {sub:"Import", lay:"both", tc:"Import sai định dạng/thiếu cột", pre:"File sai", exp:"Báo lỗi rõ; không import", pr:"P1", steps:["Import file sai cột", "Xác nhận báo lỗi & không import"]},
+  {sub:"Import", lay:"both", tc:"Dữ liệu lỗi từng dòng", pre:"File có dòng lỗi", exp:"Báo dòng lỗi; rollback hoặc import phần hợp lệ (theo policy)", pr:"P1", steps:["Import file lẫn dòng lỗi", "Xác nhận xử lý đúng policy"]},
+  {sub:"Import", lay:"api", tc:"Import trùng dữ liệu", pre:"Có bản ghi trùng", exp:"Xử lý (bỏ qua/cập nhật/báo) theo thiết kế", pr:"P2", steps:["Import trùng", "Xác nhận xử lý đúng"]},
+  {sub:"Import", lay:"perf", tc:"Import file lớn", pre:"File lớn", exp:"Tiến trình & không treo; timeout hợp lý", pr:"P2", steps:["Import file lớn", "Xác nhận tiến trình"]},
+  {sub:"Bảo mật", lay:"api", tc:"Kiểm định dạng thật & an toàn", pre:"Upload file import", exp:"Kiểm MIME thật, kích thước; chống file độc", pr:"P1", steps:["Import file đổi đuôi/độc", "Xác nhận bị chặn"]},
+  {sub:"Export", lay:"ui", tc:"Tải file mẫu (template)", pre:"Có template", exp:"Template tải được & đúng cột hướng dẫn", pr:"P3", steps:["Tải template", "Xác nhận đúng"]},
+];
+const CHAT_TC = [
+  {sub:"Gửi/nhận", lay:"both", tc:"Gửi tin nhắn", pre:"Trong phòng chat", exp:"Hiển thị ngay (optimistic) & lưu server; xác nhận đã gửi", pr:"P1", steps:["Gửi tin", "Xác nhận hiển thị & lưu"]},
+  {sub:"Realtime", lay:"both", tc:"Nhận tin realtime", pre:"2 người trong phòng", exp:"Người kia gửi → hiện realtime (WebSocket/SSE)", pr:"P1", steps:["A gửi", "Xác nhận B nhận ngay"]},
+  {sub:"Realtime", lay:"both", tc:"Mất kết nối & reconnect", pre:"Ngắt mạng khi chat", exp:"Tự reconnect; tin gửi lúc offline vào hàng đợi/gửi lại", pr:"P1", steps:["Ngắt & khôi phục mạng", "Xác nhận reconnect & không mất tin"]},
+  {sub:"Trạng thái", lay:"both", tc:"Trạng thái tin (gửi/nhận/đọc)", pre:"Đang chat", exp:"Trạng thái đang gửi/đã gửi/đã nhận/đã đọc đúng", pr:"P2", steps:["Gửi & đọc tin", "Xác nhận trạng thái"]},
+  {sub:"UX", lay:"both", tc:"Cuộn & tải lịch sử", pre:"Nhiều tin", exp:"Giữ vị trí khi có tin mới; auto-scroll khi ở đáy; cuộn lên tải lịch sử", pr:"P2", steps:["Cuộn lên & nhận tin mới", "Xác nhận hành vi cuộn"]},
+  {sub:"UX", lay:"both", tc:"Nội dung dài/emoji/link", pre:"Gửi nội dung đa dạng", exp:"Xuống dòng/emoji/auto-link hiển thị đúng", pr:"P2", steps:["Gửi tin dài + emoji + link", "Xác nhận hiển thị"]},
+  {sub:"UX", lay:"both", tc:"Gửi file/ảnh trong chat", pre:"Chat hỗ trợ đính kèm", exp:"Kiểm định dạng/dung lượng; preview đúng", pr:"P2", steps:["Gửi ảnh/file", "Xác nhận preview & giới hạn"]},
+  {sub:"Bảo mật", lay:"both", tc:"XSS trong tin nhắn", pre:"Gửi payload", exp:"Escape khi hiển thị; không thực thi", pr:"P1", steps:["Gửi <script> trong tin", "Xác nhận escape"]},
+  {sub:"Realtime", lay:"api", tc:"Thứ tự tin khi nhiều tin đến nhanh", pre:"Nhiều tin liên tiếp", exp:"Hiển thị đúng thứ tự thời gian", pr:"P2", steps:["Gửi nhiều tin nhanh", "Xác nhận thứ tự"]},
+  {sub:"Trạng thái", lay:"both", tc:"Xoá/sửa tin & đồng bộ", pre:"Có tin đã gửi", exp:"Xoá/sửa đồng bộ 2 phía (nếu hỗ trợ)", pr:"P2", steps:["Sửa/xoá tin", "Xác nhận đồng bộ"]},
+  {sub:"UX", lay:"both", tc:"Thông báo tin mới khi không ở màn chat", pre:"Ở màn khác", exp:"Có badge/thông báo tin mới", pr:"P2", steps:["Nhận tin khi ở màn khác", "Xác nhận thông báo"]},
+];
+const DASH_TC = [
+  {sub:"Hiển thị", lay:"both", tc:"Load dashboard", pre:"Đã đăng nhập", exp:"Hiển thị đúng widget & số liệu", pr:"P1", steps:["Mở dashboard", "Xác nhận widget/số liệu"]},
+  {sub:"Bộ lọc", lay:"both", tc:"Bộ lọc khoảng thời gian", pre:"Có date range", exp:"Đổi range → số liệu/biểu đồ cập nhật đúng", pr:"P1", steps:["Đổi date range", "Xác nhận cập nhật"]},
+  {sub:"Dữ liệu", lay:"both", tc:"Không có dữ liệu", pre:"Range không có data", exp:"Empty state trong widget/chart (không lỗi)", pr:"P2", steps:["Chọn range trống", "Xác nhận empty state"]},
+  {sub:"Hiển thị", lay:"both", tc:"Biểu đồ đúng & a11y", pre:"Có dữ liệu", exp:"Chart đúng dữ liệu; tooltip/legend; không chỉ dựa màu", pr:"P2", steps:["Xem chart", "Đối chiếu & kiểm a11y"]},
+  {sub:"Dữ liệu", lay:"both", tc:"Số liệu khớp nguồn & định dạng", pre:"Có dữ liệu", exp:"Số khớp nguồn; định dạng số/tiền/% đúng", pr:"P1", steps:["Đối chiếu số với nguồn", "Xác nhận khớp & định dạng"]},
+  {sub:"Dữ liệu", lay:"api", tc:"Múi giờ", pre:"Dữ liệu theo thời gian", exp:"Hiển thị theo timezone đúng (local vs UTC)", pr:"P2", steps:["Đổi timezone", "Xác nhận số liệu đúng"]},
+  {sub:"Bảo mật", lay:"api", tc:"Phân quyền dữ liệu", pre:"Nhiều vai trò", exp:"Chỉ thấy dữ liệu được phép (không lộ của bộ phận khác)", pr:"P1", steps:["Đăng nhập role khác nhau", "Xác nhận phạm vi dữ liệu"]},
+  {sub:"Hiển thị", lay:"both", tc:"Export báo cáo", pre:"Có dữ liệu", exp:"Export CSV/PDF đúng", pr:"P2", steps:["Export báo cáo", "Xác nhận nội dung"]},
+  {sub:"Hiệu năng", lay:"perf", tc:"Nhiều widget / dữ liệu lớn", pre:"Dashboard nặng", exp:"Lazy/skeleton; không treo; p95 đạt", pr:"P2", steps:["Mở dashboard nặng", "Xác nhận không treo"]},
+  {sub:"Hiển thị", lay:"ui", tc:"Responsive", pre:"Màn nhỏ", exp:"Widget xếp lại gọn trên mobile", pr:"P2", steps:["Thu nhỏ màn", "Xác nhận layout"]},
+  {sub:"Bộ lọc", lay:"both", tc:"Realtime / refresh", pre:"Có auto-refresh", exp:"Số liệu cập nhật theo realtime/refresh đúng", pr:"P2", steps:["Chờ refresh", "Xác nhận cập nhật"]},
+];
+const NOTIF_TC = [
+  {sub:"Danh sách", lay:"both", tc:"Hiển thị danh sách thông báo", pre:"Có thông báo", exp:"Mới nhất trước; nội dung đúng", pr:"P1", steps:["Mở notification center", "Xác nhận danh sách"]},
+  {sub:"Realtime", lay:"both", tc:"Badge số chưa đọc", pre:"Có tin chưa đọc", exp:"Badge đếm đúng; cập nhật realtime", pr:"P1", steps:["Nhận thông báo mới", "Xác nhận badge"]},
+  {sub:"Tương tác", lay:"both", tc:"Đánh dấu đã đọc / tất cả", pre:"Có tin chưa đọc", exp:"Đánh dấu đã đọc → badge giảm; 'đọc tất cả' đúng", pr:"P1", steps:["Đọc 1 & đọc tất cả", "Xác nhận badge cập nhật"]},
+  {sub:"Tương tác", lay:"both", tc:"Bấm thông báo điều hướng", pre:"Có thông báo có link", exp:"Bấm → tới đúng màn (deep-link)", pr:"P2", steps:["Bấm thông báo", "Xác nhận điều hướng đúng"]},
+  {sub:"Danh sách", lay:"both", tc:"Danh sách rỗng", pre:"Không có thông báo", exp:"Empty state rõ", pr:"P2", steps:["Xoá hết/không có", "Xác nhận empty state"]},
+  {sub:"Danh sách", lay:"both", tc:"Tải thêm (phân trang/infinite)", pre:"Nhiều thông báo", exp:"Tải thêm đúng, không trùng", pr:"P2", steps:["Cuộn tải thêm", "Xác nhận đúng"]},
+  {sub:"Tương tác", lay:"both", tc:"Xoá thông báo", pre:"Có thông báo", exp:"Xoá được; cập nhật danh sách", pr:"P2", steps:["Xoá 1 thông báo", "Xác nhận biến mất"]},
+  {sub:"Realtime", lay:"both", tc:"Đồng bộ đã đọc giữa tab/thiết bị", pre:"Mở nhiều tab", exp:"Đọc ở 1 nơi → nơi khác đồng bộ", pr:"P2", steps:["Đọc ở tab A", "Xác nhận tab B đồng bộ"]},
+  {sub:"Tương tác", lay:"both", tc:"Cài đặt bật/tắt loại thông báo", pre:"Có cài đặt", exp:"Tắt loại nào → không nhận loại đó", pr:"P3", steps:["Tắt 1 loại", "Xác nhận không nhận"]},
+];
+const COMMENT_TC = [
+  {sub:"Đăng", lay:"both", tc:"Đăng bình luận", pre:"Đã đăng nhập", exp:"Hiển thị ngay & lưu server", pr:"P1", steps:["Đăng bình luận", "Xác nhận hiển thị & lưu"]},
+  {sub:"Đăng", lay:"both", tc:"Bình luận rỗng / quá dài", pre:"Ở ô bình luận", exp:"Validate: chặn rỗng & vượt giới hạn ký tự", pr:"P2", steps:["Đăng rỗng & rất dài", "Xác nhận validate"]},
+  {sub:"Bảo mật", lay:"both", tc:"XSS trong bình luận", pre:"Nhập payload", exp:"Escape khi hiển thị; link an toàn (rel/noopener)", pr:"P1", steps:["Đăng <script>", "Xác nhận escape"]},
+  {sub:"Sửa/Xoá", lay:"both", tc:"Sửa/xoá của mình; không của người khác", pre:"Có bình luận", exp:"Sửa/xoá bình luận của mình OK; của người khác → 403 (BOLA)", pr:"P1", steps:["Sửa/xoá của mình & của người khác", "Xác nhận quyền đúng"]},
+  {sub:"Hiển thị", lay:"both", tc:"Trả lời lồng (threading)", pre:"Bình luận có reply", exp:"Reply hiển thị đúng cấp/thứ tự", pr:"P2", steps:["Trả lời bình luận", "Xác nhận lồng đúng"]},
+  {sub:"Đăng", lay:"both", tc:"Đánh giá sao (review)", pre:"Có tính năng review", exp:"Chọn 1–5 sao; 1 người 1 review; cập nhật điểm TB", pr:"P2", steps:["Đánh giá sao", "Xác nhận 1 review & điểm TB"]},
+  {sub:"Hiển thị", lay:"both", tc:"Phân trang / tải thêm", pre:"Nhiều bình luận", exp:"Tải thêm đúng, không trùng", pr:"P2", steps:["Cuộn tải thêm", "Xác nhận đúng"]},
+  {sub:"Bảo mật", lay:"api", tc:"Kiểm duyệt / chống spam", pre:"Có kiểm duyệt", exp:"Chờ duyệt/chặn spam theo policy; rate limit", pr:"P2", steps:["Đăng spam liên tục", "Xác nhận bị chặn/chờ duyệt"]},
+  {sub:"Hiển thị", lay:"both", tc:"Sắp xếp (mới nhất/hữu ích)", pre:"Có sắp xếp", exp:"Đổi sort → thứ tự đúng", pr:"P3", steps:["Đổi sort", "Xác nhận thứ tự"]},
+  {sub:"Hiển thị", lay:"both", tc:"Realtime bình luận mới", pre:"Nhiều người", exp:"Bình luận mới hiện realtime (nếu hỗ trợ)", pr:"P3", steps:["Người khác đăng", "Xác nhận hiện realtime"]},
+];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
 const FEATURE_IDS = [];
 const TC_FEAT = [];
@@ -2325,6 +2402,12 @@ FORGOT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"
 UPLOAD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Upload file", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 SEARCHF_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Search", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 PROFILE_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Profile", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+CART_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Cart & Checkout", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+IMPEX_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Import / Export", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+CHAT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Chat", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+DASH_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Dashboard", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+NOTIF_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Notification center", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+COMMENT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Comment & Review", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_GET_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API GET", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_POST_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API POST", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_PUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API PUT", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
@@ -2390,7 +2473,7 @@ function tcRefreshDependent(){
   tcFillSelect(tcPrio, data.map(t=>t.priority).filter(Boolean).sort(), "Tất cả ưu tiên");
 }
 // Feature "chuyên biệt" (bộ test case tự viết) vs "từ Sổ tay" (chuyển từ mục kiến thức)
-const DEDICATED_FEATURES = new Set(["Login","Logout","Register","Forgot password","Password","Email","Upload file","Search","Profile","API GET","API POST","API PUT","API PATCH","API DELETE"]);
+const DEDICATED_FEATURES = new Set(["Login","Logout","Register","Forgot password","Password","Email","Upload file","Search","Profile","Cart & Checkout","Import / Export","Chat","Dashboard","Notification center","Comment & Review","API GET","API POST","API PUT","API PATCH","API DELETE"]);
 function tcSetupMode(){
   const isComp = tcMode==="component";
   tcHead.innerHTML = `<tr><th>ID</th><th>${isComp?"Component":"Feature"}</th><th>${isComp?"Group":"Category"}</th><th>Test Case</th><th>Layer</th><th>Expected Result</th><th>Priority</th><th>Steps</th></tr>`;
