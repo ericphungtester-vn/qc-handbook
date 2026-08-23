@@ -1515,6 +1515,15 @@ PHASES.forEach(([title, items], i)=>{
   });
 });
 
+// Sắp lại DOM các section theo đúng thứ tự menu Nhóm (PHASES) để cuộn trang khớp menu
+(function reorderSections(){
+  const main = document.querySelector("main");
+  PHASES.forEach(([title, items])=> items.forEach(it=>{
+    const el = document.getElementById(it[0]==="cat" ? "cat-"+it[1] : it[1]);
+    if(el) main.appendChild(el);
+  }));
+})();
+
 // nav theo tên component (A→Z)
 [...COMPS].sort((a,b)=>a.n.localeCompare(b.n)).forEach(x=>{
   const a = document.createElement("a");
@@ -1559,7 +1568,7 @@ const demoSec = document.getElementById("demo");
 q.addEventListener("input", ()=>{
   const term = q.value.trim().toLowerCase();
   let visible = 0;
-  document.querySelectorAll("#content .cat").forEach(sec=>{
+  document.querySelectorAll("section.cat[data-cat]").forEach(sec=>{
     let any = 0;
     sec.querySelectorAll(".comp").forEach(card=>{
       const hit = !term || card.dataset.k.includes(term);
