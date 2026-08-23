@@ -1873,9 +1873,6 @@ const LOGIN_TC = [
   {sub:"Mật khẩu & UX", lay:"ui", tc:"Trình quản lý mật khẩu tự điền", pre:"Trình duyệt đã lưu tài khoản", exp:"Gợi ý & tự điền được vào 2 ô", pr:"P3", steps:["Đã lưu tài khoản", "Mở lại màn Login", "Chọn gợi ý → xác nhận tự điền"]},
   {sub:"Mật khẩu & UX", lay:"ui", tc:"Enter submit; loading; chống double-submit", pre:"Ở màn Login", exp:"Enter gửi; nút loading & khoá; bấm 2 lần không gửi 2 request", pr:"P2", steps:["Nhập thông tin, nhấn Enter", "Bấm Đăng nhập 2 lần nhanh", "Xác nhận chỉ 1 request & nút loading"]},
   {sub:"Mật khẩu & UX", lay:"ui", tc:"Accessibility (a11y)", pre:"Điều hướng bằng bàn phím", exp:"Tab đúng thứ tự; screen reader đọc nhãn; focus nhảy vào lỗi", pr:"P2", steps:["Tab qua các trường", "Bật screen reader kiểm nhãn", "Gây lỗi & xác nhận focus tới lỗi"]},
-  {sub:"Mật khẩu & UX", lay:"both", tc:"Ghi nhớ đăng nhập (remember me)", pre:"Tick \"Ghi nhớ\" rồi login", exp:"Phiên / refresh token kéo dài đúng thời hạn cấu hình", pr:"P2", steps:["Tick Ghi nhớ & đăng nhập", "Đóng & mở lại trình duyệt", "Xác nhận vẫn đăng nhập trong hạn"]},
-  {sub:"Mật khẩu & UX", lay:"both", tc:"Không tick Ghi nhớ → hết phiên khi đóng trình duyệt", pre:"Không tick Ghi nhớ", exp:"Dùng session cookie; đóng trình duyệt → phải đăng nhập lại", pr:"P2", steps:["Đăng nhập không tick Ghi nhớ", "Đóng & mở lại trình duyệt", "Xác nhận phải đăng nhập lại"]},
-  {sub:"Mật khẩu & UX", lay:"api", tc:"Thu hồi remember-me khi đổi mật khẩu/đăng xuất mọi nơi", pre:"Đang có remember-me token", exp:"Token remember-me bị vô hiệu khi đổi mật khẩu hoặc đăng xuất mọi nơi", pr:"P1", steps:["Bật Ghi nhớ", "Đổi mật khẩu / đăng xuất mọi nơi", "Xác nhận remember-me không còn hiệu lực"]},
   {sub:"Mật khẩu & UX", lay:"ui", tc:"Cho phép dán mật khẩu & OTP", pre:"Ở ô mật khẩu / OTP", exp:"Dán được (NIST khuyến nghị cho phép paste); dán OTP điền đủ ô", pr:"P3", steps:["Dán mật khẩu vào ô", "Dán mã OTP", "Xác nhận dán được & OTP điền đủ ô"]},
   {sub:"2FA / OTP", lay:"both", tc:"OTP đúng", pre:"Đã qua bước 1, 2FA bật", exp:"Nhập OTP đúng → đăng nhập thành công", pr:"P1", steps:["Đăng nhập bước 1", "Nhập OTP đúng", "Xác nhận thành công"]},
   {sub:"2FA / OTP", lay:"both", tc:"OTP sai", pre:"Ở màn nhập OTP", exp:"Báo \"Mã không đúng\"; không đăng nhập", pr:"P1", steps:["Nhập OTP sai", "Xác nhận báo lỗi & không đăng nhập"]},
@@ -2518,11 +2515,30 @@ const TRANSLATION_TC = [
   {sub:"Nhớ ngôn ngữ", lay:"both", tc:"Đổi ngôn ngữ áp toàn app & nhớ", pre:"Đổi ngôn ngữ", exp:"Áp toàn bộ UI & nhớ khi reload", pr:"P2", steps:["Đổi ngôn ngữ & F5", "Xác nhận giữ & áp"]},
   {sub:"Ký tự", lay:"both", tc:"Unicode/emoji/tiếng Việt", pre:"Nhập/hiển thị", exp:"Hiển thị đúng, không lỗi encoding", pr:"P2", steps:["Nhập ký tự đặc biệt", "Xác nhận đúng"]},
 ];
+const REMEMBER_TC = [
+  {sub:"Cơ bản", lay:"both", tc:"Đăng nhập khi bật Remember Me", pre:"Ở màn Login", exp:"Tạo cookie/refresh dài hạn; vẫn đăng nhập sau khi đóng & mở lại trình duyệt", pr:"P1", steps:["Tick Remember Me & đăng nhập", "Đóng & mở lại trình duyệt", "Xác nhận vẫn đăng nhập"]},
+  {sub:"Cơ bản", lay:"both", tc:"Đăng nhập KHÔNG bật Remember Me", pre:"Ở màn Login", exp:"Dùng session cookie; đóng trình duyệt → phải đăng nhập lại", pr:"P1", steps:["Đăng nhập không tick", "Đóng & mở lại", "Xác nhận phải đăng nhập lại"]},
+  {sub:"Cơ bản", lay:"both", tc:"Đăng nhập lại nhưng không tick Remember Me", pre:"Từng bật Remember Me", exp:"Không tạo cookie dài hạn mới; theo session", pr:"P2", steps:["Đăng nhập lại không tick", "Xác nhận không có cookie dài hạn"]},
+  {sub:"Cookie & bảo mật", lay:"api", tc:"Cookie remember lưu đúng", pre:"Bật Remember Me", exp:"Cookie tồn tại & dùng được sau khi đóng trình duyệt", pr:"P1", steps:["Đăng nhập có Remember Me", "Kiểm cookie ở DevTools", "Xác nhận cookie dài hạn"]},
+  {sub:"Cookie & bảo mật", lay:"api", tc:"Cookie có HttpOnly + Secure + SameSite", pre:"Có cookie remember", exp:"Đủ flag HttpOnly, Secure, SameSite (chuẩn OWASP)", pr:"P1", steps:["Xem thuộc tính cookie", "Xác nhận đủ flag bảo mật"]},
+  {sub:"Cookie & bảo mật", lay:"api", tc:"Thời gian hết hạn cookie dài hạn", pre:"Có cookie remember", exp:"Expiry đúng cấu hình (vd 30 ngày)", pr:"P2", steps:["Kiểm Max-Age/Expires cookie", "Xác nhận đúng cấu hình"]},
+  {sub:"Cookie & bảo mật", lay:"both", tc:"Token Remember Me hết hạn", pre:"Token quá hạn", exp:"Hết hạn → yêu cầu đăng nhập lại", pr:"P1", steps:["Để token quá hạn", "Truy cập", "Xác nhận yêu cầu đăng nhập lại"]},
+  {sub:"Cookie & bảo mật", lay:"both", tc:"Xoá localStorage nhưng vẫn giữ cookie", pre:"Bật Remember Me", exp:"Auto-login vẫn hoạt động qua cookie (đúng thiết kế); không phụ thuộc localStorage", pr:"P2", steps:["Xoá localStorage", "Tải lại", "Xác nhận vẫn đăng nhập qua cookie"]},
+  {sub:"Cookie & bảo mật", lay:"api", tc:"Token rotation khi dùng lại", pre:"Mỗi lần auto-login", exp:"Xoay vòng remember token mỗi lần dùng (chống trộm/replay)", pr:"P2", steps:["Auto-login nhiều lần", "Kiểm token", "Xác nhận đổi mới"]},
+  {sub:"Logout & phiên", lay:"both", tc:"Logout xoá remember token/cookie", pre:"Đang dùng Remember Me", exp:"Logout → xoá cookie/token remember; không auto-login lại", pr:"P1", steps:["Logout", "Kiểm cookie", "Xác nhận đã xoá & không auto-login"]},
+  {sub:"Logout & phiên", lay:"api", tc:"Reuse remember token sau logout", pre:"Đã logout", exp:"Dùng lại token remember cũ → bị từ chối (401)", pr:"P1", steps:["Logout", "Gửi request bằng remember token cũ", "Xác nhận 401"]},
+  {sub:"Logout & phiên", lay:"both", tc:"Đăng xuất tất cả phiên", pre:"Nhiều thiết bị có Remember Me", exp:"'Đăng xuất mọi nơi' → thu hồi mọi remember token", pr:"P1", steps:["Đăng xuất mọi nơi", "Kiểm các thiết bị", "Xác nhận đều bị thu hồi"]},
+  {sub:"Logout & phiên", lay:"both", tc:"Remember Me + session timeout ngắn", pre:"Có timeout ngắn", exp:"Hết session ngắn → dùng remember để cấp phiên mới (đúng thiết kế), không lộ", pr:"P2", steps:["Để session ngắn hết", "Xác nhận hành vi đúng thiết kế"]},
+  {sub:"Bảo mật", lay:"both", tc:"Đổi mật khẩu khi Remember Me hoạt động", pre:"Đang có remember token", exp:"Đổi mật khẩu → vô hiệu remember token; buộc đăng nhập lại", pr:"P1", steps:["Đổi mật khẩu", "Xác nhận remember token bị vô hiệu"]},
+  {sub:"Quản trị", lay:"api", tc:"Admin vô hiệu hoá tài khoản khi Remember Me hoạt động", pre:"Admin disable tài khoản", exp:"Remember token bị thu hồi ngay; auto-login thất bại", pr:"P1", steps:["Admin vô hiệu hoá", "User auto-login", "Xác nhận bị chặn"]},
+  {sub:"Đa thiết bị", lay:"both", tc:"Remember Me trên nhiều thiết bị", pre:"Đăng nhập nhiều thiết bị", exp:"Mỗi thiết bị 1 remember token riêng; thu hồi từng cái độc lập", pr:"P2", steps:["Bật Remember Me ở A & B", "Thu hồi ở A", "Xác nhận B vẫn còn (nếu policy vậy)"]},
+];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
 const FEATURE_IDS = [];
 const TC_FEAT = [];
 let n2 = 0;
 LOGIN_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Login", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+REMEMBER_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Remember Me", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 LOGOUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Logout", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 EMAILFIELD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Email", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 PASSWORD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Password", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
@@ -2613,7 +2629,7 @@ function tcRefreshDependent(){
   tcFillSelect(tcPrio, data.map(t=>t.priority).filter(Boolean).sort(), "Tất cả ưu tiên");
 }
 // Feature "chuyên biệt" (bộ test case tự viết) vs "từ Sổ tay" (chuyển từ mục kiến thức)
-const DEDICATED_FEATURES = new Set(["Login","Logout","Register","Forgot password","Password","Email","Upload file","Search","Profile","Cart & Checkout","Import / Export","Chat","Dashboard","Notification center","Comment & Review","Booking","Calendar","Map","Media player","Wizard / Multi-step","Onboarding","Settings","Timezone","Number & Currency","Date & Time","Translation & RTL","API GET","API POST","API PUT","API PATCH","API DELETE"]);
+const DEDICATED_FEATURES = new Set(["Login","Logout","Remember Me","Register","Forgot password","Password","Email","Upload file","Search","Profile","Cart & Checkout","Import / Export","Chat","Dashboard","Notification center","Comment & Review","Booking","Calendar","Map","Media player","Wizard / Multi-step","Onboarding","Settings","Timezone","Number & Currency","Date & Time","Translation & RTL","API GET","API POST","API PUT","API PATCH","API DELETE"]);
 function tcSetupMode(){
   const isComp = tcMode==="component";
   tcHead.innerHTML = `<tr><th>ID</th><th>${isComp?"Component":"Feature"}</th><th>${isComp?"Group":"Category"}</th><th>Test Case</th><th>Layer</th><th>Expected Result</th><th>Priority</th><th>Steps</th></tr>`;
