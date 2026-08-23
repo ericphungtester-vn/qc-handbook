@@ -82,7 +82,8 @@
 
   /* Layout */
   .shell{display:grid; grid-template-columns:230px 1fr; gap:34px; padding:28px 0 80px}
-  nav.side{position:sticky; top:82px; align-self:start; max-height:calc(100vh - 100px); overflow-y:auto; padding-right:4px}
+  nav.side{position:sticky; top:82px; align-self:start; max-height:calc(100vh - 100px); overflow-y:auto; padding-right:4px; background:var(--paper)}
+  .navtoggle-sticky{position:sticky; top:0; z-index:3; background:var(--paper); padding-bottom:12px}
   nav.side .lbl{
     font-size:11px; text-transform:uppercase; letter-spacing:.09em;
     color:var(--muted); font-weight:700; margin:0 0 8px 8px;
@@ -94,7 +95,7 @@
   }
   nav.side a:hover{background:var(--surface-2)}
   nav.side a .n{font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums}
-  .navtoggle{display:flex; gap:3px; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:3px; margin-bottom:14px}
+  .navtoggle{display:flex; gap:3px; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:3px}
   .navtoggle button{
     flex:1; font:600 12px var(--sans); padding:6px 8px; border:0; border-radius:6px;
     background:transparent; color:var(--muted); cursor:pointer;
@@ -368,6 +369,7 @@
       border-right:1px solid var(--line);
     }
     nav.side.open{transform:none}
+    .navtoggle-sticky{background:var(--surface)}
   }
   @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto} nav.side{transition:none}}
 </style>
@@ -397,9 +399,11 @@
 <div id="view-handbook" class="view" role="tabpanel" aria-labelledby="tab-handbook">
 <div class="wrap shell">
   <nav class="side" id="nav" aria-label="Danh mục">
-    <div class="navtoggle" role="tablist" aria-label="Kiểu hiển thị menu">
-      <button id="tgGroups" type="button" class="on" aria-selected="true">Nhóm</button>
-      <button id="tgComps" type="button" aria-selected="false">Component</button>
+    <div class="navtoggle-sticky">
+      <div class="navtoggle" role="tablist" aria-label="Kiểu hiển thị menu">
+        <button id="tgGroups" type="button" class="on" aria-selected="true">Nhóm</button>
+        <button id="tgComps" type="button" aria-selected="false">Component</button>
+      </div>
     </div>
     <div id="navGroups"></div>
     <div id="navComps" hidden><p class="lbl">Tất cả component (A→Z)</p></div>
