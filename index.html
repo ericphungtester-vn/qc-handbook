@@ -2544,6 +2544,14 @@ const RESET_TC = [
   {sub:"Edge", lay:"both", tc:"Reset tài khoản bị disable / lock", pre:"Tài khoản disabled/locked", exp:"Xử lý đúng policy từng trạng thái (chặn/thông báo)", pr:"P2", steps:["Reset cho tài khoản disable/lock", "Xác nhận xử lý đúng"]},
   {sub:"Edge", lay:"both", tc:"Reset khi đang login nhiều browser", pre:"Đăng nhập nhiều browser", exp:"Sau reset các browser bị đăng xuất (vô hiệu phiên)", pr:"P2", steps:["Reset", "Kiểm các browser", "Xác nhận bị đăng xuất"]},
   {sub:"Edge", lay:"ui", tc:"Back button sau khi reset thành công", pre:"Vừa reset xong", exp:"Bấm Back không reset lại/không lộ; xử lý gọn", pr:"P3", steps:["Reset xong bấm Back", "Xác nhận xử lý gọn"]},
+  {sub:"Đặt mật khẩu", lay:"both", tc:"Mật khẩu mới trùng cũ / trong lịch sử", pre:"Có password history", exp:"Chặn nếu trùng mật khẩu cũ / trong N mật khẩu gần nhất", pr:"P2", steps:["Đặt lại = mật khẩu cũ", "Xác nhận bị chặn"]},
+  {sub:"Token & Link", lay:"api", tc:"Token gắn đúng user (IDOR)", pre:"Token của user A", exp:"Token A không đặt được mật khẩu cho user B; gắn đúng chủ token", pr:"P1", steps:["Dùng token A cố đổi mật khẩu B","Xác nhận từ chối"]},
+  {sub:"Token & Link", lay:"api", tc:"Race: 2 request cùng token đồng thời", pre:"2 request song song cùng token", exp:"Chỉ 1 thành công (single-use atomic); cái còn lại từ chối", pr:"P2", steps:["Gửi 2 request cùng token đồng thời","Xác nhận chỉ 1 thành công"]},
+  {sub:"Bảo mật", lay:"api", tc:"Rate limit khi submit mật khẩu mới", pre:"Submit nhiều lần / đoán token", exp:"Giới hạn số lần submit; chống brute-force token", pr:"P2", steps:["Submit sai/đoán token nhiều lần","Xác nhận bị giới hạn"]},
+  {sub:"Bảo mật", lay:"api", tc:"CSRF form đặt mật khẩu mới", pre:"Form dùng cookie/session", exp:"Có chống CSRF; request thiếu token → từ chối", pr:"P2", steps:["Gửi form thiếu CSRF token","Xác nhận từ chối"]},
+  {sub:"Bảo mật", lay:"both", tc:"Email xác nhận sau khi đổi mật khẩu", pre:"Reset thành công", exp:"Gửi email thông báo mật khẩu đã đổi (cảnh báo bảo mật)", pr:"P2", steps:["Reset thành công","Kiểm email xác nhận"]},
+  {sub:"Đặt mật khẩu", lay:"both", tc:"Sau reset: đăng nhập lại / auto-login đúng thiết kế", pre:"Reset xong", exp:"Yêu cầu đăng nhập lại (khuyến nghị) hoặc auto-login đúng thiết kế; nhất quán", pr:"P2", steps:["Reset xong","Xác nhận hành vi đăng nhập đúng thiết kế"]},
+  {sub:"Đặt mật khẩu", lay:"ui", tc:"UX form: hiện/ẩn, Caps Lock, dán", pre:"Ở form đặt mật khẩu mới", exp:"Hiện/ẩn mật khẩu; cảnh báo Caps Lock; cho dán (NIST)", pr:"P3", steps:["Dùng các tiện ích ở form","Xác nhận hoạt động"]},
 ];
 const ACCLOCK_TC = [
   {sub:"Kích hoạt khoá", lay:"both", tc:"Khoá sau X lần đăng nhập sai", pre:"Sai mật khẩu liên tiếp", exp:"Sau X lần (vd 5) → khoá tài khoản; báo rõ (OWASP ASVS)", pr:"P1", steps:["Đăng nhập sai X lần", "Xác nhận bị khoá"]},
