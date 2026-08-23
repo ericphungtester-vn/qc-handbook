@@ -301,12 +301,19 @@
   .tc-wrap{padding:24px 20px 80px}
   .tc-head{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:6px}
   .tc-head h2{margin:0; font-size:20px; letter-spacing:-.01em}
-  .tc-seg{display:inline-flex; gap:3px; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:3px; margin:14px 0 0}
+  .tc-desc{color:var(--muted); font-size:13px; margin:10px 0 0; max-width:74ch; line-height:1.5}
+  .tc-desc-toggle{border:1px solid var(--line); background:var(--surface); color:var(--muted); width:24px; height:24px; border-radius:6px; cursor:pointer; font-size:12px; line-height:1; vertical-align:middle; margin-left:8px; transition:transform .15s}
+  .tc-desc-toggle:hover{border-color:var(--accent); color:var(--accent-ink)}
+  .tc-desc-toggle[aria-expanded="true"]{transform:rotate(180deg)}
+  .tc-div{width:1px; height:30px; background:var(--line); margin:0 4px; flex:none}
+  .tc-seg{display:inline-flex; gap:3px; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:3px}
   .tc-seg-b{font:600 13px var(--sans); padding:7px 14px; border:0; border-radius:6px; background:transparent; color:var(--muted); cursor:pointer}
   .tc-seg-b.on{background:var(--surface); color:var(--accent-ink); box-shadow:var(--shadow)}
-  .tc-controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:16px 0}
-  .tc-controls input, .tc-controls select{font:14px var(--sans); padding:8px 11px; border:1px solid var(--line); border-radius:9px; background:var(--surface); color:var(--ink)}
-  .tc-controls input{flex:1 1 240px; min-width:180px}
+  .tc-controls{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:16px 0}
+  .tc-controls input, .tc-controls select{font:13px var(--sans); padding:7px 9px; border:1px solid var(--line); border-radius:9px; background:var(--surface); color:var(--ink)}
+  .tc-controls input{flex:1 1 140px; min-width:120px}
+  .tc-controls select{max-width:160px; flex:0 1 auto}
+  #tcExport{flex:none; white-space:nowrap}
   .tc-count{font-size:12.5px; color:var(--muted); margin-left:auto; font-variant-numeric:tabular-nums}
   .tc-table-wrap{border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow)}
   .tc-scroll{overflow-x:auto; max-height:74vh; overflow-y:auto}
@@ -1177,13 +1184,14 @@
 
 <div id="view-testcase" class="view" role="tabpanel" aria-labelledby="tab-testcase" hidden>
   <div class="wrap tc-wrap">
-    <div class="tc-head"><h2>Test case</h2><span class="tc-count" id="tcCount"></span></div>
-    <p style="color:var(--muted);font-size:13px;margin:2px 0 0;max-width:74ch">Bộ test case theo 2 chế độ: <strong>Theo Component</strong> (sinh từ checklist của các component) và <strong>Theo Feature</strong> (Login, API GET/POST/PUT/PATCH/DELETE, Thanh toán, Đăng nhập &amp; phiên, a11y…). Lọc theo Feature/Component, Hạng mục, Layer, Ưu tiên hoặc từ khoá; bấm <strong>⋯</strong> để xem Bước thực hiện; <strong>Xuất CSV</strong> để nhập vào Excel / công cụ quản lý test. Với component, nhớ chạy kèm mục <strong>Checklist nền</strong> (tab Sổ tay).</p>
-    <div class="tc-seg" role="tablist" aria-label="Kiểu test case">
-      <button class="tc-seg-b on" data-mode="component" type="button">Theo Component</button>
-      <button class="tc-seg-b" data-mode="feature" type="button">Theo Feature</button>
-    </div>
+    <div class="tc-head"><h2>Test case <button class="tc-desc-toggle" id="tcDescToggle" type="button" aria-expanded="false" aria-controls="tcDesc" aria-label="Xem mô tả" title="Xem mô tả">⌄</button></h2><span class="tc-count" id="tcCount"></span></div>
+    <p class="tc-desc" id="tcDesc" hidden>Bộ test case theo 2 chế độ: <strong>Theo Component</strong> (sinh từ checklist của các component) và <strong>Theo Feature</strong> (Login, API GET/POST/PUT/PATCH/DELETE, Thanh toán, Đăng nhập &amp; phiên, a11y…). Lọc theo Feature/Component, Hạng mục, Layer, Ưu tiên hoặc từ khoá; bấm <strong>⋯</strong> để xem Bước thực hiện; <strong>Xuất CSV</strong> để nhập vào Excel / công cụ quản lý test. Với component, nhớ chạy kèm mục <strong>Checklist nền</strong> (tab Sổ tay).</p>
     <div class="tc-controls">
+      <div class="tc-seg" role="tablist" aria-label="Kiểu test case">
+        <button class="tc-seg-b on" data-mode="component" type="button">Theo Component</button>
+        <button class="tc-seg-b" data-mode="feature" type="button">Theo Feature</button>
+      </div>
+      <span class="tc-div" aria-hidden="true"></span>
       <input id="tcSearch" type="search" placeholder="Tìm test case…" autocomplete="off" aria-label="Tìm test case">
       <select id="tcFilter" aria-label="Lọc"><option value="">Tất cả</option></select>
       <select id="tcSub" aria-label="Lọc hạng mục"><option value="">Tất cả hạng mục</option></select>
@@ -2281,6 +2289,15 @@ tcBody.addEventListener("click", e=>{
   btn.textContent = willOpen ? "▾" : "⋯";
 });
 tcSetupMode();
+
+// Xổ/thu mô tả tab TestCase
+const tcDescToggle = document.getElementById("tcDescToggle");
+const tcDesc = document.getElementById("tcDesc");
+tcDescToggle.addEventListener("click", ()=>{
+  const open = tcDesc.hidden;
+  tcDesc.hidden = !open;
+  tcDescToggle.setAttribute("aria-expanded", String(open));
+});
 
 document.getElementById("tcExport").addEventListener("click", ()=>{
   const isComp = tcMode==="component";
