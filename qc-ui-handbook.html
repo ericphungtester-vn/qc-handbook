@@ -2189,12 +2189,38 @@ const LOGOUT_TC = [
   {sub:"Edge", lay:"ui", tc:"Double-click logout", pre:"Ở nút logout", exp:"Bấm 2 lần nhanh không gây lỗi/không gọi 2 lần lỗi", pr:"P3", steps:["Bấm logout 2 lần nhanh", "Xác nhận không lỗi"]},
   {sub:"SSO", lay:"api", tc:"Single Logout (SLO)", pre:"Dùng SSO/IdP", exp:"Logout thu hồi phiên ở IdP &/hoặc các app liên kết (nếu cấu hình SLO)", pr:"P2", steps:["Logout từ 1 app SSO", "Kiểm các app/IdP", "Xác nhận SLO đúng cấu hình"]},
 ];
+const EMAILFIELD_TC = [
+  {sub:"Nhập & validate", lay:"both", tc:"Email đúng định dạng → chấp nhận", pre:"Ở ô email", exp:"Chấp nhận email hợp lệ (user@domain.com)", pr:"P1", steps:["Nhập email hợp lệ", "Xác nhận không báo lỗi & gửi được"]},
+  {sub:"Nhập & validate", lay:"both", tc:"Thiếu @ → báo lỗi", pre:"Ở ô email", exp:"Báo lỗi định dạng; chặn submit; server cũng chặn", pr:"P1", steps:["Nhập 'userdomain.com'", "Xác nhận báo lỗi"]},
+  {sub:"Nhập & validate", lay:"both", tc:"Nhiều @ → báo lỗi", pre:"Ở ô email", exp:"Từ chối 'a@@b.com' / 'a@b@c.com'", pr:"P2", steps:["Nhập email nhiều @", "Xác nhận báo lỗi"]},
+  {sub:"Nhập & validate", lay:"both", tc:"Thiếu/sai domain", pre:"Ở ô email", exp:"Từ chối thiếu domain, thiếu dấu chấm, TLD sai", pr:"P2", steps:["Nhập 'user@', 'user@domain'", "Xác nhận báo lỗi"]},
+  {sub:"Nhập & validate", lay:"both", tc:"Khoảng trắng đầu/cuối & ở giữa", pre:"Ở ô email", exp:"Trim đầu/cuối tự động; khoảng trắng giữa → lỗi", pr:"P2", steps:["Nhập ' a@b.com ' và 'a b@c.com'", "Xác nhận trim & báo lỗi tương ứng"]},
+  {sub:"Nhập & validate", lay:"both", tc:"Không phân biệt hoa/thường", pre:"Tài khoản 'User@X.com'", exp:"'user@x.com' == 'User@X.com' (chuẩn hoá về thường)", pr:"P2", steps:["Nhập email viết hoa", "Xác nhận khớp tài khoản"]},
+  {sub:"Nhập & validate", lay:"both", tc:"Ký tự hợp lệ (dấu chấm, +tag)", pre:"Ở ô email", exp:"Chấp nhận 'a.b+tag@x.com'; định tuyến/lưu đúng", pr:"P2", steps:["Nhập email có dấu chấm & +tag", "Xác nhận chấp nhận"]},
+  {sub:"Nhập & validate", lay:"both", tc:"Unicode / IDN", pre:"Ô email hỗ trợ IDN", exp:"Xử lý đúng tên miền quốc tế/chữ có dấu (hoặc từ chối rõ nếu không hỗ trợ)", pr:"P3", steps:["Nhập email IDN (vd 'a@ví-dụ.vn')", "Xác nhận xử lý đúng theo policy"]},
+  {sub:"Nhập & validate", lay:"api", tc:"Độ dài tối đa (RFC 5321)", pre:"Ở ô email", exp:"Local ≤ 64, tổng ≤ 254 ký tự; vượt → lỗi", pr:"P2", steps:["Nhập email vượt giới hạn", "Xác nhận báo lỗi, không tràn"]},
+  {sub:"Nhập & validate", lay:"both", tc:"XSS / SQLi trong ô email", pre:"Ở ô email", exp:"Payload không thực thi; server validate/escape; không 500", pr:"P1", steps:["Nhập '<script>@x.com' / \" OR 1=1--", "Xác nhận chặn an toàn"]},
+  {sub:"Nhập & validate", lay:"ui", tc:"Bỏ trống khi bắt buộc", pre:"Ô email bắt buộc", exp:"Báo lỗi trường bắt buộc; không submit", pr:"P1", steps:["Để trống & submit", "Xác nhận báo lỗi"]},
+  {sub:"Nhập & validate", lay:"ui", tc:"Dán (paste) email", pre:"Ở ô email", exp:"Dán được & validate đúng như gõ tay", pr:"P3", steps:["Dán email vào ô", "Xác nhận validate đúng"]},
+  {sub:"Nhập & validate", lay:"api", tc:"Disposable / temp email", pre:"Policy chặn email tạm", exp:"Từ chối domain email dùng-một-lần (nếu có policy)", pr:"P3", steps:["Nhập email disposable", "Xác nhận từ chối theo policy"]},
+  {sub:"Nhập & validate", lay:"api", tc:"Email trùng khi đăng ký", pre:"Email đã tồn tại", exp:"HTTP 409/báo đã tồn tại; không tạo trùng; cân nhắc chống enumeration", pr:"P1", steps:["Đăng ký email đã tồn tại", "Xác nhận 409/báo lỗi hợp lý"]},
+  {sub:"Xác minh email", lay:"both", tc:"Gửi email xác minh sau đăng ký", pre:"Vừa đăng ký", exp:"Nhận email chứa link/OTP xác minh đúng địa chỉ", pr:"P1", steps:["Đăng ký", "Kiểm hộp thư", "Xác nhận nhận email xác minh"]},
+  {sub:"Xác minh email", lay:"both", tc:"Bấm link xác minh → kích hoạt", pre:"Có link xác minh", exp:"Tài khoản chuyển sang đã xác minh/active; đăng nhập được", pr:"P1", steps:["Mở link xác minh", "Xác nhận tài khoản active"]},
+  {sub:"Xác minh email", lay:"both", tc:"Link/OTP xác minh hết hạn", pre:"Link/OTP quá hạn", exp:"Báo hết hạn & cho gửi lại (link ~24h, OTP ~5 phút)", pr:"P1", steps:["Dùng link/OTP quá hạn", "Xác nhận báo hết hạn & gửi lại được"]},
+  {sub:"Xác minh email", lay:"api", tc:"Link dùng 1 lần", pre:"Link đã verify", exp:"Dùng lại link → báo đã xác minh/không hợp lệ (single-use)", pr:"P1", steps:["Verify xong dùng lại link", "Xác nhận bị từ chối"]},
+  {sub:"Xác minh email", lay:"api", tc:"Gửi lại (resend) & rate limit", pre:"Bấm gửi lại", exp:"Link/mã mới hợp lệ, cũ vô hiệu; giới hạn tần suất resend", pr:"P2", steps:["Bấm gửi lại nhiều lần", "Xác nhận mã mới & bị rate limit"]},
+  {sub:"Xác minh email", lay:"both", tc:"Đổi email → xác minh lại", pre:"Đổi sang email mới", exp:"Yêu cầu verify email mới; email cũ còn hiệu lực tới khi verify mới", pr:"P2", steps:["Đổi email", "Xác nhận phải verify email mới"]},
+  {sub:"Xác minh email", lay:"api", tc:"Token bị sửa/giả mạo", pre:"Sửa token trong link", exp:"Từ chối (invalid/401); không kích hoạt", pr:"P1", steps:["Sửa vài ký tự token", "Mở link", "Xác nhận bị từ chối"]},
+  {sub:"Xác minh email", lay:"both", tc:"Đã xác minh rồi (idempotent)", pre:"Tài khoản đã verify", exp:"Verify lại xử lý gọn, không lỗi (idempotent)", pr:"P2", steps:["Mở lại link khi đã verify", "Xác nhận thông báo gọn"]},
+  {sub:"Xác minh email", lay:"both", tc:"Chưa xác minh mà đăng nhập", pre:"Tài khoản chưa verify", exp:"Chặn/nhắc xác minh theo policy; hướng dẫn gửi lại", pr:"P2", steps:["Đăng nhập khi chưa verify", "Xác nhận bị chặn/nhắc verify"]},
+];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
 const FEATURE_IDS = [];
 const TC_FEAT = [];
 let n2 = 0;
 LOGIN_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Login", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 LOGOUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Logout", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+EMAILFIELD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Email", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_GET_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API GET", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_POST_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API POST", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_PUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API PUT", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
@@ -2259,10 +2285,24 @@ function tcRefreshDependent(){
   tcFillSelect(tcLay, data.map(t=>t.lay), "Tất cả lớp", v=>LAY_LABEL[v]||v);
   tcFillSelect(tcPrio, data.map(t=>t.priority).filter(Boolean).sort(), "Tất cả ưu tiên");
 }
+// Feature "chuyên biệt" (bộ test case tự viết) vs "từ Sổ tay" (chuyển từ mục kiến thức)
+const DEDICATED_FEATURES = new Set(["Login","Logout","Email","API GET","API POST","API PUT","API PATCH","API DELETE"]);
 function tcSetupMode(){
   const isComp = tcMode==="component";
   tcHead.innerHTML = `<tr><th>ID</th><th>${isComp?"Component":"Feature"}</th><th>${isComp?"Group":"Category"}</th><th>Test Case</th><th>Layer</th><th>Expected Result</th><th>Priority</th><th>Steps</th></tr>`;
-  tcFillSelect(tcFilter, tcData().map(t=>t.group), `Tất cả ${isComp?"component":"feature"}`);
+  const groups = [...new Set(tcData().map(t=>t.group))];
+  const opt = g=>`<option value="${escHtml(g)}">${escHtml(g)}</option>`;
+  if(isComp){
+    tcFilter.hidden = false;
+    tcFilter.innerHTML = `<option value="">Tất cả component</option>` + groups.map(opt).join("");
+  } else {
+    const ded = groups.filter(g=>DEDICATED_FEATURES.has(g));
+    const other = groups.filter(g=>!DEDICATED_FEATURES.has(g));
+    tcFilter.hidden = false;
+    tcFilter.innerHTML = `<option value="">Tất cả feature</option>`
+      + (ded.length ? `<optgroup label="◆ Bộ test case chuyên biệt">${ded.map(opt).join("")}</optgroup>` : "")
+      + (other.length ? `<optgroup label="★ Từ Sổ tay (kiến thức)">${other.map(opt).join("")}</optgroup>` : "");
+  }
   tcRefreshDependent();
   renderTC();
 }
