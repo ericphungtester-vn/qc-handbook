@@ -1874,6 +1874,8 @@ const LOGIN_TC = [
   {sub:"Mật khẩu & UX", lay:"ui", tc:"Enter submit; loading; chống double-submit", pre:"Ở màn Login", exp:"Enter gửi; nút loading & khoá; bấm 2 lần không gửi 2 request", pr:"P2", steps:["Nhập thông tin, nhấn Enter", "Bấm Đăng nhập 2 lần nhanh", "Xác nhận chỉ 1 request & nút loading"]},
   {sub:"Mật khẩu & UX", lay:"ui", tc:"Accessibility (a11y)", pre:"Điều hướng bằng bàn phím", exp:"Tab đúng thứ tự; screen reader đọc nhãn; focus nhảy vào lỗi", pr:"P2", steps:["Tab qua các trường", "Bật screen reader kiểm nhãn", "Gây lỗi & xác nhận focus tới lỗi"]},
   {sub:"Mật khẩu & UX", lay:"both", tc:"Ghi nhớ đăng nhập (remember me)", pre:"Tick \"Ghi nhớ\" rồi login", exp:"Phiên / refresh token kéo dài đúng thời hạn cấu hình", pr:"P2", steps:["Tick Ghi nhớ & đăng nhập", "Đóng & mở lại trình duyệt", "Xác nhận vẫn đăng nhập trong hạn"]},
+  {sub:"Mật khẩu & UX", lay:"both", tc:"Không tick Ghi nhớ → hết phiên khi đóng trình duyệt", pre:"Không tick Ghi nhớ", exp:"Dùng session cookie; đóng trình duyệt → phải đăng nhập lại", pr:"P2", steps:["Đăng nhập không tick Ghi nhớ", "Đóng & mở lại trình duyệt", "Xác nhận phải đăng nhập lại"]},
+  {sub:"Mật khẩu & UX", lay:"api", tc:"Thu hồi remember-me khi đổi mật khẩu/đăng xuất mọi nơi", pre:"Đang có remember-me token", exp:"Token remember-me bị vô hiệu khi đổi mật khẩu hoặc đăng xuất mọi nơi", pr:"P1", steps:["Bật Ghi nhớ", "Đổi mật khẩu / đăng xuất mọi nơi", "Xác nhận remember-me không còn hiệu lực"]},
   {sub:"Mật khẩu & UX", lay:"ui", tc:"Cho phép dán mật khẩu & OTP", pre:"Ở ô mật khẩu / OTP", exp:"Dán được (NIST khuyến nghị cho phép paste); dán OTP điền đủ ô", pr:"P3", steps:["Dán mật khẩu vào ô", "Dán mã OTP", "Xác nhận dán được & OTP điền đủ ô"]},
   {sub:"2FA / OTP", lay:"both", tc:"OTP đúng", pre:"Đã qua bước 1, 2FA bật", exp:"Nhập OTP đúng → đăng nhập thành công", pr:"P1", steps:["Đăng nhập bước 1", "Nhập OTP đúng", "Xác nhận thành công"]},
   {sub:"2FA / OTP", lay:"both", tc:"OTP sai", pre:"Ở màn nhập OTP", exp:"Báo \"Mã không đúng\"; không đăng nhập", pr:"P1", steps:["Nhập OTP sai", "Xác nhận báo lỗi & không đăng nhập"]},
@@ -2471,6 +2473,32 @@ const SETTINGS_TC = [
   {sub:"Bảo mật", lay:"both", tc:"Đổi mật khẩu / bảo mật", pre:"Có mục bảo mật", exp:"Dẫn tới luồng đổi mật khẩu/2FA đúng", pr:"P2", steps:["Vào mục bảo mật", "Xác nhận luồng"]},
   {sub:"Cơ bản", lay:"both", tc:"Lưu thất bại → rollback", pre:"API lưu lỗi", exp:"Báo lỗi & rollback về giá trị cũ", pr:"P2", steps:["Giả lập lỗi lưu", "Xác nhận rollback & báo"]},
 ];
+const LOCALIZATION_TC = [
+  {sub:"Timezone", lay:"api", tc:"Lưu UTC / hiển thị local", pre:"Dữ liệu thời gian", exp:"Lưu UTC ở server; hiển thị theo local user đúng", pr:"P1", steps:["Tạo dữ liệu có thời gian", "Xem ở timezone khác", "Xác nhận hiển thị local đúng"]},
+  {sub:"Timezone", lay:"both", tc:"Đổi múi giờ người dùng", pre:"Đổi timezone", exp:"Mọi thời gian hiển thị đổi theo đúng", pr:"P1", steps:["Đổi timezone", "Xác nhận thời gian cập nhật"]},
+  {sub:"Timezone", lay:"api", tc:"DST transition (ngày đổi giờ)", pre:"Mốc thời gian rơi vào DST", exp:"Không lệch/nhân đôi giờ khi qua mốc DST", pr:"P1", steps:["Tạo/hiển thị thời gian quanh mốc DST", "Xác nhận đúng"]},
+  {sub:"Timezone", lay:"both", tc:"Sự kiện xuyên nửa đêm / qua ngày", pre:"Timezone khác nhau", exp:"Ngày/giờ qua nửa đêm hiển thị đúng theo local", pr:"P2", steps:["Tạo sự kiện gần nửa đêm", "Xem ở timezone khác", "Xác nhận đúng ngày"]},
+  {sub:"Timezone", lay:"api", tc:"Server không dùng local time", pre:"Server ở timezone khác", exp:"Chuẩn hoá UTC; không lệch do timezone server", pr:"P1", steps:["Kiểm xử lý thời gian server", "Xác nhận dùng UTC"]},
+  {sub:"Timezone", lay:"ui", tc:"Hiển thị nhãn múi giờ", pre:"Ngữ cảnh cần rõ", exp:"Hiện GMT+7/tên timezone khi cần tránh nhầm", pr:"P3", steps:["Xem thời gian có nhãn tz", "Xác nhận rõ ràng"]},
+  {sub:"Number & Currency", lay:"both", tc:"Dấu phân cách theo locale", pre:"Nhiều locale", exp:"1,000.5 (en) vs 1.000,5 (de/vi) đúng", pr:"P1", steps:["Đổi locale", "Xác nhận dấu phân cách"]},
+  {sub:"Number & Currency", lay:"both", tc:"Ký hiệu & vị trí tiền tệ", pre:"Nhiều locale", exp:"₫ sau số / $ trước số đúng theo locale", pr:"P2", steps:["Đổi locale tiền tệ", "Xác nhận ký hiệu & vị trí"]},
+  {sub:"Number & Currency", lay:"api", tc:"Làm tròn nhất quán", pre:"Số thập phân", exp:"Làm tròn đúng quy tắc & nhất quán FE/BE", pr:"P1", steps:["Kiểm số sau làm tròn", "Đối chiếu FE/BE"]},
+  {sub:"Number & Currency", lay:"both", tc:"Số âm theo locale", pre:"Giá trị âm", exp:"Hiển thị '-' / ngoặc theo locale đúng", pr:"P2", steps:["Xem số âm", "Xác nhận định dạng"]},
+  {sub:"Number & Currency", lay:"both", tc:"Số rất lớn / thập phân dài", pre:"Giá trị biên", exp:"Không tràn/không mất chính xác (dùng đúng kiểu)", pr:"P2", steps:["Nhập số rất lớn/nhiều thập phân", "Xác nhận đúng"]},
+  {sub:"Number & Currency", lay:"both", tc:"Nhập số theo locale (parse)", pre:"Ô nhập số", exp:"Parse đúng dấu phân cách theo locale khi nhập", pr:"P2", steps:["Nhập '1.000,5' ở locale vi", "Xác nhận parse đúng"]},
+  {sub:"Number & Currency", lay:"both", tc:"Phần trăm & đơn vị", pre:"Có %/đơn vị", exp:"Hiển thị % & đơn vị đúng locale", pr:"P3", steps:["Xem giá trị %", "Xác nhận đúng"]},
+  {sub:"Date & Time", lay:"both", tc:"DD/MM vs MM/DD", pre:"Nhiều locale", exp:"Thứ tự ngày/tháng đúng locale (tránh 03/04 nhầm)", pr:"P1", steps:["Đổi locale", "Xác nhận định dạng ngày"]},
+  {sub:"Date & Time", lay:"both", tc:"12h / 24h", pre:"Nhiều locale", exp:"Định dạng giờ theo locale (AM/PM vs 24h)", pr:"P2", steps:["Đổi locale", "Xác nhận định dạng giờ"]},
+  {sub:"Date & Time", lay:"ui", tc:"First day of week", pre:"Lịch", exp:"CN vs T2 đầu tuần theo locale", pr:"P3", steps:["Đổi locale", "Xác nhận đầu tuần"]},
+  {sub:"Date & Time", lay:"both", tc:"Thời gian tương đối", pre:"Có 'x giờ trước'", exp:"Đúng ngôn ngữ & số nhiều ('1 phút trước')", pr:"P3", steps:["Xem thời gian tương đối", "Xác nhận ngôn ngữ"]},
+  {sub:"Date & Time", lay:"both", tc:"Ngày biên (29/2, 30/31)", pre:"Nhập/hiển thị ngày", exp:"29/2 năm nhuận & năm thường; 31/4 xử lý đúng", pr:"P2", steps:["Nhập ngày biên", "Xác nhận hợp lệ/lỗi đúng"]},
+  {sub:"Translation & RTL", lay:"both", tc:"Dịch đầy đủ, không sót key", pre:"Đổi ngôn ngữ", exp:"Không sót key/không trơ {{var}}; đúng nội dung", pr:"P1", steps:["Đổi ngôn ngữ", "Rà UI không còn key/biến trơ"]},
+  {sub:"Translation & RTL", lay:"ui", tc:"Chữ dịch dài không vỡ", pre:"Ngôn ngữ dài (DE/VI)", exp:"Nút/nhãn không vỡ khi dịch dài", pr:"P2", steps:["Đổi ngôn ngữ dài", "Xác nhận layout"]},
+  {sub:"Translation & RTL", lay:"ui", tc:"RTL (Ả Rập)", pre:"Bật RTL", exp:"Bố cục lật đúng, kể cả icon hướng (mũi tên)", pr:"P2", steps:["Bật RTL", "Xác nhận lật đúng"]},
+  {sub:"Translation & RTL", lay:"both", tc:"Số nhiều (plural)", pre:"Đếm 1 vs nhiều", exp:"Đúng quy tắc plural theo ngôn ngữ", pr:"P2", steps:["Kiểm chuỗi 1 & nhiều", "Xác nhận đúng"]},
+  {sub:"Translation & RTL", lay:"both", tc:"Đổi ngôn ngữ áp toàn app & nhớ", pre:"Đổi ngôn ngữ", exp:"Áp toàn bộ UI & nhớ khi reload", pr:"P2", steps:["Đổi ngôn ngữ & F5", "Xác nhận giữ & áp"]},
+  {sub:"Translation & RTL", lay:"both", tc:"Unicode/emoji/tiếng Việt", pre:"Nhập/hiển thị", exp:"Hiển thị đúng, không lỗi encoding", pr:"P2", steps:["Nhập ký tự đặc biệt", "Xác nhận đúng"]},
+];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
 const FEATURE_IDS = [];
 const TC_FEAT = [];
@@ -2497,6 +2525,7 @@ MEDIAP_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"
 WIZARDF_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Wizard / Multi-step", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 ONBOARD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Onboarding", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 SETTINGS_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Settings", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+LOCALIZATION_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Localization", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_GET_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API GET", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_POST_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API POST", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_PUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API PUT", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
@@ -2562,7 +2591,7 @@ function tcRefreshDependent(){
   tcFillSelect(tcPrio, data.map(t=>t.priority).filter(Boolean).sort(), "Tất cả ưu tiên");
 }
 // Feature "chuyên biệt" (bộ test case tự viết) vs "từ Sổ tay" (chuyển từ mục kiến thức)
-const DEDICATED_FEATURES = new Set(["Login","Logout","Register","Forgot password","Password","Email","Upload file","Search","Profile","Cart & Checkout","Import / Export","Chat","Dashboard","Notification center","Comment & Review","Booking","Calendar","Map","Media player","Wizard / Multi-step","Onboarding","Settings","API GET","API POST","API PUT","API PATCH","API DELETE"]);
+const DEDICATED_FEATURES = new Set(["Login","Logout","Register","Forgot password","Password","Email","Upload file","Search","Profile","Cart & Checkout","Import / Export","Chat","Dashboard","Notification center","Comment & Review","Booking","Calendar","Map","Media player","Wizard / Multi-step","Onboarding","Settings","Localization","API GET","API POST","API PUT","API PATCH","API DELETE"]);
 function tcSetupMode(){
   const isComp = tcMode==="component";
   tcHead.innerHTML = `<tr><th>ID</th><th>${isComp?"Component":"Feature"}</th><th>${isComp?"Group":"Category"}</th><th>Test Case</th><th>Layer</th><th>Expected Result</th><th>Priority</th><th>Steps</th></tr>`;
