@@ -2389,6 +2389,88 @@ const COMMENT_TC = [
   {sub:"Hiển thị", lay:"both", tc:"Sắp xếp (mới nhất/hữu ích)", pre:"Có sắp xếp", exp:"Đổi sort → thứ tự đúng", pr:"P3", steps:["Đổi sort", "Xác nhận thứ tự"]},
   {sub:"Hiển thị", lay:"both", tc:"Realtime bình luận mới", pre:"Nhiều người", exp:"Bình luận mới hiện realtime (nếu hỗ trợ)", pr:"P3", steps:["Người khác đăng", "Xác nhận hiện realtime"]},
 ];
+const BOOKING_TC = [
+  {sub:"Đặt lịch", lay:"both", tc:"Xem slot/lịch trống", pre:"Có lịch", exp:"Hiển thị đúng slot còn trống/đã đặt", pr:"P1", steps:["Mở lịch đặt", "Xác nhận slot đúng"]},
+  {sub:"Đặt lịch", lay:"both", tc:"Chọn slot & đặt thành công", pre:"Slot trống", exp:"Tạo booking; xác nhận & (email nếu có)", pr:"P1", steps:["Chọn slot & đặt", "Xác nhận tạo booking"]},
+  {sub:"Đồng thời", lay:"both", tc:"Chống double-booking", pre:"2 người đặt cùng slot", exp:"Chỉ 1 đặt được; người sau bị báo đã đặt", pr:"P1", steps:["2 phiên đặt cùng slot", "Xác nhận chỉ 1 thành công"]},
+  {sub:"Ràng buộc", lay:"both", tc:"Slot quá khứ/ngoài giờ", pre:"Chọn slot không hợp lệ", exp:"Chặn đặt & báo rõ", pr:"P2", steps:["Chọn slot quá khứ", "Xác nhận bị chặn"]},
+  {sub:"Quản lý", lay:"both", tc:"Sửa/huỷ booking", pre:"Có booking", exp:"Sửa/huỷ trước hạn theo policy; cập nhật slot", pr:"P2", steps:["Sửa & huỷ booking", "Xác nhận cập nhật"]},
+  {sub:"Quản lý", lay:"both", tc:"Chính sách huỷ/hoàn", pre:"Sát giờ", exp:"Áp deadline huỷ/hoàn đúng policy", pr:"P2", steps:["Huỷ sát giờ", "Xác nhận theo policy"]},
+  {sub:"Ràng buộc", lay:"api", tc:"Múi giờ", pre:"Người dùng khác timezone", exp:"Slot hiển thị đúng theo timezone người dùng", pr:"P1", steps:["Đổi timezone", "Xác nhận slot đúng"]},
+  {sub:"Ràng buộc", lay:"both", tc:"Capacity không vượt", pre:"Slot có giới hạn số lượng", exp:"Không đặt vượt sức chứa", pr:"P2", steps:["Đặt vượt capacity", "Xác nhận bị chặn"]},
+  {sub:"Đồng thời", lay:"api", tc:"Chống double-submit đặt", pre:"Bấm 2 lần", exp:"Idempotency → 1 booking", pr:"P1", steps:["Đặt 2 lần nhanh", "Xác nhận 1 booking"]},
+  {sub:"Ràng buộc", lay:"both", tc:"Xung đột lịch (overlap)", pre:"Đã có lịch trùng giờ", exp:"Cảnh báo/chặn overlap theo policy", pr:"P2", steps:["Đặt trùng giờ", "Xác nhận cảnh báo"]},
+  {sub:"Đặt lịch", lay:"both", tc:"Email/nhắc xác nhận", pre:"Đặt thành công", exp:"Nhận email/nhắc lịch đúng", pr:"P2", steps:["Đặt xong", "Kiểm email/nhắc"]},
+];
+const CALENDAR_TC = [
+  {sub:"Hiển thị", lay:"both", tc:"View tháng/tuần/ngày", pre:"Có sự kiện", exp:"Chuyển view hiển thị đúng", pr:"P1", steps:["Đổi view", "Xác nhận đúng"]},
+  {sub:"Điều hướng", lay:"both", tc:"Prev/Next/Today", pre:"Ở lịch", exp:"Điều hướng đúng mốc thời gian", pr:"P2", steps:["Bấm prev/next/today", "Xác nhận"]},
+  {sub:"Sự kiện", lay:"both", tc:"Tạo/sửa/xoá sự kiện", pre:"Ở lịch", exp:"CRUD sự kiện đúng; hiển thị lại đúng", pr:"P1", steps:["Tạo/sửa/xoá event", "Xác nhận"]},
+  {sub:"Sự kiện", lay:"both", tc:"All-day & nhiều ngày", pre:"Có event dài", exp:"Hiển thị đúng event cả ngày/nhiều ngày", pr:"P2", steps:["Tạo event nhiều ngày", "Xác nhận hiển thị"]},
+  {sub:"Sự kiện", lay:"both", tc:"Trùng giờ (overlap)", pre:"Nhiều event cùng giờ", exp:"Hiển thị chồng/cạnh nhau rõ ràng", pr:"P2", steps:["Tạo event trùng giờ", "Xác nhận hiển thị"]},
+  {sub:"Sự kiện", lay:"ui", tc:"Kéo-thả đổi giờ", pre:"Hỗ trợ DnD", exp:"Kéo event đổi thời gian; lưu đúng", pr:"P2", steps:["Kéo event", "Xác nhận cập nhật"]},
+  {sub:"Ràng buộc", lay:"api", tc:"Múi giờ & DST", pre:"Đổi timezone/giờ mùa hè", exp:"Giờ event đúng theo timezone & DST", pr:"P1", steps:["Đổi timezone/DST", "Xác nhận giờ đúng"]},
+  {sub:"Sự kiện", lay:"both", tc:"Sự kiện lặp (recurring)", pre:"Event có recurrence", exp:"Lặp đúng quy tắc; sửa 1/tất cả", pr:"P2", steps:["Tạo recurring", "Sửa 1 & tất cả", "Xác nhận"]},
+  {sub:"Sự kiện", lay:"both", tc:"Nhắc nhở (reminder)", pre:"Có reminder", exp:"Nhắc đúng thời điểm", pr:"P3", steps:["Đặt reminder", "Xác nhận nhắc"]},
+  {sub:"Hiển thị", lay:"ui", tc:"Responsive", pre:"Màn nhỏ", exp:"Tháng → agenda gọn trên mobile", pr:"P2", steps:["Thu nhỏ", "Xác nhận layout"]},
+];
+const MAP_TC = [
+  {sub:"Hiển thị", lay:"both", tc:"Tải bản đồ & vị trí", pre:"Có bản đồ", exp:"Bản đồ tải, hiển thị đúng vùng/vị trí", pr:"P1", steps:["Mở bản đồ", "Xác nhận đúng"]},
+  {sub:"Tương tác", lay:"ui", tc:"Zoom / pan", pre:"Ở bản đồ", exp:"Zoom & kéo mượt", pr:"P2", steps:["Zoom & pan", "Xác nhận mượt"]},
+  {sub:"Marker", lay:"both", tc:"Marker & popup", pre:"Có địa điểm", exp:"Marker đúng vị trí; popup thông tin đúng", pr:"P2", steps:["Bấm marker", "Xác nhận popup"]},
+  {sub:"Tìm kiếm", lay:"both", tc:"Tìm địa điểm (geocode)", pre:"Ô tìm địa điểm", exp:"Tìm & di chuyển tới đúng địa điểm", pr:"P2", steps:["Tìm địa chỉ", "Xác nhận tới đúng"]},
+  {sub:"Vị trí", lay:"both", tc:"Định vị hiện tại (geolocation)", pre:"Cho phép quyền", exp:"Xin quyền & hiển thị vị trí hiện tại", pr:"P2", steps:["Bấm định vị", "Cấp quyền", "Xác nhận vị trí"]},
+  {sub:"Vị trí", lay:"ui", tc:"Từ chối quyền vị trí", pre:"Từ chối quyền", exp:"Xử lý gọn; hướng dẫn bật lại; không crash", pr:"P2", steps:["Từ chối quyền", "Xác nhận xử lý gọn"]},
+  {sub:"Marker", lay:"both", tc:"Nhiều marker / clustering", pre:"Nhiều điểm", exp:"Gom cụm khi zoom out; tách khi zoom in", pr:"P3", steps:["Zoom out/in", "Xác nhận clustering"]},
+  {sub:"Hiển thị", lay:"both", tc:"Lỗi tải tile / offline", pre:"Mất mạng", exp:"Fallback/thông báo, không vỡ", pr:"P2", steps:["Ngắt mạng", "Xác nhận fallback"]},
+  {sub:"Chỉ đường", lay:"both", tc:"Vẽ tuyến / chỉ đường", pre:"Có tính năng route", exp:"Hiển thị tuyến & thông tin đúng", pr:"P3", steps:["Tạo chỉ đường", "Xác nhận tuyến"]},
+  {sub:"Tương tác", lay:"ui", tc:"A11y & bàn phím", pre:"Điều khiển bản đồ", exp:"Nút zoom bàn phím được; có nhãn a11y", pr:"P3", steps:["Tab tới control", "Xác nhận dùng được"]},
+];
+const MEDIAP_TC = [
+  {sub:"Điều khiển", lay:"both", tc:"Play / pause", pre:"Có media", exp:"Phát & tạm dừng đúng", pr:"P1", steps:["Play & pause", "Xác nhận"]},
+  {sub:"Điều khiển", lay:"both", tc:"Tua & thanh thời gian", pre:"Đang phát", exp:"Tua chính xác; thời gian đồng bộ", pr:"P1", steps:["Tua tới/lui", "Xác nhận vị trí"]},
+  {sub:"Điều khiển", lay:"ui", tc:"Âm lượng / tắt tiếng", pre:"Đang phát", exp:"Chỉnh & tắt tiếng đúng", pr:"P2", steps:["Chỉnh volume/mute", "Xác nhận"]},
+  {sub:"Điều khiển", lay:"ui", tc:"Toàn màn hình", pre:"Đang phát", exp:"Vào/thoát full-screen đúng", pr:"P2", steps:["Bấm fullscreen", "Xác nhận"]},
+  {sub:"Điều khiển", lay:"ui", tc:"Phụ đề / CC", pre:"Có phụ đề", exp:"Bật/tắt & hiển thị đúng", pr:"P2", steps:["Bật CC", "Xác nhận hiển thị"]},
+  {sub:"Điều khiển", lay:"ui", tc:"Tốc độ phát", pre:"Có tuỳ chọn tốc độ", exp:"0.5x–2x phát đúng", pr:"P3", steps:["Đổi tốc độ", "Xác nhận"]},
+  {sub:"Phát", lay:"both", tc:"Autoplay policy", pre:"Trang có media", exp:"Không tự phát có tiếng (tắt tiếng nếu autoplay) đúng policy", pr:"P2", steps:["Mở trang", "Xác nhận autoplay đúng policy"]},
+  {sub:"Phát", lay:"both", tc:"Buffering / lỗi mạng", pre:"Mạng chậm/ngắt", exp:"Hiện buffering; lỗi → báo & retry", pr:"P2", steps:["Giả lập mạng chậm", "Xác nhận buffering & retry"]},
+  {sub:"Phát", lay:"api", tc:"Range request khi tua", pre:"Server hỗ trợ range", exp:"Tua giữa video dùng HTTP Range đúng", pr:"P2", steps:["Tua giữa", "Kiểm request Range"]},
+  {sub:"Phát", lay:"both", tc:"Tiếp tục từ vị trí (resume)", pre:"Đã xem dở", exp:"Mở lại tiếp từ vị trí cũ (nếu có)", pr:"P3", steps:["Xem dở & quay lại", "Xác nhận resume"]},
+  {sub:"Điều khiển", lay:"ui", tc:"Bàn phím & a11y", pre:"Player focus", exp:"Space/mũi tên điều khiển; nhãn nút a11y", pr:"P2", steps:["Dùng bàn phím", "Xác nhận điều khiển"]},
+];
+const WIZARDF_TC = [
+  {sub:"Điều hướng", lay:"both", tc:"Next/Back giữ dữ liệu", pre:"Wizard nhiều bước", exp:"Chuyển bước giữ nguyên dữ liệu đã nhập", pr:"P1", steps:["Nhập & Next/Back", "Xác nhận giữ dữ liệu"]},
+  {sub:"Validate", lay:"both", tc:"Validate từng bước", pre:"Ở mỗi bước", exp:"Không cho qua khi bước hiện tại lỗi", pr:"P1", steps:["Để lỗi & Next", "Xác nhận bị chặn"]},
+  {sub:"Điều hướng", lay:"both", tc:"Không nhảy cóc bước chưa xong", pre:"Bấm bước sau", exp:"Chặn nhảy tới bước chưa hoàn thành", pr:"P2", steps:["Bấm bước xa", "Xác nhận bị chặn"]},
+  {sub:"Hiển thị", lay:"ui", tc:"Thanh tiến trình đúng bước", pre:"Ở wizard", exp:"Progress phản ánh đúng bước hiện tại", pr:"P2", steps:["Chuyển bước", "Xác nhận progress"]},
+  {sub:"Lưu", lay:"both", tc:"Lưu nháp & khôi phục", pre:"Đang làm dở", exp:"Lưu nháp; F5/quay lại khôi phục đúng", pr:"P2", steps:["Nhập dở & F5", "Xác nhận khôi phục"]},
+  {sub:"Hoàn tất", lay:"both", tc:"Submit bước cuối", pre:"Hoàn tất các bước", exp:"Tổng hợp đúng dữ liệu tất cả bước & gửi", pr:"P1", steps:["Hoàn tất & submit", "Xác nhận dữ liệu đủ"]},
+  {sub:"Điều hướng", lay:"both", tc:"Sửa bước trước không mất bước sau", pre:"Đã qua nhiều bước", exp:"Quay lại sửa không xoá dữ liệu bước sau", pr:"P2", steps:["Quay lại sửa", "Xác nhận không mất"]},
+  {sub:"Lưu", lay:"ui", tc:"Rời giữa chừng → cảnh báo", pre:"Đang làm dở", exp:"Cảnh báo mất dữ liệu khi rời", pr:"P2", steps:["Rời trang giữa chừng", "Xác nhận cảnh báo"]},
+  {sub:"Hoàn tất", lay:"api", tc:"Chống double-submit", pre:"Bấm submit 2 lần", exp:"Chỉ gửi 1 lần", pr:"P1", steps:["Submit 2 lần", "Xác nhận 1 lần"]},
+  {sub:"Điều hướng", lay:"both", tc:"Deep-link/refresh giữ bước", pre:"Refresh giữa wizard", exp:"Giữ đúng bước sau refresh (nếu thiết kế)", pr:"P2", steps:["F5 giữa wizard", "Xác nhận đúng bước"]},
+];
+const ONBOARD_TC = [
+  {sub:"Hiển thị", lay:"both", tc:"Hiện lần đầu", pre:"User mới", exp:"Onboarding hiện lần đầu; không hiện lại sau hoàn tất/skip", pr:"P1", steps:["Đăng nhập lần đầu", "Hoàn tất/skip", "Xác nhận không hiện lại"]},
+  {sub:"Điều hướng", lay:"ui", tc:"Next/Back/Skip", pre:"Trong onboarding", exp:"Điều hướng & bỏ qua hoạt động", pr:"P2", steps:["Bấm next/back/skip", "Xác nhận"]},
+  {sub:"Lưu", lay:"both", tc:"Lưu trạng thái đã xem", pre:"Đã xem", exp:"Lưu (localStorage/server) không hiện lại", pr:"P2", steps:["Xem xong & reload", "Xác nhận không hiện lại"]},
+  {sub:"Hiển thị", lay:"ui", tc:"Coachmark trỏ đúng & responsive", pre:"Có coachmark", exp:"Trỏ đúng phần tử; responsive mọi khổ", pr:"P2", steps:["Xem coachmark", "Xác nhận trỏ đúng"]},
+  {sub:"Điều hướng", lay:"both", tc:"Skip vào app đúng", pre:"Bấm skip", exp:"Vào app ở trạng thái đúng", pr:"P2", steps:["Skip", "Xác nhận vào app"]},
+  {sub:"A11y", lay:"ui", tc:"Bàn phím & focus", pre:"Điều hướng bàn phím", exp:"Tab/Esc dùng được; focus quản lý đúng", pr:"P2", steps:["Dùng bàn phím", "Xác nhận"]},
+  {sub:"Nội dung", lay:"both", tc:"Đa ngôn ngữ", pre:"Đổi ngôn ngữ", exp:"Nội dung onboarding đúng ngôn ngữ", pr:"P3", steps:["Đổi ngôn ngữ", "Xác nhận nội dung"]},
+];
+const SETTINGS_TC = [
+  {sub:"Cơ bản", lay:"both", tc:"Xem & đổi cài đặt", pre:"Ở trang cài đặt", exp:"Đổi & lưu đúng; phản ánh ngay/khi lưu (đúng thiết kế)", pr:"P1", steps:["Đổi cài đặt & lưu", "Xác nhận áp dụng"]},
+  {sub:"Ngôn ngữ", lay:"both", tc:"Đổi ngôn ngữ", pre:"Có đa ngôn ngữ", exp:"UI cập nhật đúng ngôn ngữ & nhớ", pr:"P2", steps:["Đổi ngôn ngữ", "Xác nhận UI & nhớ"]},
+  {sub:"Giao diện", lay:"ui", tc:"Đổi theme sáng/tối", pre:"Có theme", exp:"Áp ngay & nhớ khi reload", pr:"P2", steps:["Đổi theme & F5", "Xác nhận nhớ"]},
+  {sub:"Thông báo", lay:"both", tc:"Bật/tắt loại thông báo", pre:"Có cài đặt thông báo", exp:"Tắt loại nào → không nhận loại đó", pr:"P2", steps:["Tắt 1 loại", "Xác nhận không nhận"]},
+  {sub:"Cơ bản", lay:"ui", tc:"Khôi phục mặc định", pre:"Có nút reset", exp:"Reset về mặc định đúng", pr:"P3", steps:["Bấm reset", "Xác nhận mặc định"]},
+  {sub:"Đồng bộ", lay:"api", tc:"Đồng bộ đa thiết bị", pre:"Cài đặt server-side", exp:"Đổi ở 1 nơi → đồng bộ nơi khác", pr:"P2", steps:["Đổi ở thiết bị A", "Xác nhận B đồng bộ"]},
+  {sub:"Bảo mật", lay:"both", tc:"Quyền riêng tư / consent", pre:"Có mục privacy", exp:"Đổi consent áp dụng đúng", pr:"P2", steps:["Đổi consent", "Xác nhận áp dụng"]},
+  {sub:"Bảo mật", lay:"both", tc:"Đổi mật khẩu / bảo mật", pre:"Có mục bảo mật", exp:"Dẫn tới luồng đổi mật khẩu/2FA đúng", pr:"P2", steps:["Vào mục bảo mật", "Xác nhận luồng"]},
+  {sub:"Cơ bản", lay:"both", tc:"Lưu thất bại → rollback", pre:"API lưu lỗi", exp:"Báo lỗi & rollback về giá trị cũ", pr:"P2", steps:["Giả lập lỗi lưu", "Xác nhận rollback & báo"]},
+];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
 const FEATURE_IDS = [];
 const TC_FEAT = [];
@@ -2408,6 +2490,13 @@ CHAT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"),
 DASH_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Dashboard", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 NOTIF_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Notification center", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 COMMENT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Comment & Review", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+BOOKING_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Booking", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+CALENDAR_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Calendar", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+MAP_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Map", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+MEDIAP_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Media player", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+WIZARDF_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Wizard / Multi-step", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+ONBOARD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Onboarding", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+SETTINGS_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Settings", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_GET_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API GET", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_POST_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API POST", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_PUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API PUT", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
@@ -2473,7 +2562,7 @@ function tcRefreshDependent(){
   tcFillSelect(tcPrio, data.map(t=>t.priority).filter(Boolean).sort(), "Tất cả ưu tiên");
 }
 // Feature "chuyên biệt" (bộ test case tự viết) vs "từ Sổ tay" (chuyển từ mục kiến thức)
-const DEDICATED_FEATURES = new Set(["Login","Logout","Register","Forgot password","Password","Email","Upload file","Search","Profile","Cart & Checkout","Import / Export","Chat","Dashboard","Notification center","Comment & Review","API GET","API POST","API PUT","API PATCH","API DELETE"]);
+const DEDICATED_FEATURES = new Set(["Login","Logout","Register","Forgot password","Password","Email","Upload file","Search","Profile","Cart & Checkout","Import / Export","Chat","Dashboard","Notification center","Comment & Review","Booking","Calendar","Map","Media player","Wizard / Multi-step","Onboarding","Settings","API GET","API POST","API PUT","API PATCH","API DELETE"]);
 function tcSetupMode(){
   const isComp = tcMode==="component";
   tcHead.innerHTML = `<tr><th>ID</th><th>${isComp?"Component":"Feature"}</th><th>${isComp?"Group":"Category"}</th><th>Test Case</th><th>Layer</th><th>Expected Result</th><th>Priority</th><th>Steps</th></tr>`;
