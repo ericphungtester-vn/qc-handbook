@@ -2473,31 +2473,37 @@ const SETTINGS_TC = [
   {sub:"Bảo mật", lay:"both", tc:"Đổi mật khẩu / bảo mật", pre:"Có mục bảo mật", exp:"Dẫn tới luồng đổi mật khẩu/2FA đúng", pr:"P2", steps:["Vào mục bảo mật", "Xác nhận luồng"]},
   {sub:"Cơ bản", lay:"both", tc:"Lưu thất bại → rollback", pre:"API lưu lỗi", exp:"Báo lỗi & rollback về giá trị cũ", pr:"P2", steps:["Giả lập lỗi lưu", "Xác nhận rollback & báo"]},
 ];
-const LOCALIZATION_TC = [
-  {sub:"Timezone", lay:"api", tc:"Lưu UTC / hiển thị local", pre:"Dữ liệu thời gian", exp:"Lưu UTC ở server; hiển thị theo local user đúng", pr:"P1", steps:["Tạo dữ liệu có thời gian", "Xem ở timezone khác", "Xác nhận hiển thị local đúng"]},
-  {sub:"Timezone", lay:"both", tc:"Đổi múi giờ người dùng", pre:"Đổi timezone", exp:"Mọi thời gian hiển thị đổi theo đúng", pr:"P1", steps:["Đổi timezone", "Xác nhận thời gian cập nhật"]},
-  {sub:"Timezone", lay:"api", tc:"DST transition (ngày đổi giờ)", pre:"Mốc thời gian rơi vào DST", exp:"Không lệch/nhân đôi giờ khi qua mốc DST", pr:"P1", steps:["Tạo/hiển thị thời gian quanh mốc DST", "Xác nhận đúng"]},
-  {sub:"Timezone", lay:"both", tc:"Sự kiện xuyên nửa đêm / qua ngày", pre:"Timezone khác nhau", exp:"Ngày/giờ qua nửa đêm hiển thị đúng theo local", pr:"P2", steps:["Tạo sự kiện gần nửa đêm", "Xem ở timezone khác", "Xác nhận đúng ngày"]},
-  {sub:"Timezone", lay:"api", tc:"Server không dùng local time", pre:"Server ở timezone khác", exp:"Chuẩn hoá UTC; không lệch do timezone server", pr:"P1", steps:["Kiểm xử lý thời gian server", "Xác nhận dùng UTC"]},
-  {sub:"Timezone", lay:"ui", tc:"Hiển thị nhãn múi giờ", pre:"Ngữ cảnh cần rõ", exp:"Hiện GMT+7/tên timezone khi cần tránh nhầm", pr:"P3", steps:["Xem thời gian có nhãn tz", "Xác nhận rõ ràng"]},
-  {sub:"Number & Currency", lay:"both", tc:"Dấu phân cách theo locale", pre:"Nhiều locale", exp:"1,000.5 (en) vs 1.000,5 (de/vi) đúng", pr:"P1", steps:["Đổi locale", "Xác nhận dấu phân cách"]},
-  {sub:"Number & Currency", lay:"both", tc:"Ký hiệu & vị trí tiền tệ", pre:"Nhiều locale", exp:"₫ sau số / $ trước số đúng theo locale", pr:"P2", steps:["Đổi locale tiền tệ", "Xác nhận ký hiệu & vị trí"]},
-  {sub:"Number & Currency", lay:"api", tc:"Làm tròn nhất quán", pre:"Số thập phân", exp:"Làm tròn đúng quy tắc & nhất quán FE/BE", pr:"P1", steps:["Kiểm số sau làm tròn", "Đối chiếu FE/BE"]},
-  {sub:"Number & Currency", lay:"both", tc:"Số âm theo locale", pre:"Giá trị âm", exp:"Hiển thị '-' / ngoặc theo locale đúng", pr:"P2", steps:["Xem số âm", "Xác nhận định dạng"]},
-  {sub:"Number & Currency", lay:"both", tc:"Số rất lớn / thập phân dài", pre:"Giá trị biên", exp:"Không tràn/không mất chính xác (dùng đúng kiểu)", pr:"P2", steps:["Nhập số rất lớn/nhiều thập phân", "Xác nhận đúng"]},
-  {sub:"Number & Currency", lay:"both", tc:"Nhập số theo locale (parse)", pre:"Ô nhập số", exp:"Parse đúng dấu phân cách theo locale khi nhập", pr:"P2", steps:["Nhập '1.000,5' ở locale vi", "Xác nhận parse đúng"]},
-  {sub:"Number & Currency", lay:"both", tc:"Phần trăm & đơn vị", pre:"Có %/đơn vị", exp:"Hiển thị % & đơn vị đúng locale", pr:"P3", steps:["Xem giá trị %", "Xác nhận đúng"]},
-  {sub:"Date & Time", lay:"both", tc:"DD/MM vs MM/DD", pre:"Nhiều locale", exp:"Thứ tự ngày/tháng đúng locale (tránh 03/04 nhầm)", pr:"P1", steps:["Đổi locale", "Xác nhận định dạng ngày"]},
-  {sub:"Date & Time", lay:"both", tc:"12h / 24h", pre:"Nhiều locale", exp:"Định dạng giờ theo locale (AM/PM vs 24h)", pr:"P2", steps:["Đổi locale", "Xác nhận định dạng giờ"]},
-  {sub:"Date & Time", lay:"ui", tc:"First day of week", pre:"Lịch", exp:"CN vs T2 đầu tuần theo locale", pr:"P3", steps:["Đổi locale", "Xác nhận đầu tuần"]},
-  {sub:"Date & Time", lay:"both", tc:"Thời gian tương đối", pre:"Có 'x giờ trước'", exp:"Đúng ngôn ngữ & số nhiều ('1 phút trước')", pr:"P3", steps:["Xem thời gian tương đối", "Xác nhận ngôn ngữ"]},
-  {sub:"Date & Time", lay:"both", tc:"Ngày biên (29/2, 30/31)", pre:"Nhập/hiển thị ngày", exp:"29/2 năm nhuận & năm thường; 31/4 xử lý đúng", pr:"P2", steps:["Nhập ngày biên", "Xác nhận hợp lệ/lỗi đúng"]},
-  {sub:"Translation & RTL", lay:"both", tc:"Dịch đầy đủ, không sót key", pre:"Đổi ngôn ngữ", exp:"Không sót key/không trơ {{var}}; đúng nội dung", pr:"P1", steps:["Đổi ngôn ngữ", "Rà UI không còn key/biến trơ"]},
-  {sub:"Translation & RTL", lay:"ui", tc:"Chữ dịch dài không vỡ", pre:"Ngôn ngữ dài (DE/VI)", exp:"Nút/nhãn không vỡ khi dịch dài", pr:"P2", steps:["Đổi ngôn ngữ dài", "Xác nhận layout"]},
-  {sub:"Translation & RTL", lay:"ui", tc:"RTL (Ả Rập)", pre:"Bật RTL", exp:"Bố cục lật đúng, kể cả icon hướng (mũi tên)", pr:"P2", steps:["Bật RTL", "Xác nhận lật đúng"]},
-  {sub:"Translation & RTL", lay:"both", tc:"Số nhiều (plural)", pre:"Đếm 1 vs nhiều", exp:"Đúng quy tắc plural theo ngôn ngữ", pr:"P2", steps:["Kiểm chuỗi 1 & nhiều", "Xác nhận đúng"]},
-  {sub:"Translation & RTL", lay:"both", tc:"Đổi ngôn ngữ áp toàn app & nhớ", pre:"Đổi ngôn ngữ", exp:"Áp toàn bộ UI & nhớ khi reload", pr:"P2", steps:["Đổi ngôn ngữ & F5", "Xác nhận giữ & áp"]},
-  {sub:"Translation & RTL", lay:"both", tc:"Unicode/emoji/tiếng Việt", pre:"Nhập/hiển thị", exp:"Hiển thị đúng, không lỗi encoding", pr:"P2", steps:["Nhập ký tự đặc biệt", "Xác nhận đúng"]},
+const TIMEZONE_TC = [
+  {sub:"Lưu trữ", lay:"api", tc:"Lưu UTC / hiển thị local", pre:"Dữ liệu thời gian", exp:"Lưu UTC ở server; hiển thị theo local user đúng", pr:"P1", steps:["Tạo dữ liệu có thời gian", "Xem ở timezone khác", "Xác nhận hiển thị local đúng"]},
+  {sub:"Chuyển đổi", lay:"both", tc:"Đổi múi giờ người dùng", pre:"Đổi timezone", exp:"Mọi thời gian hiển thị đổi theo đúng", pr:"P1", steps:["Đổi timezone", "Xác nhận thời gian cập nhật"]},
+  {sub:"DST", lay:"api", tc:"DST transition (ngày đổi giờ)", pre:"Mốc rơi vào DST", exp:"Không lệch/nhân đôi giờ khi qua mốc DST", pr:"P1", steps:["Hiển thị thời gian quanh mốc DST", "Xác nhận đúng"]},
+  {sub:"Biên", lay:"both", tc:"Sự kiện xuyên nửa đêm / qua ngày", pre:"Timezone khác nhau", exp:"Ngày/giờ qua nửa đêm hiển thị đúng theo local", pr:"P2", steps:["Tạo sự kiện gần nửa đêm", "Xem ở tz khác", "Xác nhận đúng ngày"]},
+  {sub:"Server", lay:"api", tc:"Server không dùng local time", pre:"Server ở tz khác", exp:"Chuẩn hoá UTC; không lệch do timezone server", pr:"P1", steps:["Kiểm xử lý thời gian server", "Xác nhận dùng UTC"]},
+  {sub:"Hiển thị", lay:"ui", tc:"Hiển thị nhãn múi giờ", pre:"Ngữ cảnh cần rõ", exp:"Hiện GMT+7/tên timezone khi cần tránh nhầm", pr:"P3", steps:["Xem thời gian có nhãn tz", "Xác nhận rõ ràng"]},
+];
+const NUMFMT_TC = [
+  {sub:"Định dạng", lay:"both", tc:"Dấu phân cách theo locale", pre:"Nhiều locale", exp:"1,000.5 (en) vs 1.000,5 (de/vi) đúng", pr:"P1", steps:["Đổi locale", "Xác nhận dấu phân cách"]},
+  {sub:"Tiền tệ", lay:"both", tc:"Ký hiệu & vị trí tiền tệ", pre:"Nhiều locale", exp:"₫ sau số / $ trước số đúng theo locale", pr:"P2", steps:["Đổi locale tiền tệ", "Xác nhận ký hiệu & vị trí"]},
+  {sub:"Làm tròn", lay:"api", tc:"Làm tròn nhất quán", pre:"Số thập phân", exp:"Làm tròn đúng quy tắc & nhất quán FE/BE", pr:"P1", steps:["Kiểm số sau làm tròn", "Đối chiếu FE/BE"]},
+  {sub:"Số âm", lay:"both", tc:"Số âm theo locale", pre:"Giá trị âm", exp:"Hiển thị '-' / ngoặc theo locale đúng", pr:"P2", steps:["Xem số âm", "Xác nhận định dạng"]},
+  {sub:"Biên", lay:"both", tc:"Số rất lớn / thập phân dài", pre:"Giá trị biên", exp:"Không tràn/không mất chính xác (đúng kiểu)", pr:"P2", steps:["Nhập số rất lớn/nhiều thập phân", "Xác nhận đúng"]},
+  {sub:"Nhập liệu", lay:"both", tc:"Parse số theo locale", pre:"Ô nhập số", exp:"Parse đúng dấu phân cách theo locale khi nhập", pr:"P2", steps:["Nhập '1.000,5' ở locale vi", "Xác nhận parse đúng"]},
+  {sub:"Phần trăm", lay:"both", tc:"Phần trăm & đơn vị", pre:"Có %/đơn vị", exp:"Hiển thị % & đơn vị đúng locale", pr:"P3", steps:["Xem giá trị %", "Xác nhận đúng"]},
+];
+const DATEFMT_TC = [
+  {sub:"Định dạng ngày", lay:"both", tc:"DD/MM vs MM/DD", pre:"Nhiều locale", exp:"Thứ tự ngày/tháng đúng locale (tránh 03/04 nhầm)", pr:"P1", steps:["Đổi locale", "Xác nhận định dạng ngày"]},
+  {sub:"Định dạng giờ", lay:"both", tc:"12h / 24h", pre:"Nhiều locale", exp:"Định dạng giờ theo locale (AM/PM vs 24h)", pr:"P2", steps:["Đổi locale", "Xác nhận định dạng giờ"]},
+  {sub:"Lịch", lay:"ui", tc:"First day of week", pre:"Lịch", exp:"CN vs T2 đầu tuần theo locale", pr:"P3", steps:["Đổi locale", "Xác nhận đầu tuần"]},
+  {sub:"Tương đối", lay:"both", tc:"Thời gian tương đối", pre:"Có 'x giờ trước'", exp:"Đúng ngôn ngữ & số nhiều ('1 phút trước')", pr:"P3", steps:["Xem thời gian tương đối", "Xác nhận ngôn ngữ"]},
+  {sub:"Biên", lay:"both", tc:"Ngày biên (29/2, 30/31)", pre:"Nhập/hiển thị ngày", exp:"29/2 năm nhuận & thường; 31/4 xử lý đúng", pr:"P2", steps:["Nhập ngày biên", "Xác nhận hợp lệ/lỗi đúng"]},
+];
+const TRANSLATION_TC = [
+  {sub:"Dịch", lay:"both", tc:"Dịch đầy đủ, không sót key", pre:"Đổi ngôn ngữ", exp:"Không sót key/không trơ {{var}}; đúng nội dung", pr:"P1", steps:["Đổi ngôn ngữ", "Rà UI không còn key/biến trơ"]},
+  {sub:"Layout", lay:"ui", tc:"Chữ dịch dài không vỡ", pre:"Ngôn ngữ dài (DE/VI)", exp:"Nút/nhãn không vỡ khi dịch dài", pr:"P2", steps:["Đổi ngôn ngữ dài", "Xác nhận layout"]},
+  {sub:"RTL", lay:"ui", tc:"RTL (Ả Rập)", pre:"Bật RTL", exp:"Bố cục lật đúng, kể cả icon hướng (mũi tên)", pr:"P2", steps:["Bật RTL", "Xác nhận lật đúng"]},
+  {sub:"Plural", lay:"both", tc:"Số nhiều (plural)", pre:"Đếm 1 vs nhiều", exp:"Đúng quy tắc plural theo ngôn ngữ", pr:"P2", steps:["Kiểm chuỗi 1 & nhiều", "Xác nhận đúng"]},
+  {sub:"Nhớ ngôn ngữ", lay:"both", tc:"Đổi ngôn ngữ áp toàn app & nhớ", pre:"Đổi ngôn ngữ", exp:"Áp toàn bộ UI & nhớ khi reload", pr:"P2", steps:["Đổi ngôn ngữ & F5", "Xác nhận giữ & áp"]},
+  {sub:"Ký tự", lay:"both", tc:"Unicode/emoji/tiếng Việt", pre:"Nhập/hiển thị", exp:"Hiển thị đúng, không lỗi encoding", pr:"P2", steps:["Nhập ký tự đặc biệt", "Xác nhận đúng"]},
 ];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
 const FEATURE_IDS = [];
@@ -2525,7 +2531,10 @@ MEDIAP_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"
 WIZARDF_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Wizard / Multi-step", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 ONBOARD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Onboarding", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 SETTINGS_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Settings", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
-LOCALIZATION_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Localization", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+TIMEZONE_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Timezone", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+NUMFMT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Number & Currency", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+DATEFMT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Date & Time", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+TRANSLATION_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Translation & RTL", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_GET_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API GET", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_POST_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API POST", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_PUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API PUT", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
@@ -2591,7 +2600,7 @@ function tcRefreshDependent(){
   tcFillSelect(tcPrio, data.map(t=>t.priority).filter(Boolean).sort(), "Tất cả ưu tiên");
 }
 // Feature "chuyên biệt" (bộ test case tự viết) vs "từ Sổ tay" (chuyển từ mục kiến thức)
-const DEDICATED_FEATURES = new Set(["Login","Logout","Register","Forgot password","Password","Email","Upload file","Search","Profile","Cart & Checkout","Import / Export","Chat","Dashboard","Notification center","Comment & Review","Booking","Calendar","Map","Media player","Wizard / Multi-step","Onboarding","Settings","Localization","API GET","API POST","API PUT","API PATCH","API DELETE"]);
+const DEDICATED_FEATURES = new Set(["Login","Logout","Register","Forgot password","Password","Email","Upload file","Search","Profile","Cart & Checkout","Import / Export","Chat","Dashboard","Notification center","Comment & Review","Booking","Calendar","Map","Media player","Wizard / Multi-step","Onboarding","Settings","Timezone","Number & Currency","Date & Time","Translation & RTL","API GET","API POST","API PUT","API PATCH","API DELETE"]);
 function tcSetupMode(){
   const isComp = tcMode==="component";
   tcHead.innerHTML = `<tr><th>ID</th><th>${isComp?"Component":"Feature"}</th><th>${isComp?"Group":"Category"}</th><th>Test Case</th><th>Layer</th><th>Expected Result</th><th>Priority</th><th>Steps</th></tr>`;
