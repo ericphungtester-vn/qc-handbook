@@ -2239,6 +2239,79 @@ const PASSWORD_TC = [
   {sub:"Bảo mật lưu trữ", lay:"api", tc:"Không trả/không log; HTTPS; so sánh timing-safe", pre:"Xác thực", exp:"Không trả/không log mật khẩu; chỉ HTTPS; so sánh hằng thời gian (chống timing)", pr:"P1", steps:["Soi response/log & so sánh", "Xác nhận không lộ & timing-safe"]},
   {sub:"Bảo mật lưu trữ", lay:"api", tc:"Rate limit / khoá sau N lần sai", pre:"Nhập sai nhiều lần", exp:"Khoá tạm / HTTP 429 sau ~5 lần (OWASP ASVS)", pr:"P1", steps:["Nhập sai liên tiếp", "Xác nhận bị khoá/429"]},
 ];
+const REGISTER_TC = [
+  {sub:"Form & validate", lay:"both", tc:"Đăng ký thành công", pre:"Email chưa tồn tại, payload hợp lệ", exp:"HTTP 201; tạo tài khoản (chưa kích hoạt); gửi email xác minh", pr:"P1", steps:["Điền form hợp lệ & submit", "Xác nhận tạo tài khoản & nhận email xác minh"]},
+  {sub:"Form & validate", lay:"ui", tc:"Thiếu field bắt buộc", pre:"Ở form đăng ký", exp:"Báo lỗi trường bắt buộc; chặn submit", pr:"P1", steps:["Bỏ trống field & submit", "Xác nhận báo lỗi"]},
+  {sub:"Form & validate", lay:"both", tc:"Email sai định dạng", pre:"Ở form", exp:"Báo lỗi định dạng email", pr:"P2", steps:["Nhập email sai", "Xác nhận báo lỗi"]},
+  {sub:"Form & validate", lay:"both", tc:"Chuẩn hoá email (trim, hoa/thường)", pre:"Ở form", exp:"Trim & chuẩn hoá thường trước khi lưu/so khớp", pr:"P2", steps:["Nhập ' User@X.com '", "Xác nhận chuẩn hoá đúng"]},
+  {sub:"Form & validate", lay:"ui", tc:"Xác nhận mật khẩu khớp", pre:"Ô mật khẩu + xác nhận", exp:"Không khớp → báo lỗi", pr:"P1", steps:["Nhập confirm khác", "Xác nhận báo lỗi"]},
+  {sub:"Trùng & bảo mật", lay:"api", tc:"Email đã tồn tại", pre:"Email đã đăng ký", exp:"HTTP 409/báo đã tồn tại; không tạo trùng", pr:"P1", steps:["Đăng ký email đã tồn tại", "Xác nhận 409"]},
+  {sub:"Trùng & bảo mật", lay:"both", tc:"Mật khẩu yếu bị chặn", pre:"Ở form", exp:"Chặn theo NIST (≥8, không phổ biến/đã lộ); đo độ mạnh", pr:"P1", steps:["Nhập mật khẩu yếu", "Xác nhận bị chặn"]},
+  {sub:"Trùng & bảo mật", lay:"both", tc:"XSS / SQLi trong field", pre:"Ở form", exp:"Payload không thực thi; server validate/escape", pr:"P1", steps:["Nhập payload vào field", "Xác nhận an toàn"]},
+  {sub:"Trùng & bảo mật", lay:"api", tc:"Rate limit / captcha chống bot", pre:"Đăng ký hàng loạt", exp:"Giới hạn tần suất / captcha chống tạo tài khoản bot", pr:"P2", steps:["Đăng ký liên tục", "Xác nhận bị chặn/captcha"]},
+  {sub:"Điều khoản", lay:"ui", tc:"Chấp nhận điều khoản bắt buộc", pre:"Ở form có checkbox điều khoản", exp:"Bắt buộc tick mới cho đăng ký", pr:"P2", steps:["Không tick điều khoản & submit", "Xác nhận bị chặn"]},
+  {sub:"Hoàn tất", lay:"both", tc:"Gửi email xác minh", pre:"Đăng ký xong", exp:"Nhận email xác minh; tài khoản chưa active tới khi verify", pr:"P1", steps:["Đăng ký", "Kiểm hộp thư", "Xác nhận nhận email xác minh"]},
+  {sub:"Hoàn tất", lay:"both", tc:"Đăng ký bằng OAuth", pre:"Có tài khoản OAuth", exp:"Tạo/liên kết tài khoản; đăng nhập ngay (theo thiết kế)", pr:"P2", steps:["Đăng ký bằng Google/Apple", "Xác nhận tạo/liên kết đúng"]},
+  {sub:"Form & validate", lay:"both", tc:"Username (nếu có)", pre:"Form có username", exp:"Độ dài & ký tự cho phép; trùng username → báo lỗi", pr:"P2", steps:["Nhập username không hợp lệ & trùng", "Xác nhận báo lỗi"]},
+];
+const FORGOT_TC = [
+  {sub:"Yêu cầu", lay:"both", tc:"Yêu cầu reset với email tồn tại", pre:"Ở màn quên mật khẩu", exp:"Gửi link/OTP reset tới email; báo đã gửi", pr:"P1", steps:["Nhập email tồn tại & gửi", "Xác nhận nhận link reset"]},
+  {sub:"Bảo mật", lay:"api", tc:"Không lộ email tồn tại", pre:"Email tồn tại vs không", exp:"Thông báo giống nhau (chống enumeration)", pr:"P1", steps:["Gửi reset 2 loại email", "So sánh thông báo giống nhau"]},
+  {sub:"Reset", lay:"both", tc:"Link reset hết hạn", pre:"Link quá hạn", exp:"Báo hết hạn & cho gửi lại", pr:"P1", steps:["Dùng link quá hạn", "Xác nhận báo & gửi lại được"]},
+  {sub:"Bảo mật", lay:"api", tc:"Link reset dùng 1 lần", pre:"Link đã dùng", exp:"Dùng lại → từ chối (single-use)", pr:"P1", steps:["Dùng link 2 lần", "Xác nhận bị từ chối"]},
+  {sub:"Reset", lay:"both", tc:"Đặt mật khẩu mới", pre:"Link hợp lệ", exp:"Áp policy độ mạnh; đặt thành công", pr:"P1", steps:["Đặt mật khẩu mới yếu & mạnh", "Xác nhận áp policy"]},
+  {sub:"Reset", lay:"both", tc:"Sau reset: vô hiệu phiên & mật khẩu cũ fail", pre:"Vừa reset", exp:"Vô hiệu các phiên cũ; đăng nhập mật khẩu cũ → 401", pr:"P1", steps:["Reset xong", "Kiểm phiên cũ & đăng nhập mật khẩu cũ", "Xác nhận vô hiệu & fail"]},
+  {sub:"Bảo mật", lay:"api", tc:"Rate limit yêu cầu reset", pre:"Gửi nhiều yêu cầu", exp:"Giới hạn tần suất chống spam/lạm dụng", pr:"P2", steps:["Gửi reset liên tục", "Xác nhận rate limit"]},
+  {sub:"Bảo mật", lay:"api", tc:"Token bị sửa/giả mạo", pre:"Sửa token trong link", exp:"Từ chối (invalid); không cho đặt mật khẩu", pr:"P1", steps:["Sửa token & mở", "Xác nhận bị từ chối"]},
+  {sub:"Reset", lay:"both", tc:"Reset tài khoản bị khoá/chưa kích hoạt", pre:"Tài khoản khoá/chưa active", exp:"Xử lý đúng theo policy (chặn/thông báo)", pr:"P2", steps:["Reset cho tài khoản khoá", "Xác nhận xử lý đúng"]},
+  {sub:"UX", lay:"ui", tc:"Màn nhập email & hướng dẫn", pre:"Ở màn quên mật khẩu", exp:"Có thông báo đã gửi & nhắc kiểm hộp thư/spam", pr:"P3", steps:["Gửi reset", "Xác nhận thông báo hướng dẫn rõ"]},
+];
+const UPLOAD_TC = [
+  {sub:"Định dạng & dung lượng", lay:"both", tc:"Upload đúng định dạng", pre:"File hợp lệ", exp:"Upload thành công; lưu & hiển thị đúng", pr:"P1", steps:["Chọn file đúng định dạng", "Xác nhận thành công"]},
+  {sub:"Định dạng & dung lượng", lay:"api", tc:"Chặn sai định dạng dù đổi đuôi", pre:"File đổi đuôi giả", exp:"Kiểm MIME thật/magic bytes → từ chối, không tin phần mở rộng", pr:"P1", steps:["Đổi .exe thành .jpg & upload", "Xác nhận bị từ chối"]},
+  {sub:"Định dạng & dung lượng", lay:"both", tc:"Vượt dung lượng", pre:"File quá lớn", exp:"HTTP 413/báo rõ giới hạn; không treo", pr:"P1", steps:["Upload file vượt max", "Xác nhận 413/báo lỗi"]},
+  {sub:"Định dạng & dung lượng", lay:"both", tc:"File 0 byte / rỗng", pre:"File rỗng", exp:"Xử lý đúng (từ chối/báo)", pr:"P2", steps:["Upload file 0 byte", "Xác nhận xử lý gọn"]},
+  {sub:"Định dạng & dung lượng", lay:"api", tc:"Tên file dài / ký tự lạ", pre:"Tên file bất thường", exp:"Sanitize tên file; không path traversal (../)", pr:"P2", steps:["Upload tên file có ../ & ký tự lạ", "Xác nhận sanitize an toàn"]},
+  {sub:"Nhiều file & UX", lay:"both", tc:"Nhiều file cùng lúc", pre:"Chọn nhiều file", exp:"Upload đồng thời đúng; báo từng file", pr:"P2", steps:["Chọn nhiều file", "Xác nhận tất cả đúng"]},
+  {sub:"Nhiều file & UX", lay:"ui", tc:"Kéo-thả & chọn thủ công", pre:"Vùng upload", exp:"Cả kéo-thả & chọn thủ công hoạt động", pr:"P2", steps:["Kéo-thả & chọn thủ công", "Xác nhận đều được"]},
+  {sub:"Nhiều file & UX", lay:"both", tc:"Tiến trình & huỷ giữa chừng", pre:"Đang upload", exp:"Hiện tiến trình; huỷ được; không để lại file dở", pr:"P2", steps:["Upload file lớn & huỷ", "Xác nhận huỷ sạch"]},
+  {sub:"Nhiều file & UX", lay:"ui", tc:"Xoá file đã chọn trước khi gửi", pre:"Đã chọn file", exp:"Xoá được khỏi danh sách trước upload", pr:"P2", steps:["Chọn rồi xoá file", "Xác nhận bị loại"]},
+  {sub:"Xử lý", lay:"api", tc:"Trùng tên file", pre:"File trùng tên", exp:"Xử lý đúng (đổi tên/ghi đè/hỏi) theo thiết kế", pr:"P2", steps:["Upload trùng tên", "Xác nhận xử lý đúng"]},
+  {sub:"Bảo mật", lay:"api", tc:"Chống file thực thi & lưu an toàn", pre:"Upload file nguy hiểm", exp:"Chặn file thực thi (.php/.exe); lưu ngoài webroot; quét virus (nếu có)", pr:"P1", steps:["Upload .php/.svg có script", "Xác nhận bị chặn/không thực thi"]},
+  {sub:"Xử lý", lay:"both", tc:"Ảnh: preview, nén, tỉ lệ", pre:"Upload ảnh", exp:"Preview đúng; nén/giữ tỉ lệ; xoá EXIF nhạy cảm (nếu cần)", pr:"P2", steps:["Upload ảnh", "Xác nhận preview & xử lý đúng"]},
+  {sub:"Nhiều file & UX", lay:"both", tc:"Mạng lỗi giữa chừng", pre:"Ngắt mạng khi upload", exp:"Báo lỗi gọn / cho thử lại; không hỏng dữ liệu", pr:"P2", steps:["Ngắt mạng khi upload", "Xác nhận báo lỗi & retry"]},
+  {sub:"Nhiều file & UX", lay:"ui", tc:"Bàn phím mở hộp chọn (a11y)", pre:"Điều hướng bàn phím", exp:"Mở được hộp chọn file bằng bàn phím", pr:"P3", steps:["Tab tới nút upload & Enter", "Xác nhận mở hộp chọn"]},
+];
+const SEARCHF_TC = [
+  {sub:"Cơ bản", lay:"both", tc:"Tìm có kết quả", pre:"Có dữ liệu", exp:"Trả kết quả đúng khớp từ khoá", pr:"P1", steps:["Nhập từ khoá có kết quả", "Xác nhận kết quả đúng"]},
+  {sub:"Cơ bản", lay:"both", tc:"Không có kết quả", pre:"Từ khoá không khớp", exp:"Empty state rõ ràng (không phải lỗi)", pr:"P1", steps:["Tìm từ khoá không có", "Xác nhận empty state"]},
+  {sub:"Cơ bản", lay:"ui", tc:"Tìm rỗng / chưa nhập", pre:"Ô tìm trống", exp:"Không gọi thừa / hiện gợi ý; xử lý đúng", pr:"P2", steps:["Để trống & submit", "Xác nhận xử lý đúng"]},
+  {sub:"Cơ bản", lay:"both", tc:"Ký tự đặc biệt & tiếng Việt", pre:"Có dữ liệu", exp:"Khớp có dấu & không dấu; ký tự đặc biệt an toàn", pr:"P2", steps:["Tìm 'Hà Nội' & 'ha noi'", "Xác nhận khớp"]},
+  {sub:"Cơ bản", lay:"both", tc:"Không phân biệt hoa/thường", pre:"Có dữ liệu", exp:"'ABC' == 'abc'", pr:"P2", steps:["Tìm hoa & thường", "Xác nhận cùng kết quả"]},
+  {sub:"Bộ lọc & sắp xếp", lay:"api", tc:"Debounce", pre:"Gõ liên tục", exp:"Không gọi API mỗi phím (debounce)", pr:"P2", steps:["Gõ nhanh", "Kiểm network", "Xác nhận gọi gộp"]},
+  {sub:"Cơ bản", lay:"ui", tc:"Nút × xoá & Enter để tìm", pre:"Ô tìm", exp:"× xoá nhanh; Enter kích hoạt tìm", pr:"P2", steps:["Bấm × & Enter", "Xác nhận hành vi"]},
+  {sub:"Bộ lọc & sắp xếp", lay:"both", tc:"Bộ lọc kết hợp", pre:"Có filter", exp:"Lọc kết hợp trả đúng tập kết quả", pr:"P2", steps:["Áp nhiều filter", "Xác nhận kết quả đúng"]},
+  {sub:"Bộ lọc & sắp xếp", lay:"both", tc:"Sắp xếp asc/desc", pre:"Có dữ liệu", exp:"Sắp xếp đúng chiều & field", pr:"P2", steps:["Đổi sort", "Xác nhận thứ tự"]},
+  {sub:"Phân trang", lay:"both", tc:"Phân trang / tải thêm", pre:"Nhiều kết quả", exp:"Phân trang đúng; giữ query khi đổi trang", pr:"P2", steps:["Chuyển trang", "Xác nhận giữ query & đúng trang"]},
+  {sub:"Bảo mật", lay:"api", tc:"Injection ở query", pre:"Ô tìm", exp:"SQLi/XSS ở query bị chặn; không 500", pr:"P1", steps:["Tìm payload injection", "Xác nhận an toàn"]},
+  {sub:"Bộ lọc & sắp xếp", lay:"ui", tc:"Gợi ý / autocomplete", pre:"Có autocomplete", exp:"Gợi ý đúng; chọn bằng phím & chuột", pr:"P2", steps:["Gõ để hiện gợi ý", "Chọn bằng mũi tên/click"]},
+  {sub:"Hiệu năng", lay:"perf", tc:"Hiệu năng tìm kiếm", pre:"Dữ liệu lớn", exp:"p95 ≤ SLA; dữ liệu lớn không treo", pr:"P2", steps:["Đo p95 & tìm trên tập lớn", "Xác nhận đạt & không treo"]},
+  {sub:"Phân trang", lay:"both", tc:"Giữ trạng thái tìm (deep-link)", pre:"Đã tìm & lọc", exp:"URL phản ánh query/filter; mở lại đúng", pr:"P2", steps:["Tìm → copy URL → mở lại", "Xác nhận khôi phục"]},
+];
+const PROFILE_TC = [
+  {sub:"Xem & sửa", lay:"both", tc:"Xem hồ sơ đúng", pre:"Đã đăng nhập", exp:"Hiển thị đúng thông tin người dùng", pr:"P1", steps:["Mở trang hồ sơ", "Xác nhận dữ liệu đúng"]},
+  {sub:"Xem & sửa", lay:"both", tc:"Sửa & lưu thông tin", pre:"Ở trang sửa hồ sơ", exp:"Cập nhật đúng; thông báo thành công", pr:"P1", steps:["Sửa field & lưu", "Xác nhận cập nhật & thông báo"]},
+  {sub:"Xem & sửa", lay:"both", tc:"Validate khi sửa", pre:"Ở trang sửa", exp:"Email/phone/required validate đúng; báo lỗi rõ", pr:"P1", steps:["Nhập sai định dạng & lưu", "Xác nhận báo lỗi"]},
+  {sub:"Xem & sửa", lay:"ui", tc:"Huỷ sửa không lưu", pre:"Đang sửa dở", exp:"Huỷ → không lưu thay đổi", pr:"P2", steps:["Sửa rồi huỷ", "Xác nhận không lưu"]},
+  {sub:"Avatar", lay:"both", tc:"Đổi avatar", pre:"Ở hồ sơ", exp:"Upload/crop avatar (định dạng, dung lượng); lỗi → fallback chữ", pr:"P2", steps:["Đổi avatar", "Xác nhận hiển thị & fallback"]},
+  {sub:"Bảo mật", lay:"both", tc:"Đổi email → xác minh lại", pre:"Đổi email trong hồ sơ", exp:"Yêu cầu verify email mới; email cũ còn tới khi verify", pr:"P2", steps:["Đổi email", "Xác nhận phải verify mới"]},
+  {sub:"Bảo mật", lay:"api", tc:"Chỉ sửa hồ sơ của mình (BOLA)", pre:"Đăng nhập user A", exp:"Sửa hồ sơ user B → 403 (OWASP API1)", pr:"P1", steps:["Gọi API sửa hồ sơ người khác", "Xác nhận 403"]},
+  {sub:"Bảo mật", lay:"both", tc:"XSS trong field (bio)", pre:"Nhập bio có payload", exp:"Escape khi hiển thị lại; không thực thi", pr:"P1", steps:["Nhập <script> vào bio", "Xác nhận escape an toàn"]},
+  {sub:"Xem & sửa", lay:"both", tc:"Chống double-submit khi lưu", pre:"Bấm lưu nhanh 2 lần", exp:"Không lưu/gửi 2 lần", pr:"P2", steps:["Bấm lưu 2 lần", "Xác nhận 1 lần"]},
+  {sub:"Xem & sửa", lay:"ui", tc:"Cảnh báo dữ liệu chưa lưu", pre:"Sửa dở rồi rời trang", exp:"Cảnh báo trước khi rời để tránh mất dữ liệu", pr:"P2", steps:["Sửa dở & rời trang", "Xác nhận cảnh báo"]},
+  {sub:"Bảo mật", lay:"both", tc:"Xoá tài khoản", pre:"Có tính năng xoá", exp:"Xác nhận nhiều bước; nêu hệ quả; xử lý dữ liệu (GDPR)", pr:"P2", steps:["Yêu cầu xoá tài khoản", "Xác nhận có bước xác nhận & hệ quả"]},
+  {sub:"Xem & sửa", lay:"both", tc:"i18n định dạng", pre:"Đổi locale", exp:"Ngày/số/tiền theo locale; chữ dịch không vỡ", pr:"P3", steps:["Đổi locale", "Xác nhận định dạng đúng"]},
+];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
 const FEATURE_IDS = [];
 const TC_FEAT = [];
@@ -2247,6 +2320,11 @@ LOGIN_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0")
 LOGOUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Logout", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 EMAILFIELD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Email", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 PASSWORD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Password", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+REGISTER_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Register", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+FORGOT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Forgot password", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+UPLOAD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Upload file", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+SEARCHF_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Search", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+PROFILE_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Profile", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_GET_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API GET", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_POST_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API POST", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_PUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API PUT", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
@@ -2312,7 +2390,7 @@ function tcRefreshDependent(){
   tcFillSelect(tcPrio, data.map(t=>t.priority).filter(Boolean).sort(), "Tất cả ưu tiên");
 }
 // Feature "chuyên biệt" (bộ test case tự viết) vs "từ Sổ tay" (chuyển từ mục kiến thức)
-const DEDICATED_FEATURES = new Set(["Login","Logout","Email","Password","API GET","API POST","API PUT","API PATCH","API DELETE"]);
+const DEDICATED_FEATURES = new Set(["Login","Logout","Register","Forgot password","Password","Email","Upload file","Search","Profile","API GET","API POST","API PUT","API PATCH","API DELETE"]);
 function tcSetupMode(){
   const isComp = tcMode==="component";
   tcHead.innerHTML = `<tr><th>ID</th><th>${isComp?"Component":"Feature"}</th><th>${isComp?"Group":"Category"}</th><th>Test Case</th><th>Layer</th><th>Expected Result</th><th>Priority</th><th>Steps</th></tr>`;
