@@ -2214,6 +2214,31 @@ const EMAILFIELD_TC = [
   {sub:"Xác minh email", lay:"both", tc:"Đã xác minh rồi (idempotent)", pre:"Tài khoản đã verify", exp:"Verify lại xử lý gọn, không lỗi (idempotent)", pr:"P2", steps:["Mở lại link khi đã verify", "Xác nhận thông báo gọn"]},
   {sub:"Xác minh email", lay:"both", tc:"Chưa xác minh mà đăng nhập", pre:"Tài khoản chưa verify", exp:"Chặn/nhắc xác minh theo policy; hướng dẫn gửi lại", pr:"P2", steps:["Đăng nhập khi chưa verify", "Xác nhận bị chặn/nhắc verify"]},
 ];
+const PASSWORD_TC = [
+  {sub:"Nhập & UX", lay:"ui", tc:"Che ký tự mặc định", pre:"Ở ô mật khẩu", exp:"Ký tự bị che (••••) mặc định", pr:"P1", steps:["Nhập mật khẩu", "Xác nhận bị che"]},
+  {sub:"Nhập & UX", lay:"ui", tc:"Hiện / ẩn mật khẩu", pre:"Đã nhập mật khẩu", exp:"Nút mắt bật/tắt hiện đúng ký tự", pr:"P2", steps:["Bấm icon mắt", "Xác nhận hiện/ẩn"]},
+  {sub:"Nhập & UX", lay:"ui", tc:"Cảnh báo Caps Lock", pre:"Con trỏ ở ô mật khẩu, Caps Lock bật", exp:"Hiện cảnh báo Caps Lock", pr:"P3", steps:["Bật Caps Lock & gõ", "Xác nhận cảnh báo"]},
+  {sub:"Nhập & UX", lay:"ui", tc:"Cho phép dán mật khẩu", pre:"Ở ô mật khẩu", exp:"Dán được (NIST khuyến nghị cho paste)", pr:"P3", steps:["Dán mật khẩu", "Xác nhận nhận đúng"]},
+  {sub:"Nhập & UX", lay:"both", tc:"Unicode/emoji/khoảng trắng & KHÔNG trim", pre:"Đặt mật khẩu có ký tự đặc biệt", exp:"Chấp nhận mọi ký tự; không trim/biến đổi (NIST 800-63B)", pr:"P2", steps:["Đặt & đăng nhập mật khẩu có emoji/space", "Xác nhận không bị trim & đúng"]},
+  {sub:"Nhập & UX", lay:"both", tc:"Độ dài tối thiểu 8, cho tới ≥64", pre:"Ở ô mật khẩu", exp:"≥ 8 mới hợp lệ; cho tới ≥64 ký tự; vượt max báo lỗi (NIST)", pr:"P1", steps:["Nhập < 8, và rất dài", "Xác nhận chặn/ cho phép đúng"]},
+  {sub:"Nhập & UX", lay:"ui", tc:"Không tự điền/không cache trang nhạy cảm", pre:"Form đổi/đặt mật khẩu", exp:"Dùng autocomplete=new-password; không lưu cache trang nhạy cảm", pr:"P2", steps:["Kiểm thuộc tính autocomplete", "Xác nhận đúng"]},
+  {sub:"Chính sách & độ mạnh", lay:"ui", tc:"Đo độ mạnh mật khẩu", pre:"Đang nhập mật khẩu", exp:"Chỉ báo weak→strong cập nhật realtime", pr:"P2", steps:["Nhập mật khẩu yếu rồi mạnh dần", "Xác nhận chỉ báo đổi"]},
+  {sub:"Chính sách & độ mạnh", lay:"api", tc:"Chặn mật khẩu phổ biến/đã lộ", pre:"Nhập mật khẩu phổ biến", exp:"Từ chối mật khẩu trong danh sách phổ biến/đã lộ (HIBP) — NIST", pr:"P1", steps:["Nhập 'password123'/'123456'", "Xác nhận bị từ chối"]},
+  {sub:"Chính sách & độ mạnh", lay:"both", tc:"Không ép thành phần & không ép đổi định kỳ", pre:"Đặt mật khẩu", exp:"Không bắt buộc hoa/số/ký tự đặc biệt; không ép đổi định kỳ (NIST 800-63B)", pr:"P2", steps:["Đặt mật khẩu chỉ chữ thường dài", "Xác nhận chấp nhận & không ép đổi"]},
+  {sub:"Chính sách & độ mạnh", lay:"api", tc:"Không chứa thông tin cá nhân", pre:"Mật khẩu chứa username/email", exp:"Từ chối/cảnh báo mật khẩu chứa username/email/tên", pr:"P2", steps:["Đặt mật khẩu = username", "Xác nhận bị từ chối/cảnh báo"]},
+  {sub:"Chính sách & độ mạnh", lay:"ui", tc:"Xác nhận mật khẩu khớp", pre:"Ô mật khẩu + xác nhận", exp:"Không khớp → báo lỗi; chặn submit", pr:"P1", steps:["Nhập confirm khác", "Xác nhận báo lỗi"]},
+  {sub:"Đổi mật khẩu", lay:"both", tc:"Yêu cầu mật khẩu hiện tại đúng", pre:"Đang đăng nhập, đổi mật khẩu", exp:"Phải nhập đúng mật khẩu hiện tại mới cho đổi", pr:"P1", steps:["Đổi mật khẩu", "Nhập sai/đúng mật khẩu hiện tại", "Xác nhận chỉ đúng mới đổi được"]},
+  {sub:"Đổi mật khẩu", lay:"both", tc:"Mật khẩu mới ≠ mật khẩu cũ", pre:"Đổi mật khẩu", exp:"Từ chối nếu trùng mật khẩu cũ (password history nếu có)", pr:"P1", steps:["Đặt mật khẩu mới = cũ", "Xác nhận bị từ chối"]},
+  {sub:"Đổi mật khẩu", lay:"both", tc:"Đổi mật khẩu → vô hiệu phiên khác + email", pre:"Đổi thành công", exp:"Mọi phiên khác bị vô hiệu; gửi email thông báo đổi mật khẩu", pr:"P1", steps:["Đổi mật khẩu", "Kiểm phiên khác & email", "Xác nhận vô hiệu & có thông báo"]},
+  {sub:"Đặt lại mật khẩu", lay:"api", tc:"Yêu cầu reset — không lộ email", pre:"Nhập email tồn tại vs không", exp:"Thông báo giống nhau (chống enumeration); gửi link nếu có", pr:"P1", steps:["Yêu cầu reset 2 loại email", "So sánh thông báo giống nhau"]},
+  {sub:"Đặt lại mật khẩu", lay:"api", tc:"Link reset dùng 1 lần & hết hạn", pre:"Có link reset", exp:"Dùng 1 lần; hết hạn theo cấu hình (vd 15–60 phút)", pr:"P1", steps:["Dùng link 2 lần & quá hạn", "Xác nhận bị từ chối"]},
+  {sub:"Đặt lại mật khẩu", lay:"both", tc:"Đặt mật khẩu mới qua reset", pre:"Link reset hợp lệ", exp:"Áp policy độ mạnh; đặt xong vô hiệu phiên cũ", pr:"P1", steps:["Đặt mật khẩu mới yếu & mạnh", "Xác nhận áp policy & vô hiệu phiên"]},
+  {sub:"Đặt lại mật khẩu", lay:"api", tc:"Rate limit yêu cầu reset", pre:"Gửi nhiều yêu cầu reset", exp:"Giới hạn tần suất; chống lạm dụng/spam", pr:"P2", steps:["Gửi reset liên tục", "Xác nhận bị rate limit"]},
+  {sub:"Đặt lại mật khẩu", lay:"both", tc:"Mật khẩu cũ sau reset → thất bại", pre:"Vừa reset", exp:"Đăng nhập bằng mật khẩu cũ → HTTP 401", pr:"P1", steps:["Reset rồi đăng nhập mật khẩu cũ", "Xác nhận thất bại"]},
+  {sub:"Bảo mật lưu trữ", lay:"api", tc:"Băm mật khẩu (không plaintext)", pre:"Đăng ký/đổi mật khẩu", exp:"Lưu dạng hash mạnh + salt (bcrypt/argon2/scrypt); KHÔNG lưu plaintext", pr:"P1", steps:["Kiểm DB/lưu trữ", "Xác nhận là hash + salt"]},
+  {sub:"Bảo mật lưu trữ", lay:"api", tc:"Không trả/không log; HTTPS; so sánh timing-safe", pre:"Xác thực", exp:"Không trả/không log mật khẩu; chỉ HTTPS; so sánh hằng thời gian (chống timing)", pr:"P1", steps:["Soi response/log & so sánh", "Xác nhận không lộ & timing-safe"]},
+  {sub:"Bảo mật lưu trữ", lay:"api", tc:"Rate limit / khoá sau N lần sai", pre:"Nhập sai nhiều lần", exp:"Khoá tạm / HTTP 429 sau ~5 lần (OWASP ASVS)", pr:"P1", steps:["Nhập sai liên tiếp", "Xác nhận bị khoá/429"]},
+];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
 const FEATURE_IDS = [];
 const TC_FEAT = [];
@@ -2221,6 +2246,7 @@ let n2 = 0;
 LOGIN_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Login", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 LOGOUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Logout", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 EMAILFIELD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Email", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+PASSWORD_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Password", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_GET_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API GET", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_POST_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API POST", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_PUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API PUT", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
@@ -2286,7 +2312,7 @@ function tcRefreshDependent(){
   tcFillSelect(tcPrio, data.map(t=>t.priority).filter(Boolean).sort(), "Tất cả ưu tiên");
 }
 // Feature "chuyên biệt" (bộ test case tự viết) vs "từ Sổ tay" (chuyển từ mục kiến thức)
-const DEDICATED_FEATURES = new Set(["Login","Logout","Email","API GET","API POST","API PUT","API PATCH","API DELETE"]);
+const DEDICATED_FEATURES = new Set(["Login","Logout","Email","Password","API GET","API POST","API PUT","API PATCH","API DELETE"]);
 function tcSetupMode(){
   const isComp = tcMode==="component";
   tcHead.innerHTML = `<tr><th>ID</th><th>${isComp?"Component":"Feature"}</th><th>${isComp?"Group":"Category"}</th><th>Test Case</th><th>Layer</th><th>Expected Result</th><th>Priority</th><th>Steps</th></tr>`;
