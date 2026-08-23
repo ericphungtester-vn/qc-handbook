@@ -1984,6 +1984,10 @@ const API_PUT_TC = [
   {sub:"Bảo mật", lay:"api", tc:"Auth 401/403 & BOLA", pre:"Không token / sửa của người khác", exp:"401 khi không token; 403 khi sửa bản ghi người khác", pr:"P1", steps:["PUT không token → 401", "PUT bản ghi người khác → 403"]},
   {sub:"Mã trạng thái", lay:"api", tc:"Content-Type sai → 415", pre:"Content-Type không phải JSON", exp:"HTTP 415", pr:"P2", steps:["PUT với Content-Type sai", "Xác nhận 415"]},
   {sub:"Hiệu năng", lay:"perf", tc:"Response time", pre:"Tải bình thường", exp:"p95 ≤ ngưỡng SLA", pr:"P2", steps:["Đo p95 thời gian PUT", "Xác nhận đạt SLA"]},
+  {sub:"Chức năng", lay:"api", tc:"PUT tạo mới (upsert) → 201 nếu hỗ trợ", pre:"PUT tới id chưa tồn tại", exp:"Theo RFC 9110: tạo mới → 201 (nếu API cho phép upsert) hoặc 404 nhất quán theo thiết kế", pr:"P2", steps:["PUT id chưa tồn tại","Xác nhận 201/404 đúng thiết kế"]},
+  {sub:"Validation", lay:"api", tc:"JSON không hợp lệ → 400", pre:"Body JSON hỏng", exp:"Trả 400 với thông báo rõ; không 500", pr:"P2", steps:["Gửi JSON hỏng","Xác nhận 400"]},
+  {sub:"Bảo mật", lay:"api", tc:"Rate limit → 429", pre:"Gọi vượt ngưỡng", exp:"Trả 429 + Retry-After; chống lạm dụng (OWASP API4)", pr:"P2", steps:["Gọi vượt ngưỡng","Xác nhận 429"]},
+  {sub:"Bảo mật", lay:"api", tc:"Response không lộ dữ liệu thừa (API3)", pre:"Trả bản ghi sau cập nhật", exp:"Chỉ trả field cần thiết; không lộ field nhạy cảm/nội bộ", pr:"P2", steps:["Kiểm response","Xác nhận không có field nhạy cảm"]},
 ];
 const API_PATCH_TC = [
   {sub:"Chức năng", lay:"api", tc:"PATCH cập nhật một phần", pre:"Bản ghi tồn tại", exp:"Chỉ field gửi thay đổi; field khác giữ nguyên", pr:"P1", steps:["PATCH 1 field", "GET lại xác nhận field khác không đổi"]},
@@ -1999,6 +2003,10 @@ const API_PATCH_TC = [
   {sub:"Bảo mật", lay:"api", tc:"XSS / SQLi", pre:"Field chứa payload", exp:"Chặn/escape an toàn", pr:"P1", steps:["PATCH field chứa payload", "Xác nhận an toàn"]},
   {sub:"Bảo mật", lay:"api", tc:"Auth 401/403 & BOLA", pre:"Không token / sửa của người khác", exp:"401 / 403 đúng", pr:"P1", steps:["PATCH không token → 401", "PATCH bản ghi người khác → 403"]},
   {sub:"Hiệu năng", lay:"perf", tc:"Response time", pre:"Tải bình thường", exp:"p95 ≤ ngưỡng SLA", pr:"P2", steps:["Đo p95 thời gian PATCH", "Xác nhận đạt SLA"]},
+  {sub:"Chức năng", lay:"api", tc:"Chỉ đổi field gửi lên (không đụng field khác)", pre:"PATCH 1 field", exp:"Các field không gửi giữ nguyên; không bị reset như PUT", pr:"P1", steps:["PATCH 1 field","Kiểm các field khác","Xác nhận không đổi"]},
+  {sub:"Validation", lay:"api", tc:"JSON không hợp lệ → 400", pre:"Body JSON hỏng", exp:"Trả 400 rõ ràng; không 500", pr:"P2", steps:["Gửi JSON hỏng","Xác nhận 400"]},
+  {sub:"Mã trạng thái", lay:"api", tc:"Content-Type patch sai → 415", pre:"Merge Patch vs JSON Patch", exp:"Sai media type (application/merge-patch+json / json-patch+json) → 415", pr:"P3", steps:["Gửi Content-Type sai","Xác nhận 415"]},
+  {sub:"Bảo mật", lay:"api", tc:"Rate limit → 429", pre:"Gọi vượt ngưỡng", exp:"Trả 429 + Retry-After (OWASP API4)", pr:"P2", steps:["Gọi vượt ngưỡng","Xác nhận 429"]},
 ];
 const API_DELETE_TC = [
   {sub:"Chức năng", lay:"api", tc:"DELETE thành công → 200/204", pre:"Bản ghi tồn tại", exp:"HTTP 200/204; GET lại → 404", pr:"P1", steps:["DELETE bản ghi", "GET lại xác nhận 404"]},
@@ -2015,6 +2023,8 @@ const API_DELETE_TC = [
   {sub:"UX", lay:"both", tc:"Xác nhận trước khi xoá & chống xoá nhầm", pre:"Thao tác xoá trên UI", exp:"Có hộp xác nhận; không xoá nhầm hàng loạt", pr:"P2", steps:["Bấm xoá trên UI", "Xác nhận có bước xác nhận"]},
   {sub:"Đồng thời", lay:"api", tc:"ETag/If-Match (xoá có điều kiện) → 412", pre:"Bản ghi đã đổi", exp:"Xoá trên bản cũ → 412", pr:"P2", steps:["Lấy ETag", "Bản ghi bị đổi", "DELETE If-Match cũ → 412"]},
   {sub:"Hiệu năng", lay:"perf", tc:"Response time & bulk delete", pre:"Tải bình thường / xoá hàng loạt", exp:"p95 ≤ SLA; bulk delete (nếu có) hiệu quả, không timeout", pr:"P2", steps:["Đo p95 DELETE", "Nếu có bulk: đo & kiểm tính đúng"]},
+  {sub:"Chức năng", lay:"api", tc:"Bulk delete lỗi một phần → báo cáo rõ", pre:"Danh sách có id hợp lệ & không", exp:"Báo id nào xoá được/không (partial); hành vi nhất quán đúng thiết kế", pr:"P2", steps:["Bulk delete lẫn id lỗi","Xác nhận báo cáo từng id"]},
+  {sub:"Chức năng", lay:"api", tc:"Resource không cho DELETE → 405", pre:"Endpoint không hỗ trợ DELETE", exp:"Trả 405 + header Allow liệt kê method hợp lệ (RFC 9110)", pr:"P3", steps:["DELETE resource read-only","Xác nhận 405 & Allow"]},
 ];
 const AUTH_TC = [
   {sub:"Đăng ký", lay:"both", tc:"Đăng ký thành công", pre:"Email chưa tồn tại, payload hợp lệ", exp:"HTTP 201; tạo tài khoản (chưa kích hoạt); gửi email xác minh", pr:"P1", steps:["Điền form đăng ký hợp lệ", "Submit", "Xác nhận tạo tài khoản & nhận email xác minh"]},
@@ -2187,6 +2197,8 @@ const LOGOUT_TC = [
   {sub:"Edge", lay:"both", tc:"Logout khi phiên đã hết hạn", pre:"Token đã invalid", exp:"Vẫn chuyển login gọn, không lỗi/không crash", pr:"P2", steps:["Để token hết hạn", "Bấm logout", "Xác nhận xử lý gọn"]},
   {sub:"Edge", lay:"ui", tc:"Double-click logout", pre:"Ở nút logout", exp:"Bấm 2 lần nhanh không gây lỗi/không gọi 2 lần lỗi", pr:"P3", steps:["Bấm logout 2 lần nhanh", "Xác nhận không lỗi"]},
   {sub:"SSO", lay:"api", tc:"Single Logout (SLO)", pre:"Dùng SSO/IdP", exp:"Logout thu hồi phiên ở IdP &/hoặc các app liên kết (nếu cấu hình SLO)", pr:"P2", steps:["Logout từ 1 app SSO", "Kiểm các app/IdP", "Xác nhận SLO đúng cấu hình"]},
+  {sub:"Bảo mật", lay:"both", tc:"Redirect sau logout an toàn (chống open redirect)", pre:"URL logout có ?next=/redirect=", exp:"Chỉ redirect tới domain/whitelist cho phép; chặn URL ngoài", pr:"P2", steps:["Logout với ?next=//evil.com","Xác nhận không redirect ra ngoài"]},
+  {sub:"Bảo mật", lay:"both", tc:"Không lộ dữ liệu qua bfcache/back sau logout", pre:"Bấm Back sau logout", exp:"Cache-Control: no-store; trang cần auth không hiện lại từ bfcache", pr:"P1", steps:["Logout → bấm Back","Xác nhận không thấy dữ liệu cũ"]},
 ];
 const EMAILFIELD_TC = [
   {sub:"Nhập & validate", lay:"both", tc:"Email đúng định dạng → chấp nhận", pre:"Ở ô email", exp:"Chấp nhận email hợp lệ (user@domain.com)", pr:"P1", steps:["Nhập email hợp lệ", "Xác nhận không báo lỗi & gửi được"]},
@@ -2254,6 +2266,13 @@ const REGISTER_TC = [
   {sub:"Hoàn tất", lay:"both", tc:"Gửi email xác minh", pre:"Đăng ký xong", exp:"Nhận email xác minh; tài khoản chưa active tới khi verify", pr:"P1", steps:["Đăng ký", "Kiểm hộp thư", "Xác nhận nhận email xác minh"]},
   {sub:"Hoàn tất", lay:"both", tc:"Đăng ký bằng OAuth", pre:"Có tài khoản OAuth", exp:"Tạo/liên kết tài khoản; đăng nhập ngay (theo thiết kế)", pr:"P2", steps:["Đăng ký bằng Google/Apple", "Xác nhận tạo/liên kết đúng"]},
   {sub:"Form & validate", lay:"both", tc:"Username (nếu có)", pre:"Form có username", exp:"Độ dài & ký tự cho phép; trùng username → báo lỗi", pr:"P2", steps:["Nhập username không hợp lệ & trùng", "Xác nhận báo lỗi"]},
+  {sub:"Trùng & bảo mật", lay:"both", tc:"Không lộ tài khoản khi email trùng (anti-enumeration)", pre:"Đăng ký email đã tồn tại", exp:"Không tiết lộ trực tiếp 'email đã tồn tại' cho kẻ dò; ưu tiên gửi email thông báo cho chủ + thông báo chung (NIST/OWASP)", pr:"P1", steps:["Đăng ký email đã tồn tại & chưa tồn tại","So sánh hành vi/thông báo"]},
+  {sub:"Trùng & bảo mật", lay:"api", tc:"Race: đăng ký trùng email đồng thời", pre:"2 request cùng email song song", exp:"Ràng buộc unique ở DB → chỉ 1 tài khoản được tạo", pr:"P2", steps:["Gửi 2 request cùng email đồng thời","Xác nhận chỉ 1 tài khoản"]},
+  {sub:"Hoàn tất", lay:"both", tc:"Link xác minh dùng 1 lần & hết hạn", pre:"Có email xác minh", exp:"Link xác minh single-use, hết hạn sau thời gian quy định; dùng lại/hết hạn → báo lỗi & cho gửi lại", pr:"P1", steps:["Dùng link 2 lần & để hết hạn","Xác nhận bị chặn"]},
+  {sub:"Hoàn tất", lay:"both", tc:"Gửi lại email xác minh + rate limit", pre:"Chưa nhận được email", exp:"Cho gửi lại; giới hạn tần suất chống spam", pr:"P2", steps:["Bấm gửi lại nhiều lần","Xác nhận bị giới hạn"]},
+  {sub:"Hoàn tất", lay:"both", tc:"Chưa xác minh: chặn/giới hạn đúng thiết kế", pre:"Tài khoản chưa verify", exp:"Đăng nhập bị chặn hoặc hạn chế chức năng theo thiết kế; hướng dẫn xác minh", pr:"P2", steps:["Đăng nhập khi chưa verify","Xác nhận hành vi đúng thiết kế"]},
+  {sub:"Form & validate", lay:"ui", tc:"Autocomplete & input type đúng", pre:"Ở form đăng ký", exp:"type=email, autocomplete=email/new-password; bàn phím mobile phù hợp", pr:"P3", steps:["Kiểm thuộc tính field","Xác nhận đúng"]},
+  {sub:"Form & validate", lay:"ui", tc:"A11y: lỗi field được liên kết & đọc", pre:"Submit lỗi", exp:"Lỗi gắn aria-describedby, focus về field lỗi đầu, screen reader đọc được", pr:"P2", steps:["Submit lỗi bằng bàn phím","Xác nhận focus & đọc lỗi"]},
 ];
 const FORGOT_TC = [
   {sub:"Yêu cầu", lay:"both", tc:"Yêu cầu reset với email tồn tại", pre:"Ở màn quên mật khẩu", exp:"Gửi link/OTP reset tới email; báo đã gửi", pr:"P1", steps:["Nhập email tồn tại & gửi", "Xác nhận nhận link reset"]},
@@ -2289,6 +2308,12 @@ const UPLOAD_TC = [
   {sub:"Xử lý", lay:"both", tc:"Ảnh: preview, nén, tỉ lệ", pre:"Upload ảnh", exp:"Preview đúng; nén/giữ tỉ lệ; xoá EXIF nhạy cảm (nếu cần)", pr:"P2", steps:["Upload ảnh", "Xác nhận preview & xử lý đúng"]},
   {sub:"Nhiều file & UX", lay:"both", tc:"Mạng lỗi giữa chừng", pre:"Ngắt mạng khi upload", exp:"Báo lỗi gọn / cho thử lại; không hỏng dữ liệu", pr:"P2", steps:["Ngắt mạng khi upload", "Xác nhận báo lỗi & retry"]},
   {sub:"Nhiều file & UX", lay:"ui", tc:"Bàn phím mở hộp chọn (a11y)", pre:"Điều hướng bàn phím", exp:"Mở được hộp chọn file bằng bàn phím", pr:"P3", steps:["Tab tới nút upload & Enter", "Xác nhận mở hộp chọn"]},
+  {sub:"Bảo mật", lay:"both", tc:"SVG chứa script (XSS)", pre:"Upload file .svg có <script>", exp:"Chặn/sanitize SVG; không thực thi script khi xem; phục vụ với Content-Type an toàn", pr:"P1", steps:["Upload SVG có script","Mở/xem file","Xác nhận không chạy script"]},
+  {sub:"Bảo mật", lay:"both", tc:"Path traversal trong tên file", pre:"Tên file dạng ../../etc/passwd", exp:"Sanitize tên/đường dẫn; không ghi ra ngoài thư mục cho phép", pr:"P1", steps:["Upload tên file có ../","Xác nhận lưu đúng thư mục an toàn"]},
+  {sub:"Bảo mật", lay:"api", tc:"Quét malware/virus", pre:"Có bước AV scan", exp:"File nghi ngờ bị chặn/cách ly; không phân phối cho người dùng khác", pr:"P2", steps:["Upload file test (EICAR)","Xác nhận bị chặn/cách ly"]},
+  {sub:"Bảo mật", lay:"api", tc:"Phân quyền xem file đã upload (BOLA)", pre:"File riêng tư của user A", exp:"User B không tải/xem được file của A; URL/ID không đoán được hoặc có kiểm tra quyền", pr:"P1", steps:["Lấy link file của A","Truy cập bằng B","Xác nhận bị từ chối"]},
+  {sub:"Xử lý", lay:"both", tc:"Strip EXIF/metadata ảnh", pre:"Ảnh có GPS/EXIF", exp:"Xoá metadata nhạy cảm (GPS) trước khi lưu/hiển thị công khai", pr:"P3", steps:["Upload ảnh có GPS","Kiểm ảnh đã lưu","Xác nhận không còn GPS"]},
+  {sub:"Định dạng & dung lượng", lay:"both", tc:"Giới hạn tổng số file & tổng dung lượng", pre:"Upload nhiều file/lô lớn", exp:"Chặn khi vượt số lượng tối đa hoặc tổng dung lượng; báo lỗi rõ", pr:"P2", steps:["Chọn quá số/tổng cho phép","Xác nhận bị chặn"]},
 ];
 const SEARCHF_TC = [
   {sub:"Cơ bản", lay:"both", tc:"Tìm có kết quả", pre:"Có dữ liệu", exp:"Trả kết quả đúng khớp từ khoá", pr:"P1", steps:["Nhập từ khoá có kết quả", "Xác nhận kết quả đúng"]},
@@ -2305,6 +2330,12 @@ const SEARCHF_TC = [
   {sub:"Bộ lọc & sắp xếp", lay:"ui", tc:"Gợi ý / autocomplete", pre:"Có autocomplete", exp:"Gợi ý đúng; chọn bằng phím & chuột", pr:"P2", steps:["Gõ để hiện gợi ý", "Chọn bằng mũi tên/click"]},
   {sub:"Hiệu năng", lay:"perf", tc:"Hiệu năng tìm kiếm", pre:"Dữ liệu lớn", exp:"p95 ≤ SLA; dữ liệu lớn không treo", pr:"P2", steps:["Đo p95 & tìm trên tập lớn", "Xác nhận đạt & không treo"]},
   {sub:"Phân trang", lay:"both", tc:"Giữ trạng thái tìm (deep-link)", pre:"Đã tìm & lọc", exp:"URL phản ánh query/filter; mở lại đúng", pr:"P2", steps:["Tìm → copy URL → mở lại", "Xác nhận khôi phục"]},
+  {sub:"Cơ bản", lay:"both", tc:"Tìm không dấu vẫn ra kết quả (diacritic-insensitive)", pre:"Dữ liệu có dấu tiếng Việt", exp:"'tieng viet' khớp 'tiếng việt'; chuẩn hoá dấu khi tìm", pr:"P2", steps:["Nhập từ khoá không dấu","Xác nhận vẫn ra kết quả có dấu"]},
+  {sub:"Cơ bản", lay:"ui", tc:"Highlight từ khoá khớp", pre:"Có kết quả", exp:"Đánh dấu phần khớp trong kết quả; không phá vỡ layout/HTML", pr:"P3", steps:["Tìm từ khoá","Xác nhận phần khớp được highlight"]},
+  {sub:"Cơ bản", lay:"both", tc:"Query quá dài / giới hạn độ dài", pre:"Nhập chuỗi rất dài", exp:"Giới hạn độ dài hợp lý; không lỗi server; báo/cắt gọn", pr:"P3", steps:["Nhập query cực dài","Xác nhận xử lý an toàn"]},
+  {sub:"Phân trang", lay:"both", tc:"Trang vượt quá trang cuối", pre:"Yêu cầu page > tổng số trang", exp:"Trả rỗng/điều chỉnh về trang hợp lệ; không lỗi", pr:"P3", steps:["Mở URL page vượt giới hạn","Xác nhận xử lý gọn"]},
+  {sub:"Bộ lọc & sắp xếp", lay:"ui", tc:"Xoá tất cả bộ lọc (clear all)", pre:"Đang áp nhiều filter", exp:"Nút xoá toàn bộ filter → về trạng thái mặc định; URL cập nhật", pr:"P3", steps:["Áp nhiều filter → Clear all","Xác nhận reset"]},
+  {sub:"Cơ bản", lay:"ui", tc:"A11y: thông báo số kết quả (aria-live)", pre:"Dùng screen reader", exp:"Số kết quả/không kết quả được đọc qua aria-live; combobox có role/aria đúng", pr:"P2", steps:["Tìm bằng screen reader","Xác nhận đọc số kết quả"]},
 ];
 const PROFILE_TC = [
   {sub:"Xem & sửa", lay:"both", tc:"Xem hồ sơ đúng", pre:"Đã đăng nhập", exp:"Hiển thị đúng thông tin người dùng", pr:"P1", steps:["Mở trang hồ sơ", "Xác nhận dữ liệu đúng"]},
@@ -2319,6 +2350,11 @@ const PROFILE_TC = [
   {sub:"Xem & sửa", lay:"ui", tc:"Cảnh báo dữ liệu chưa lưu", pre:"Sửa dở rồi rời trang", exp:"Cảnh báo trước khi rời để tránh mất dữ liệu", pr:"P2", steps:["Sửa dở & rời trang", "Xác nhận cảnh báo"]},
   {sub:"Bảo mật", lay:"both", tc:"Xoá tài khoản", pre:"Có tính năng xoá", exp:"Xác nhận nhiều bước; nêu hệ quả; xử lý dữ liệu (GDPR)", pr:"P2", steps:["Yêu cầu xoá tài khoản", "Xác nhận có bước xác nhận & hệ quả"]},
   {sub:"Xem & sửa", lay:"both", tc:"i18n định dạng", pre:"Đổi locale", exp:"Ngày/số/tiền theo locale; chữ dịch không vỡ", pr:"P3", steps:["Đổi locale", "Xác nhận định dạng đúng"]},
+  {sub:"Bảo mật", lay:"both", tc:"Re-auth khi đổi field nhạy cảm (step-up)", pre:"Đổi email/mật khẩu/SĐT", exp:"Yêu cầu nhập lại mật khẩu/OTP trước khi đổi thông tin nhạy cảm", pr:"P1", steps:["Đổi email/mật khẩu","Xác nhận bị hỏi xác thực lại"]},
+  {sub:"Bảo mật", lay:"both", tc:"Đổi email: thông báo email cũ & giữ đến khi xác minh", pre:"Đổi sang email mới", exp:"Gửi cảnh báo tới email cũ; email mới chỉ hiệu lực sau khi xác minh", pr:"P2", steps:["Đổi email","Kiểm cảnh báo email cũ & xác minh email mới"]},
+  {sub:"Bảo mật", lay:"both", tc:"Xoá tài khoản: xác nhận + xuất dữ liệu (GDPR)", pre:"Yêu cầu xoá tài khoản", exp:"Có bước xác nhận rõ; hỗ trợ xuất dữ liệu; xoá/ẩn danh theo chính sách", pr:"P2", steps:["Yêu cầu xoá","Xác nhận & (nếu có) xuất dữ liệu"]},
+  {sub:"Avatar", lay:"both", tc:"Validate avatar (định dạng/dung lượng/crop)", pre:"Đổi avatar", exp:"Chỉ nhận ảnh đúng định dạng/dung lượng; crop/nén; chặn file thực thi", pr:"P2", steps:["Upload avatar sai loại/lớn","Xác nhận bị chặn/xử lý đúng"]},
+  {sub:"Xem & sửa", lay:"api", tc:"Sửa đồng thời / dữ liệu cũ (optimistic lock)", pre:"2 phiên cùng sửa 1 hồ sơ", exp:"Phát hiện ghi đè (ETag/version) → cảnh báo/merge, không mất dữ liệu", pr:"P2", steps:["Sửa từ 2 phiên","Lưu lần 2","Xác nhận cảnh báo conflict"]},
 ];
 const CART_TC = [
   {sub:"Giỏ hàng", lay:"both", tc:"Thêm sản phẩm vào giỏ", pre:"Có sản phẩm", exp:"Item vào giỏ; số lượng & tổng cập nhật đúng", pr:"P1", steps:["Thêm sản phẩm", "Xác nhận giỏ & tổng đúng"]},
@@ -2334,6 +2370,11 @@ const CART_TC = [
   {sub:"Checkout", lay:"both", tc:"Đặt hàng thành công", pre:"Thông tin hợp lệ", exp:"Tạo đơn; chuyển sang thanh toán/confirm", pr:"P1", steps:["Đặt hàng", "Xác nhận tạo đơn"]},
   {sub:"Đồng thời & tồn kho", lay:"api", tc:"Chống double-submit đặt hàng", pre:"Bấm 2 lần", exp:"Idempotency → chỉ tạo 1 đơn", pr:"P1", steps:["Đặt hàng 2 lần nhanh", "Xác nhận 1 đơn"]},
   {sub:"Bảo mật", lay:"api", tc:"Giá/tổng tính ở server", pre:"Sửa giá phía client", exp:"Server tính lại giá/tổng, không tin client", pr:"P1", steps:["Sửa giá trong request", "Xác nhận server dùng giá đúng"]},
+  {sub:"Giỏ hàng", lay:"both", tc:"Giá đổi giữa lúc thêm giỏ và checkout", pre:"Giá sản phẩm thay đổi", exp:"Phát hiện & thông báo giá mới trước khi đặt; không âm thầm tính giá cũ/khác", pr:"P1", steps:["Thêm giỏ → đổi giá → checkout","Xác nhận thông báo giá mới"]},
+  {sub:"Giỏ hàng", lay:"both", tc:"Số lượng không hợp lệ (0/âm/không phải số)", pre:"Nhập số lượng bất thường", exp:"Chặn & báo lỗi; không cho đặt số lượng ≤0 hay phi số", pr:"P2", steps:["Nhập 0/-1/abc","Xác nhận bị chặn"]},
+  {sub:"Giỏ hàng", lay:"both", tc:"Voucher không hợp lệ/hết hạn/không đủ điều kiện", pre:"Áp mã sai/hết hạn/dưới min-order", exp:"Báo lỗi rõ lý do; không áp; không cho chồng mã nếu cấm", pr:"P2", steps:["Áp mã sai & hết hạn & dưới min","Xác nhận báo lỗi đúng"]},
+  {sub:"Checkout", lay:"both", tc:"Guest checkout vs yêu cầu đăng nhập", pre:"Người dùng chưa đăng nhập", exp:"Cho đặt dạng khách hoặc yêu cầu đăng nhập theo thiết kế; luồng nhất quán", pr:"P2", steps:["Checkout khi chưa đăng nhập","Xác nhận luồng đúng thiết kế"]},
+  {sub:"Đồng thời & tồn kho", lay:"both", tc:"Thanh toán thất bại → giữ giỏ", pre:"Thanh toán fail/hủy", exp:"Giỏ hàng được giữ nguyên; cho thử lại; không trừ tồn kho vĩnh viễn", pr:"P1", steps:["Gây thanh toán fail","Xác nhận giỏ còn nguyên & cho thử lại"]},
 ];
 const IMPEX_TC = [
   {sub:"Export", lay:"both", tc:"Export CSV/Excel đúng dữ liệu", pre:"Có dữ liệu", exp:"File đúng dữ liệu & cột; mở được", pr:"P1", steps:["Export", "Mở file & đối chiếu"]},
@@ -2347,6 +2388,12 @@ const IMPEX_TC = [
   {sub:"Import", lay:"perf", tc:"Import file lớn", pre:"File lớn", exp:"Tiến trình & không treo; timeout hợp lý", pr:"P2", steps:["Import file lớn", "Xác nhận tiến trình"]},
   {sub:"Bảo mật", lay:"api", tc:"Kiểm định dạng thật & an toàn", pre:"Upload file import", exp:"Kiểm MIME thật, kích thước; chống file độc", pr:"P1", steps:["Import file đổi đuôi/độc", "Xác nhận bị chặn"]},
   {sub:"Export", lay:"ui", tc:"Tải file mẫu (template)", pre:"Có template", exp:"Template tải được & đúng cột hướng dẫn", pr:"P3", steps:["Tải template", "Xác nhận đúng"]},
+  {sub:"Import", lay:"both", tc:"Xem trước (dry-run) trước khi ghi", pre:"Import file hợp lệ", exp:"Hiển thị preview/đối chiếu trước khi commit; cho hủy", pr:"P2", steps:["Chọn file → xem preview","Hủy/Xác nhận","Kiểm dữ liệu chỉ ghi khi xác nhận"]},
+  {sub:"Import", lay:"both", tc:"Báo cáo kết quả & tải danh sách dòng lỗi", pre:"File có dòng đúng & sai", exp:"Báo X thành công/Y lỗi; tải được file dòng lỗi kèm lý do", pr:"P2", steps:["Import file lẫn lỗi","Xác nhận báo cáo","Tải file lỗi"]},
+  {sub:"Import", lay:"api", tc:"Transaction / rollback (all-or-nothing vs partial)", pre:"File lỗi giữa chừng", exp:"Hành vi nhất quán đúng thiết kế (rollback toàn bộ hoặc ghi phần hợp lệ có báo cáo), không để dữ liệu nửa vời không rõ", pr:"P2", steps:["Import file lỗi giữa chừng","Xác nhận hành vi nhất quán"]},
+  {sub:"Import", lay:"both", tc:"Xử lý bất đồng bộ + tiến trình (file lớn)", pre:"File rất lớn", exp:"Xử lý nền, hiển thị tiến trình/thông báo khi xong; không timeout UI", pr:"P2", steps:["Import file lớn","Xác nhận chạy nền & thông báo hoàn tất"]},
+  {sub:"Bảo mật", lay:"api", tc:"Phân quyền phạm vi export/import", pre:"User quyền hạn chế", exp:"Chỉ export/import dữ liệu trong phạm vi được phép; không rò dữ liệu người/đơn vị khác", pr:"P1", steps:["Export bằng user hạn chế","Xác nhận không lộ dữ liệu ngoài phạm vi"]},
+  {sub:"Export", lay:"both", tc:"Định dạng ngày/số/locale & BOM UTF-8", pre:"Mở file bằng Excel", exp:"Ngày/số theo locale; BOM UTF-8 để Excel hiển thị tiếng Việt không lỗi font", pr:"P3", steps:["Export & mở bằng Excel","Xác nhận không lỗi font/định dạng"]},
 ];
 const CHAT_TC = [
   {sub:"Gửi/nhận", lay:"both", tc:"Gửi tin nhắn", pre:"Trong phòng chat", exp:"Hiển thị ngay (optimistic) & lưu server; xác nhận đã gửi", pr:"P1", steps:["Gửi tin", "Xác nhận hiển thị & lưu"]},
@@ -2360,6 +2407,12 @@ const CHAT_TC = [
   {sub:"Realtime", lay:"api", tc:"Thứ tự tin khi nhiều tin đến nhanh", pre:"Nhiều tin liên tiếp", exp:"Hiển thị đúng thứ tự thời gian", pr:"P2", steps:["Gửi nhiều tin nhanh", "Xác nhận thứ tự"]},
   {sub:"Trạng thái", lay:"both", tc:"Xoá/sửa tin & đồng bộ", pre:"Có tin đã gửi", exp:"Xoá/sửa đồng bộ 2 phía (nếu hỗ trợ)", pr:"P2", steps:["Sửa/xoá tin", "Xác nhận đồng bộ"]},
   {sub:"UX", lay:"both", tc:"Thông báo tin mới khi không ở màn chat", pre:"Ở màn khác", exp:"Có badge/thông báo tin mới", pr:"P2", steps:["Nhận tin khi ở màn khác", "Xác nhận thông báo"]},
+  {sub:"Gửi/nhận", lay:"both", tc:"Gửi tin thất bại → trạng thái lỗi & gửi lại", pre:"Mạng lỗi lúc gửi", exp:"Tin hiển thị trạng thái 'gửi lỗi'; cho gửi lại; không mất nội dung", pr:"P1", steps:["Gửi khi mạng lỗi","Xác nhận trạng thái lỗi","Bấm gửi lại"]},
+  {sub:"Gửi/nhận", lay:"both", tc:"Chống tin trùng khi gửi lại (client message id)", pre:"Resend sau timeout", exp:"Dùng client message id/idempotency → không tạo tin trùng dù server đã nhận", pr:"P2", steps:["Gửi rồi resend cùng id","Xác nhận chỉ 1 tin"]},
+  {sub:"Bảo mật", lay:"api", tc:"Phân quyền hội thoại (authz)", pre:"Hội thoại của người khác", exp:"Chỉ đọc/gửi trong hội thoại mình tham gia; chặn truy cập conversation id lạ", pr:"P1", steps:["Gọi API với conversation id không thuộc mình","Xác nhận từ chối"]},
+  {sub:"UX", lay:"ui", tc:"Đang soạn (typing indicator)", pre:"Người kia đang gõ", exp:"Hiển thị 'đang soạn…' đúng lúc; tự tắt khi ngừng", pr:"P3", steps:["Người kia gõ","Xác nhận hiển thị & tự tắt"]},
+  {sub:"Bảo mật", lay:"both", tc:"Validate file/ảnh trong chat", pre:"Gửi file trong chat", exp:"Kiểm định dạng/dung lượng; chặn file thực thi; ảnh có preview an toàn", pr:"P2", steps:["Gửi file sai loại/lớn","Xác nhận bị chặn"]},
+  {sub:"Bảo mật", lay:"both", tc:"Xem trước link an toàn (SSRF/XSS)", pre:"Tin có URL", exp:"Link preview không gây XSS/SSRF; fetch phía server an toàn; escape nội dung", pr:"P2", steps:["Gửi URL độc hại","Xác nhận preview an toàn"]},
 ];
 const DASH_TC = [
   {sub:"Hiển thị", lay:"both", tc:"Load dashboard", pre:"Đã đăng nhập", exp:"Hiển thị đúng widget & số liệu", pr:"P1", steps:["Mở dashboard", "Xác nhận widget/số liệu"]},
@@ -2373,6 +2426,12 @@ const DASH_TC = [
   {sub:"Hiệu năng", lay:"perf", tc:"Nhiều widget / dữ liệu lớn", pre:"Dashboard nặng", exp:"Lazy/skeleton; không treo; p95 đạt", pr:"P2", steps:["Mở dashboard nặng", "Xác nhận không treo"]},
   {sub:"Hiển thị", lay:"ui", tc:"Responsive", pre:"Màn nhỏ", exp:"Widget xếp lại gọn trên mobile", pr:"P2", steps:["Thu nhỏ màn", "Xác nhận layout"]},
   {sub:"Bộ lọc", lay:"both", tc:"Realtime / refresh", pre:"Có auto-refresh", exp:"Số liệu cập nhật theo realtime/refresh đúng", pr:"P2", steps:["Chờ refresh", "Xác nhận cập nhật"]},
+  {sub:"Hiển thị", lay:"both", tc:"Lỗi 1 widget không sập cả trang", pre:"1 widget lỗi API", exp:"Chỉ widget đó báo lỗi/retry; các widget khác vẫn hiển thị", pr:"P2", steps:["Gây lỗi 1 widget","Xác nhận trang & widget khác vẫn chạy"]},
+  {sub:"Dữ liệu", lay:"both", tc:"Phân biệt trạng thái rỗng vs lỗi", pre:"Không dữ liệu vs lỗi tải", exp:"Empty state khác với error state; error cho retry", pr:"P2", steps:["Tạo cảnh rỗng & lỗi","Xác nhận 2 trạng thái khác nhau"]},
+  {sub:"Dữ liệu", lay:"both", tc:"Hiển thị thời điểm cập nhật & dữ liệu cache", pre:"Có cache", exp:"Hiển thị 'cập nhật lúc…'; khi offline/cache dùng last-known có nhãn", pr:"P3", steps:["Xem dashboard","Xác nhận có mốc thời gian cập nhật"]},
+  {sub:"Dữ liệu", lay:"both", tc:"Tổng hợp & làm tròn chính xác", pre:"Số liệu tổng/tỉ lệ", exp:"Tổng/aggregate & làm tròn đúng; tổng phần khớp tổng chung", pr:"P1", steps:["Đối chiếu tổng vs chi tiết","Xác nhận khớp"]},
+  {sub:"Hiển thị", lay:"ui", tc:"Drill-down khi bấm biểu đồ", pre:"Biểu đồ hỗ trợ drill-down", exp:"Bấm phần tử → xem chi tiết đúng ngữ cảnh/bộ lọc", pr:"P3", steps:["Bấm cột/điểm dữ liệu","Xác nhận drill-down đúng"]},
+  {sub:"Bộ lọc", lay:"both", tc:"Đổi filter khi đang refresh (race)", pre:"Đổi filter nhanh liên tục", exp:"Kết quả hiển thị khớp filter mới nhất; hủy/bỏ qua response cũ", pr:"P2", steps:["Đổi filter liên tục","Xác nhận dữ liệu khớp filter cuối"]},
 ];
 const NOTIF_TC = [
   {sub:"Danh sách", lay:"both", tc:"Hiển thị danh sách thông báo", pre:"Có thông báo", exp:"Mới nhất trước; nội dung đúng", pr:"P1", steps:["Mở notification center", "Xác nhận danh sách"]},
@@ -2384,6 +2443,11 @@ const NOTIF_TC = [
   {sub:"Tương tác", lay:"both", tc:"Xoá thông báo", pre:"Có thông báo", exp:"Xoá được; cập nhật danh sách", pr:"P2", steps:["Xoá 1 thông báo", "Xác nhận biến mất"]},
   {sub:"Realtime", lay:"both", tc:"Đồng bộ đã đọc giữa tab/thiết bị", pre:"Mở nhiều tab", exp:"Đọc ở 1 nơi → nơi khác đồng bộ", pr:"P2", steps:["Đọc ở tab A", "Xác nhận tab B đồng bộ"]},
   {sub:"Tương tác", lay:"both", tc:"Cài đặt bật/tắt loại thông báo", pre:"Có cài đặt", exp:"Tắt loại nào → không nhận loại đó", pr:"P3", steps:["Tắt 1 loại", "Xác nhận không nhận"]},
+  {sub:"Realtime", lay:"both", tc:"Đẩy thông báo tức thì (realtime)", pre:"Có sự kiện mới", exp:"Thông báo/badge cập nhật tức thì không cần reload; đồng bộ thứ tự", pr:"P2", steps:["Kích hoạt sự kiện","Xác nhận thông báo tới ngay"]},
+  {sub:"Bảo mật", lay:"api", tc:"Phân quyền: chỉ thấy thông báo của mình (BOLA)", pre:"Thông báo của người khác", exp:"Không đọc/đánh dấu được thông báo id của người khác", pr:"P1", steps:["Gọi API với notif id lạ","Xác nhận từ chối"]},
+  {sub:"Tương tác", lay:"both", tc:"Bấm thông báo tới nội dung đã xoá", pre:"Nội dung đích không còn", exp:"Điều hướng gọn, báo 'nội dung không còn'; không lỗi/màn trắng", pr:"P3", steps:["Xoá nội dung đích → bấm thông báo","Xác nhận xử lý gọn"]},
+  {sub:"Danh sách", lay:"both", tc:"Thời gian hiển thị (relative time & timezone)", pre:"Thông báo nhiều mốc thời gian", exp:"Hiển thị 'x phút trước' đúng; theo timezone người dùng", pr:"P3", steps:["Xem các thông báo","Xác nhận thời gian đúng"]},
+  {sub:"Realtime", lay:"ui", tc:"A11y: badge & thông báo mới được đọc", pre:"Dùng screen reader", exp:"Badge có aria-label; thông báo mới thông báo qua aria-live", pr:"P3", steps:["Nhận thông báo bằng screen reader","Xác nhận đọc được"]},
 ];
 const COMMENT_TC = [
   {sub:"Đăng", lay:"both", tc:"Đăng bình luận", pre:"Đã đăng nhập", exp:"Hiển thị ngay & lưu server", pr:"P1", steps:["Đăng bình luận", "Xác nhận hiển thị & lưu"]},
@@ -2396,6 +2460,12 @@ const COMMENT_TC = [
   {sub:"Bảo mật", lay:"api", tc:"Kiểm duyệt / chống spam", pre:"Có kiểm duyệt", exp:"Chờ duyệt/chặn spam theo policy; rate limit", pr:"P2", steps:["Đăng spam liên tục", "Xác nhận bị chặn/chờ duyệt"]},
   {sub:"Hiển thị", lay:"both", tc:"Sắp xếp (mới nhất/hữu ích)", pre:"Có sắp xếp", exp:"Đổi sort → thứ tự đúng", pr:"P3", steps:["Đổi sort", "Xác nhận thứ tự"]},
   {sub:"Hiển thị", lay:"both", tc:"Realtime bình luận mới", pre:"Nhiều người", exp:"Bình luận mới hiện realtime (nếu hỗ trợ)", pr:"P3", steps:["Người khác đăng", "Xác nhận hiện realtime"]},
+  {sub:"Đăng", lay:"both", tc:"Rate limit / chống flood", pre:"Đăng liên tục nhiều lần", exp:"Giới hạn tần suất; chặn spam/flood; chống double-submit", pr:"P2", steps:["Đăng liên tục","Xác nhận bị giới hạn"]},
+  {sub:"Đăng", lay:"both", tc:"Optimistic post + rollback khi lỗi", pre:"Mạng lỗi khi đăng", exp:"Hiển thị lạc quan; fail → rollback + báo lỗi + cho gửi lại; không mất nội dung", pr:"P2", steps:["Đăng khi mạng lỗi","Xác nhận rollback & giữ nội dung"]},
+  {sub:"Sửa/Xoá", lay:"both", tc:"Nhãn 'đã chỉnh sửa' sau khi sửa", pre:"Sửa bình luận", exp:"Hiển thị dấu hiệu đã chỉnh sửa (và thời gian nếu có)", pr:"P3", steps:["Sửa bình luận","Xác nhận có nhãn đã sửa"]},
+  {sub:"Bảo mật", lay:"both", tc:"Báo cáo / gắn cờ bình luận", pre:"Bình luận vi phạm", exp:"Cho report/flag; vào hàng đợi kiểm duyệt; không tự lộ người báo", pr:"P3", steps:["Báo cáo 1 bình luận","Xác nhận ghi nhận"]},
+  {sub:"Đăng", lay:"both", tc:"Review: 1 đánh giá/người & sửa được", pre:"Đã đánh giá sao trước đó", exp:"Mỗi người chỉ 1 review/sản phẩm; cho sửa review cũ thay vì tạo mới", pr:"P2", steps:["Đánh giá lần 2","Xác nhận cập nhật review cũ"]},
+  {sub:"Hiển thị", lay:"both", tc:"Tải trả lời lồng sâu (xem thêm)", pre:"Thread nhiều tầng/nhiều trả lời", exp:"'Xem thêm trả lời' tải đúng; không tải hết gây nặng; giữ vị trí", pr:"P3", steps:["Mở thread lớn","Bấm xem thêm","Xác nhận tải đúng"]},
 ];
 const BOOKING_TC = [
   {sub:"Đặt lịch", lay:"both", tc:"Xem slot/lịch trống", pre:"Có lịch", exp:"Hiển thị đúng slot còn trống/đã đặt", pr:"P1", steps:["Mở lịch đặt", "Xác nhận slot đúng"]},
@@ -2409,6 +2479,12 @@ const BOOKING_TC = [
   {sub:"Đồng thời", lay:"api", tc:"Chống double-submit đặt", pre:"Bấm 2 lần", exp:"Idempotency → 1 booking", pr:"P1", steps:["Đặt 2 lần nhanh", "Xác nhận 1 booking"]},
   {sub:"Ràng buộc", lay:"both", tc:"Xung đột lịch (overlap)", pre:"Đã có lịch trùng giờ", exp:"Cảnh báo/chặn overlap theo policy", pr:"P2", steps:["Đặt trùng giờ", "Xác nhận cảnh báo"]},
   {sub:"Đặt lịch", lay:"both", tc:"Email/nhắc xác nhận", pre:"Đặt thành công", exp:"Nhận email/nhắc lịch đúng", pr:"P2", steps:["Đặt xong", "Kiểm email/nhắc"]},
+  {sub:"Đồng thời", lay:"both", tc:"Giữ chỗ tạm khi đang thanh toán (hold timeout)", pre:"Slot cần thanh toán", exp:"Slot được giữ tạm có thời hạn; hết hạn → nhả slot cho người khác", pr:"P1", steps:["Chọn slot → giữ chỗ","Để quá hạn","Xác nhận slot được nhả"]},
+  {sub:"Quản lý", lay:"both", tc:"Thanh toán khi đặt & hoàn tiền khi huỷ", pre:"Booking có phí", exp:"Đặt gắn thanh toán idempotent; huỷ hoàn tiền theo chính sách; không double-charge", pr:"P1", steps:["Đặt có phí","Huỷ","Xác nhận hoàn đúng chính sách"]},
+  {sub:"Quản lý", lay:"both", tc:"Đổi lịch (reschedule)", pre:"Booking đã đặt", exp:"Đổi sang slot trống khác đúng ràng buộc; giải phóng slot cũ; không double-book", pr:"P2", steps:["Reschedule sang slot trống","Xác nhận slot cũ nhả & slot mới giữ"]},
+  {sub:"Ràng buộc", lay:"both", tc:"Ngày nghỉ/blackout & buffer giữa slot", pre:"Có ngày nghỉ/buffer", exp:"Không cho đặt ngày nghỉ; tôn trọng thời gian đệm giữa các slot", pr:"P2", steps:["Cố đặt ngày nghỉ/sát slot khác","Xác nhận bị chặn"]},
+  {sub:"Ràng buộc", lay:"both", tc:"Hiển thị múi giờ người dùng vs nhà cung cấp", pre:"Khác múi giờ", exp:"Slot hiển thị rõ theo TZ; không lệch giờ khi đặt", pr:"P2", steps:["Đổi TZ","Đặt slot","Xác nhận giờ đúng ở cả 2 phía"]},
+  {sub:"Đặt lịch", lay:"ui", tc:"Chọn slot bằng bàn phím (a11y)", pre:"Điều hướng bàn phím", exp:"Chọn slot/ngày bằng bàn phím; trạng thái trống/đầy có nhãn a11y", pr:"P3", steps:["Tab/mũi tên chọn slot","Xác nhận dùng được"]},
 ];
 const CALENDAR_TC = [
   {sub:"Hiển thị", lay:"both", tc:"View tháng/tuần/ngày", pre:"Có sự kiện", exp:"Chuyển view hiển thị đúng", pr:"P1", steps:["Đổi view", "Xác nhận đúng"]},
@@ -2421,6 +2497,12 @@ const CALENDAR_TC = [
   {sub:"Sự kiện", lay:"both", tc:"Sự kiện lặp (recurring)", pre:"Event có recurrence", exp:"Lặp đúng quy tắc; sửa 1/tất cả", pr:"P2", steps:["Tạo recurring", "Sửa 1 & tất cả", "Xác nhận"]},
   {sub:"Sự kiện", lay:"both", tc:"Nhắc nhở (reminder)", pre:"Có reminder", exp:"Nhắc đúng thời điểm", pr:"P3", steps:["Đặt reminder", "Xác nhận nhắc"]},
   {sub:"Hiển thị", lay:"ui", tc:"Responsive", pre:"Màn nhỏ", exp:"Tháng → agenda gọn trên mobile", pr:"P2", steps:["Thu nhỏ", "Xác nhận layout"]},
+  {sub:"Sự kiện", lay:"both", tc:"Recurring: sửa/xoá 1 lần vs cả chuỗi", pre:"Event lặp", exp:"Chọn 'chỉ lần này / lần này & sau / tất cả' → áp đúng phạm vi", pr:"P2", steps:["Sửa 1 lần","Sửa cả chuỗi","Xác nhận phạm vi đúng"]},
+  {sub:"Ràng buộc", lay:"both", tc:"Đổi múi giờ giữ đúng thời điểm", pre:"Đổi TZ sau khi tạo", exp:"Sự kiện giữ đúng mốc tuyệt đối; hiển thị lại theo TZ mới", pr:"P2", steps:["Tạo event → đổi TZ","Xác nhận không lệch thời điểm"]},
+  {sub:"Sự kiện", lay:"both", tc:"Import/Export ICS", pre:"Có ICS", exp:"Xuất/nhập .ics đúng thời gian/lặp/TZ; tương thích lịch khác", pr:"P3", steps:["Export event → import lại","Xác nhận khớp"]},
+  {sub:"Sự kiện", lay:"both", tc:"Mời người tham dự & phản hồi", pre:"Sự kiện có khách mời", exp:"Gửi lời mời; theo dõi chấp nhận/từ chối; cập nhật khi đổi lịch", pr:"P3", steps:["Mời khách","Phản hồi","Xác nhận trạng thái cập nhật"]},
+  {sub:"Hiển thị", lay:"ui", tc:"Nhiều sự kiện 1 ngày (+n more)", pre:"Ngày dày sự kiện", exp:"Hiển thị '+n' và mở xem đầy đủ; không vỡ layout", pr:"P3", steps:["Tạo nhiều event 1 ngày","Xác nhận '+n' & mở được"]},
+  {sub:"Hiển thị", lay:"ui", tc:"Điều hướng & thao tác bằng bàn phím (a11y)", pre:"Dùng bàn phím", exp:"Di chuyển ngày, mở/tạo sự kiện bằng bàn phím; có aria phù hợp", pr:"P3", steps:["Điều hướng bằng bàn phím","Xác nhận dùng được"]},
 ];
 const MAP_TC = [
   {sub:"Hiển thị", lay:"both", tc:"Tải bản đồ & vị trí", pre:"Có bản đồ", exp:"Bản đồ tải, hiển thị đúng vùng/vị trí", pr:"P1", steps:["Mở bản đồ", "Xác nhận đúng"]},
@@ -2433,6 +2515,11 @@ const MAP_TC = [
   {sub:"Hiển thị", lay:"both", tc:"Lỗi tải tile / offline", pre:"Mất mạng", exp:"Fallback/thông báo, không vỡ", pr:"P2", steps:["Ngắt mạng", "Xác nhận fallback"]},
   {sub:"Chỉ đường", lay:"both", tc:"Vẽ tuyến / chỉ đường", pre:"Có tính năng route", exp:"Hiển thị tuyến & thông tin đúng", pr:"P3", steps:["Tạo chỉ đường", "Xác nhận tuyến"]},
   {sub:"Tương tác", lay:"ui", tc:"A11y & bàn phím", pre:"Điều khiển bản đồ", exp:"Nút zoom bàn phím được; có nhãn a11y", pr:"P3", steps:["Tab tới control", "Xác nhận dùng được"]},
+  {sub:"Tìm kiếm", lay:"both", tc:"Geocode không ra kết quả / địa chỉ mơ hồ", pre:"Tìm địa chỉ không tồn tại/mơ hồ", exp:"Báo không tìm thấy hoặc gợi ý nhiều lựa chọn; không lỗi", pr:"P2", steps:["Tìm địa chỉ rác/mơ hồ","Xác nhận xử lý gọn"]},
+  {sub:"Vị trí", lay:"both", tc:"Độ chính xác định vị & reverse geocode", pre:"Có toạ độ", exp:"Reverse geocode ra địa chỉ hợp lý; xử lý sai số/độ chính xác thấp", pr:"P3", steps:["Định vị → reverse geocode","Xác nhận địa chỉ hợp lý"]},
+  {sub:"Hiển thị", lay:"ui", tc:"Lazy-load bản đồ & không nhảy layout (CLS)", pre:"Bản đồ nặng", exp:"Tải khi cần; giữ chỗ đúng kích thước, không gây layout shift", pr:"P2", steps:["Tải trang có map","Đo CLS","Xác nhận không nhảy"]},
+  {sub:"Bảo mật", lay:"api", tc:"Bảo vệ API key & giới hạn quota", pre:"Dùng map API trả phí", exp:"Key giới hạn referrer/domain; có quota/rate limit tránh lạm dụng chi phí", pr:"P2", steps:["Thử dùng key sai domain","Xác nhận bị chặn"]},
+  {sub:"Tương tác", lay:"ui", tc:"Cử chỉ cảm ứng trên mobile", pre:"Trên thiết bị cảm ứng", exp:"Pinch-zoom, kéo mượt; không xung đột cuộn trang", pr:"P3", steps:["Thao tác cảm ứng trên mobile","Xác nhận mượt"]},
 ];
 const MEDIAP_TC = [
   {sub:"Điều khiển", lay:"both", tc:"Play / pause", pre:"Có media", exp:"Phát & tạm dừng đúng", pr:"P1", steps:["Play & pause", "Xác nhận"]},
@@ -2446,6 +2533,12 @@ const MEDIAP_TC = [
   {sub:"Phát", lay:"api", tc:"Range request khi tua", pre:"Server hỗ trợ range", exp:"Tua giữa video dùng HTTP Range đúng", pr:"P2", steps:["Tua giữa", "Kiểm request Range"]},
   {sub:"Phát", lay:"both", tc:"Tiếp tục từ vị trí (resume)", pre:"Đã xem dở", exp:"Mở lại tiếp từ vị trí cũ (nếu có)", pr:"P3", steps:["Xem dở & quay lại", "Xác nhận resume"]},
   {sub:"Điều khiển", lay:"ui", tc:"Bàn phím & a11y", pre:"Player focus", exp:"Space/mũi tên điều khiển; nhãn nút a11y", pr:"P2", steps:["Dùng bàn phím", "Xác nhận điều khiển"]},
+  {sub:"Phát", lay:"both", tc:"Chất lượng thích ứng (adaptive) & chọn thủ công", pre:"Mạng thay đổi", exp:"Tự đổi bitrate theo băng thông; cho chọn chất lượng thủ công", pr:"P2", steps:["Giảm băng thông","Xác nhận hạ chất lượng","Chọn chất lượng thủ công"]},
+  {sub:"Phát", lay:"both", tc:"Định dạng/codec không hỗ trợ", pre:"File codec lạ", exp:"Báo lỗi rõ/fallback; không treo player", pr:"P2", steps:["Mở media codec không hỗ trợ","Xác nhận báo lỗi gọn"]},
+  {sub:"Bảo mật", lay:"api", tc:"Bảo vệ link stream (signed URL)", pre:"Nội dung có bản quyền", exp:"URL ký & hết hạn; không tải trực tiếp/không chia sẻ được link vĩnh viễn", pr:"P1", steps:["Lấy link stream","Dùng lại sau khi hết hạn","Xác nhận bị chặn"]},
+  {sub:"Điều khiển", lay:"ui", tc:"Picture-in-Picture (PiP)", pre:"Trình duyệt hỗ trợ PiP", exp:"Bật/tắt PiP; điều khiển vẫn hoạt động", pr:"P3", steps:["Bật PiP","Xác nhận phát & điều khiển"]},
+  {sub:"Điều khiển", lay:"ui", tc:"Xem trước khung hình khi tua (thumbnail)", pre:"Rê trên thanh thời gian", exp:"Hiển thị thumbnail/preview đúng mốc thời gian", pr:"P3", steps:["Rê trên timeline","Xác nhận preview đúng"]},
+  {sub:"Phát", lay:"both", tc:"Playlist: tự phát bài tiếp", pre:"Có playlist", exp:"Hết bài → tự phát bài kế đúng thứ tự; tôn trọng autoplay policy", pr:"P3", steps:["Phát hết 1 bài","Xác nhận sang bài kế"]},
 ];
 const WIZARDF_TC = [
   {sub:"Điều hướng", lay:"both", tc:"Next/Back giữ dữ liệu", pre:"Wizard nhiều bước", exp:"Chuyển bước giữ nguyên dữ liệu đã nhập", pr:"P1", steps:["Nhập & Next/Back", "Xác nhận giữ dữ liệu"]},
@@ -2458,6 +2551,12 @@ const WIZARDF_TC = [
   {sub:"Lưu", lay:"ui", tc:"Rời giữa chừng → cảnh báo", pre:"Đang làm dở", exp:"Cảnh báo mất dữ liệu khi rời", pr:"P2", steps:["Rời trang giữa chừng", "Xác nhận cảnh báo"]},
   {sub:"Hoàn tất", lay:"api", tc:"Chống double-submit", pre:"Bấm submit 2 lần", exp:"Chỉ gửi 1 lần", pr:"P1", steps:["Submit 2 lần", "Xác nhận 1 lần"]},
   {sub:"Điều hướng", lay:"both", tc:"Deep-link/refresh giữ bước", pre:"Refresh giữa wizard", exp:"Giữ đúng bước sau refresh (nếu thiết kế)", pr:"P2", steps:["F5 giữa wizard", "Xác nhận đúng bước"]},
+  {sub:"Hoàn tất", lay:"api", tc:"Server re-validate toàn bộ khi submit cuối", pre:"Client đã qua từng bước", exp:"Server kiểm lại toàn bộ dữ liệu; không tin validate client", pr:"P1", steps:["Bỏ qua/giả mạo validate client","Submit","Xác nhận server chặn"]},
+  {sub:"Hiển thị", lay:"ui", tc:"Bước có điều kiện (skip logic)", pre:"Lựa chọn dẫn tới bước khác nhau", exp:"Hiển thị/ẩn bước đúng theo điều kiện; tiến trình phản ánh đúng", pr:"P2", steps:["Chọn nhánh điều kiện","Xác nhận bước hiện đúng"]},
+  {sub:"Hoàn tất", lay:"both", tc:"Xem lại (review) trước khi submit", pre:"Trước bước cuối", exp:"Tổng hợp dữ liệu các bước để xem lại; cho quay lại sửa", pr:"P3", steps:["Tới bước review","Xác nhận dữ liệu đầy đủ & sửa được"]},
+  {sub:"Hoàn tất", lay:"both", tc:"Submit cuối lỗi → giữ dữ liệu & cho sửa", pre:"Submit fail (mạng/validate)", exp:"Không mất dữ liệu đã nhập; báo lỗi rõ; cho thử lại/sửa", pr:"P1", steps:["Gây submit fail","Xác nhận dữ liệu còn & cho thử lại"]},
+  {sub:"Lưu", lay:"both", tc:"Session hết hạn giữa chừng → giữ nháp", pre:"Phiên hết hạn khi đang làm", exp:"Lưu nháp/khôi phục sau đăng nhập lại; không mất tiến trình", pr:"P2", steps:["Để phiên hết hạn","Đăng nhập lại","Xác nhận khôi phục nháp"]},
+  {sub:"Điều hướng", lay:"ui", tc:"A11y: bước hiện tại (aria-current) & bàn phím", pre:"Dùng bàn phím/screen reader", exp:"Bước hiện tại có aria-current; điều hướng bàn phím; lỗi được đọc", pr:"P2", steps:["Điều hướng bằng bàn phím","Xác nhận aria-current & đọc lỗi"]},
 ];
 const ONBOARD_TC = [
   {sub:"Hiển thị", lay:"both", tc:"Hiện lần đầu", pre:"User mới", exp:"Onboarding hiện lần đầu; không hiện lại sau hoàn tất/skip", pr:"P1", steps:["Đăng nhập lần đầu", "Hoàn tất/skip", "Xác nhận không hiện lại"]},
@@ -2467,6 +2566,11 @@ const ONBOARD_TC = [
   {sub:"Điều hướng", lay:"both", tc:"Skip vào app đúng", pre:"Bấm skip", exp:"Vào app ở trạng thái đúng", pr:"P2", steps:["Skip", "Xác nhận vào app"]},
   {sub:"A11y", lay:"ui", tc:"Bàn phím & focus", pre:"Điều hướng bàn phím", exp:"Tab/Esc dùng được; focus quản lý đúng", pr:"P2", steps:["Dùng bàn phím", "Xác nhận"]},
   {sub:"Nội dung", lay:"both", tc:"Đa ngôn ngữ", pre:"Đổi ngôn ngữ", exp:"Nội dung onboarding đúng ngôn ngữ", pr:"P3", steps:["Đổi ngôn ngữ", "Xác nhận nội dung"]},
+  {sub:"Hiển thị", lay:"both", tc:"Chỉ hiện đúng đối tượng (new user)", pre:"User mới vs cũ", exp:"Chỉ hiện cho user mới/đủ điều kiện; user cũ không bị lặp lại", pr:"P2", steps:["Đăng nhập user cũ","Xác nhận không hiện onboarding"]},
+  {sub:"Lưu", lay:"both", tc:"Lưu trạng thái server & đồng bộ đa thiết bị", pre:"Xem xong ở thiết bị A", exp:"Không hiện lại ở thiết bị B (lưu phía server, không chỉ localStorage)", pr:"P2", steps:["Xem xong ở A","Mở ở B","Xác nhận không hiện lại"]},
+  {sub:"Điều hướng", lay:"both", tc:"Xem lại onboarding từ Settings/Help", pre:"Đã hoàn tất", exp:"Có lối xem lại hướng dẫn khi cần", pr:"P3", steps:["Vào Settings/Help","Mở lại onboarding","Xác nhận chạy được"]},
+  {sub:"A11y", lay:"ui", tc:"Focus trap trong overlay onboarding", pre:"Overlay mở", exp:"Focus giữ trong overlay; Esc đóng/skip; trả focus về vị trí cũ", pr:"P2", steps:["Mở overlay","Tab quanh & Esc","Xác nhận focus đúng"]},
+  {sub:"Hiển thị", lay:"both", tc:"Lỗi tải onboarding không chặn dùng app", pre:"Tài nguyên onboarding lỗi", exp:"Bỏ qua/onboarding fail gọn; app vẫn dùng được", pr:"P2", steps:["Gây lỗi tải onboarding","Xác nhận vẫn vào app được"]},
 ];
 const SETTINGS_TC = [
   {sub:"Cơ bản", lay:"both", tc:"Xem & đổi cài đặt", pre:"Ở trang cài đặt", exp:"Đổi & lưu đúng; phản ánh ngay/khi lưu (đúng thiết kế)", pr:"P1", steps:["Đổi cài đặt & lưu", "Xác nhận áp dụng"]},
@@ -2478,6 +2582,11 @@ const SETTINGS_TC = [
   {sub:"Bảo mật", lay:"both", tc:"Quyền riêng tư / consent", pre:"Có mục privacy", exp:"Đổi consent áp dụng đúng", pr:"P2", steps:["Đổi consent", "Xác nhận áp dụng"]},
   {sub:"Bảo mật", lay:"both", tc:"Đổi mật khẩu / bảo mật", pre:"Có mục bảo mật", exp:"Dẫn tới luồng đổi mật khẩu/2FA đúng", pr:"P2", steps:["Vào mục bảo mật", "Xác nhận luồng"]},
   {sub:"Cơ bản", lay:"both", tc:"Lưu thất bại → rollback", pre:"API lưu lỗi", exp:"Báo lỗi & rollback về giá trị cũ", pr:"P2", steps:["Giả lập lỗi lưu", "Xác nhận rollback & báo"]},
+  {sub:"Cơ bản", lay:"ui", tc:"Cảnh báo thay đổi chưa lưu", pre:"Sửa nhưng chưa lưu", exp:"Rời trang → cảnh báo mất thay đổi (nếu không auto-save)", pr:"P2", steps:["Sửa cài đặt → rời trang","Xác nhận cảnh báo"]},
+  {sub:"Cơ bản", lay:"both", tc:"Validate giá trị cài đặt", pre:"Nhập giá trị không hợp lệ", exp:"Chặn & báo lỗi; không lưu giá trị sai", pr:"P2", steps:["Nhập giá trị sai","Xác nhận bị chặn"]},
+  {sub:"Ngôn ngữ", lay:"ui", tc:"Đổi ngôn ngữ/theme áp ngay không cần reload", pre:"Đổi ngôn ngữ/theme", exp:"Áp dụng tức thì toàn app; không phải tải lại thủ công", pr:"P2", steps:["Đổi ngôn ngữ/theme","Xác nhận áp ngay"]},
+  {sub:"Đồng bộ", lay:"api", tc:"Xung đột khi 2 thiết bị đổi cùng lúc", pre:"Đổi cài đặt song song", exp:"Xử lý last-write/merge rõ ràng; không mất/không loạn cài đặt", pr:"P3", steps:["Đổi ở 2 thiết bị","Xác nhận kết quả nhất quán"]},
+  {sub:"Bảo mật", lay:"api", tc:"Phân quyền cài đặt (user vs admin/org)", pre:"Cài đặt cấp tổ chức", exp:"User thường không đổi được cài đặt cấp cao hơn quyền", pr:"P2", steps:["User thường đổi cài đặt org","Xác nhận bị từ chối"]},
 ];
 const TIMEZONE_TC = [
   {sub:"Lưu trữ", lay:"api", tc:"Lưu UTC / hiển thị local", pre:"Dữ liệu thời gian", exp:"Lưu UTC ở server; hiển thị theo local user đúng", pr:"P1", steps:["Tạo dữ liệu có thời gian", "Xem ở timezone khác", "Xác nhận hiển thị local đúng"]},
@@ -2486,6 +2595,10 @@ const TIMEZONE_TC = [
   {sub:"Biên", lay:"both", tc:"Sự kiện xuyên nửa đêm / qua ngày", pre:"Timezone khác nhau", exp:"Ngày/giờ qua nửa đêm hiển thị đúng theo local", pr:"P2", steps:["Tạo sự kiện gần nửa đêm", "Xem ở tz khác", "Xác nhận đúng ngày"]},
   {sub:"Server", lay:"api", tc:"Server không dùng local time", pre:"Server ở tz khác", exp:"Chuẩn hoá UTC; không lệch do timezone server", pr:"P1", steps:["Kiểm xử lý thời gian server", "Xác nhận dùng UTC"]},
   {sub:"Hiển thị", lay:"ui", tc:"Hiển thị nhãn múi giờ", pre:"Ngữ cảnh cần rõ", exp:"Hiện GMT+7/tên timezone khi cần tránh nhầm", pr:"P3", steps:["Xem thời gian có nhãn tz", "Xác nhận rõ ràng"]},
+  {sub:"Lưu trữ", lay:"api", tc:"Dùng IANA tz name, không lưu offset cứng", pre:"Lưu múi giờ user", exp:"Lưu tên vùng (Asia/Ho_Chi_Minh) thay vì offset cứng để đúng qua DST", pr:"P2", steps:["Kiểm dữ liệu lưu","Xác nhận dùng IANA name"]},
+  {sub:"Chuyển đổi", lay:"both", tc:"Chọn múi giờ khi tạo sự kiện", pre:"Tạo sự kiện có TZ", exp:"Cho chọn TZ; lưu & hiển thị đúng cho người xem khác TZ", pr:"P2", steps:["Tạo sự kiện chọn TZ khác","Xem ở TZ khác","Xác nhận đúng thời điểm"]},
+  {sub:"DST", lay:"both", tc:"Hiển thị đúng cho sự kiện quá khứ (DST cũ)", pre:"Sự kiện trước lần đổi DST", exp:"Dùng offset đúng tại thời điểm sự kiện, không dùng offset hiện tại", pr:"P3", steps:["Xem sự kiện quá khứ","Xác nhận giờ đúng lịch sử"]},
+  {sub:"Biên", lay:"both", tc:"Khoảng thời gian xuyên nhiều múi giờ", pre:"So sánh giờ 2 vùng", exp:"Tính chênh lệch/khoảng đúng giữa các TZ", pr:"P3", steps:["So 2 mốc khác TZ","Xác nhận chênh lệch đúng"]},
 ];
 const NUMFMT_TC = [
   {sub:"Định dạng", lay:"both", tc:"Dấu phân cách theo locale", pre:"Nhiều locale", exp:"1,000.5 (en) vs 1.000,5 (de/vi) đúng", pr:"P1", steps:["Đổi locale", "Xác nhận dấu phân cách"]},
@@ -2495,6 +2608,10 @@ const NUMFMT_TC = [
   {sub:"Biên", lay:"both", tc:"Số rất lớn / thập phân dài", pre:"Giá trị biên", exp:"Không tràn/không mất chính xác (đúng kiểu)", pr:"P2", steps:["Nhập số rất lớn/nhiều thập phân", "Xác nhận đúng"]},
   {sub:"Nhập liệu", lay:"both", tc:"Parse số theo locale", pre:"Ô nhập số", exp:"Parse đúng dấu phân cách theo locale khi nhập", pr:"P2", steps:["Nhập '1.000,5' ở locale vi", "Xác nhận parse đúng"]},
   {sub:"Phần trăm", lay:"both", tc:"Phần trăm & đơn vị", pre:"Có %/đơn vị", exp:"Hiển thị % & đơn vị đúng locale", pr:"P3", steps:["Xem giá trị %", "Xác nhận đúng"]},
+  {sub:"Làm tròn", lay:"api", tc:"Tiền tệ dùng số nguyên/decimal tránh sai số float", pre:"Tính tiền", exp:"Không dùng float thô (0.1+0.2); dùng minor unit/decimal; tổng khớp", pr:"P1", steps:["Cộng nhiều khoản tiền","Xác nhận tổng chính xác"]},
+  {sub:"Định dạng", lay:"both", tc:"Nhóm chữ số đặc thù locale (lakh/crore)", pre:"Locale Ấn Độ", exp:"Nhóm 12,34,567 đúng quy ước; không cứng nhắc 3 chữ số", pr:"P3", steps:["Đổi locale Ấn Độ","Xác nhận nhóm số đúng"]},
+  {sub:"Biên", lay:"both", tc:"Số 0 / rỗng / null", pre:"Giá trị 0 hoặc thiếu", exp:"Hiển thị 0 đúng (không thành '-'/rỗng nhầm); phân biệt 0 vs null", pr:"P2", steps:["Hiển thị 0 & null","Xác nhận đúng"]},
+  {sub:"Nhập liệu", lay:"ui", tc:"Nhập số: chặn phi số & dán", pre:"Ô nhập số", exp:"Chặn ký tự phi số; dán '1.234,56' parse đúng theo locale", pr:"P2", steps:["Nhập chữ & dán số có phân cách","Xác nhận parse/chặn đúng"]},
 ];
 const DATEFMT_TC = [
   {sub:"Định dạng ngày", lay:"both", tc:"DD/MM vs MM/DD", pre:"Nhiều locale", exp:"Thứ tự ngày/tháng đúng locale (tránh 03/04 nhầm)", pr:"P1", steps:["Đổi locale", "Xác nhận định dạng ngày"]},
@@ -2502,6 +2619,10 @@ const DATEFMT_TC = [
   {sub:"Lịch", lay:"ui", tc:"First day of week", pre:"Lịch", exp:"CN vs T2 đầu tuần theo locale", pr:"P3", steps:["Đổi locale", "Xác nhận đầu tuần"]},
   {sub:"Tương đối", lay:"both", tc:"Thời gian tương đối", pre:"Có 'x giờ trước'", exp:"Đúng ngôn ngữ & số nhiều ('1 phút trước')", pr:"P3", steps:["Xem thời gian tương đối", "Xác nhận ngôn ngữ"]},
   {sub:"Biên", lay:"both", tc:"Ngày biên (29/2, 30/31)", pre:"Nhập/hiển thị ngày", exp:"29/2 năm nhuận & thường; 31/4 xử lý đúng", pr:"P2", steps:["Nhập ngày biên", "Xác nhận hợp lệ/lỗi đúng"]},
+  {sub:"Định dạng ngày", lay:"both", tc:"Tên tháng/thứ theo locale", pre:"Đổi locale", exp:"Tên tháng/thứ dịch đúng ngôn ngữ; không hardcode tiếng Anh", pr:"P3", steps:["Đổi locale","Xác nhận tên tháng/thứ đúng"]},
+  {sub:"Định dạng ngày", lay:"ui", tc:"Parse ngày nhập theo locale", pre:"Nhập ngày thủ công", exp:"Hiểu đúng DD/MM vs MM/DD theo locale; ngày mơ hồ báo rõ", pr:"P2", steps:["Nhập 03/04 ở 2 locale","Xác nhận hiểu đúng"]},
+  {sub:"Lịch", lay:"api", tc:"API dùng ISO 8601 / UTC", pre:"Trao đổi ngày qua API", exp:"API dùng ISO 8601 (kèm offset/UTC); client format khi hiển thị", pr:"P2", steps:["Kiểm payload API","Xác nhận ISO 8601"]},
+  {sub:"Tương đối", lay:"both", tc:"Thời gian tương đối đúng biên", pre:"'x phút/giờ trước'", exp:"Đúng ở biên (vừa xong, 1 phút, hôm qua); cập nhật hợp lý; theo locale", pr:"P3", steps:["Xem mốc gần & xa","Xác nhận nhãn tương đối đúng"]},
 ];
 const TRANSLATION_TC = [
   {sub:"Dịch", lay:"both", tc:"Dịch đầy đủ, không sót key", pre:"Đổi ngôn ngữ", exp:"Không sót key/không trơ {{var}}; đúng nội dung", pr:"P1", steps:["Đổi ngôn ngữ", "Rà UI không còn key/biến trơ"]},
@@ -2510,6 +2631,11 @@ const TRANSLATION_TC = [
   {sub:"Plural", lay:"both", tc:"Số nhiều (plural)", pre:"Đếm 1 vs nhiều", exp:"Đúng quy tắc plural theo ngôn ngữ", pr:"P2", steps:["Kiểm chuỗi 1 & nhiều", "Xác nhận đúng"]},
   {sub:"Nhớ ngôn ngữ", lay:"both", tc:"Đổi ngôn ngữ áp toàn app & nhớ", pre:"Đổi ngôn ngữ", exp:"Áp toàn bộ UI & nhớ khi reload", pr:"P2", steps:["Đổi ngôn ngữ & F5", "Xác nhận giữ & áp"]},
   {sub:"Ký tự", lay:"both", tc:"Unicode/emoji/tiếng Việt", pre:"Nhập/hiển thị", exp:"Hiển thị đúng, không lỗi encoding", pr:"P2", steps:["Nhập ký tự đặc biệt", "Xác nhận đúng"]},
+  {sub:"Dịch", lay:"both", tc:"Fallback khi thiếu key (không lộ raw key)", pre:"Thiếu bản dịch 1 key", exp:"Hiển thị ngôn ngữ mặc định thay vì raw key/rỗng", pr:"P2", steps:["Xoá 1 key dịch","Xác nhận fallback, không hiện key"]},
+  {sub:"Dịch", lay:"both", tc:"Nội dung động từ server cũng dịch", pre:"Text từ API", exp:"Thông báo/nhãn từ server theo ngôn ngữ người dùng (Accept-Language)", pr:"P2", steps:["Đổi ngôn ngữ","Kiểm text từ server","Xác nhận đúng ngôn ngữ"]},
+  {sub:"Layout", lay:"both", tc:"Placeholder/biến trong chuỗi đúng thứ tự", pre:"Chuỗi có {name}, {count}", exp:"Nội suy biến đúng vị trí theo ngữ pháp từng ngôn ngữ; không nối chuỗi cứng", pr:"P2", steps:["Xem chuỗi có biến ở nhiều ngôn ngữ","Xác nhận thứ tự đúng"]},
+  {sub:"RTL", lay:"ui", tc:"lang & dir attribute / hreflang (SEO)", pre:"Đa ngôn ngữ/RTL", exp:"<html lang> & dir đúng; có hreflang cho SEO đa ngôn ngữ", pr:"P3", steps:["Đổi ngôn ngữ/RTL","Kiểm lang/dir/hreflang","Xác nhận đúng"]},
+  {sub:"Dịch", lay:"ui", tc:"Không hardcode chuỗi (i18n coverage)", pre:"Rà toàn UI", exp:"Mọi chuỗi hiển thị đều qua i18n; không còn chữ hardcode", pr:"P2", steps:["Đổi sang ngôn ngữ khác","Rà UI","Xác nhận không còn chữ chưa dịch"]},
 ];
 const REMEMBER_TC = [
   {sub:"Cơ bản", lay:"both", tc:"Đăng nhập khi bật Remember Me", pre:"Ở màn Login", exp:"Tạo cookie/refresh dài hạn; vẫn đăng nhập sau khi đóng & mở lại trình duyệt", pr:"P1", steps:["Tick Remember Me & đăng nhập", "Đóng & mở lại trình duyệt", "Xác nhận vẫn đăng nhập"]},
