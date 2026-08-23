@@ -2168,11 +2168,33 @@ const RELEASE_TC = [
   {sub:"Kiểm thử", lay:"both", tc:"Smoke test sau deploy", pre:"Vừa deploy prod", exp:"Chức năng cốt lõi chạy đúng", pr:"P1", steps:["Chạy smoke test", "Xác nhận core OK"]},
   {sub:"Bản in", lay:"ui", tc:"Print styles", pre:"In trang", exp:"Trang in gọn; ẩn nav/nút; ngắt trang hợp lý", pr:"P3", steps:["In thử (Ctrl+P)", "Xác nhận bản in gọn"]},
 ];
+const LOGOUT_TC = [
+  {sub:"Cơ bản", lay:"both", tc:"Đăng xuất thành công", pre:"Đang đăng nhập", exp:"Xoá token/phiên; chuyển về màn login/trang công khai; HTTP 200/204", pr:"P1", steps:["Bấm Đăng xuất", "Xác nhận về login & phiên bị xoá"]},
+  {sub:"Cơ bản", lay:"ui", tc:"Nút/menu Logout hiển thị đúng", pre:"Đã đăng nhập", exp:"Có nút/menu đăng xuất; ẩn khi chưa đăng nhập", pr:"P2", steps:["Kiểm khi đã & chưa đăng nhập", "Xác nhận hiển thị đúng"]},
+  {sub:"Phiên & token", lay:"api", tc:"Token bị vô hiệu phía server", pre:"Vừa logout", exp:"Access token bị vô hiệu (blacklist/short-TTL); không dùng lại được", pr:"P1", steps:["Logout", "Gọi API bằng token cũ", "Xác nhận 401"]},
+  {sub:"Phiên & token", lay:"api", tc:"Refresh token bị thu hồi", pre:"Vừa logout", exp:"Refresh token bị thu hồi → không cấp access token mới", pr:"P1", steps:["Logout", "Gọi refresh bằng token cũ", "Xác nhận bị từ chối"]},
+  {sub:"Phiên & token", lay:"api", tc:"Cookie phiên bị xoá", pre:"Đăng nhập bằng cookie", exp:"Set-Cookie hết hạn/xoá; cookie phiên không còn", pr:"P1", steps:["Logout", "Kiểm cookie ở DevTools", "Xác nhận cookie phiên bị xoá"]},
+  {sub:"Bảo mật", lay:"both", tc:"Back button không vào lại trang cần auth", pre:"Vừa logout", exp:"Bấm Back → không xem lại trang cần auth (no-cache); chuyển login", pr:"P1", steps:["Logout", "Bấm Back trình duyệt", "Xác nhận không vào lại"]},
+  {sub:"Bảo mật", lay:"both", tc:"Xoá dữ liệu nhạy cảm phía client", pre:"Vừa logout", exp:"Xoá localStorage/sessionStorage/bộ nhớ chứa token & dữ liệu người dùng", pr:"P1", steps:["Logout", "Soi localStorage/sessionStorage", "Xác nhận đã xoá dữ liệu nhạy cảm"]},
+  {sub:"Bảo mật", lay:"api", tc:"CSRF trên request logout", pre:"Dùng cookie-based auth", exp:"Request logout có chống CSRF (token/same-site)", pr:"P2", steps:["Gửi logout thiếu CSRF", "Xác nhận bị từ chối"]},
+  {sub:"Bảo mật", lay:"api", tc:"Ghi audit log logout", pre:"Thực hiện logout", exp:"Log sự kiện logout (user, thời gian); không lộ dữ liệu nhạy cảm (ASVS V7)", pr:"P3", steps:["Logout", "Kiểm audit log"]},
+  {sub:"Đa tab", lay:"both", tc:"Đồng bộ logout giữa các tab", pre:"Mở ≥2 tab đã đăng nhập", exp:"Logout ở 1 tab → các tab khác cũng đăng xuất (storage event)", pr:"P1", steps:["Mở 2 tab", "Logout tab A", "Xác nhận tab B cũng đăng xuất"]},
+  {sub:"Đa thiết bị", lay:"both", tc:"Phạm vi logout theo policy", pre:"Đăng nhập nhiều thiết bị", exp:"1 phiên/thiết bị: logout chỉ thiết bị hiện tại; 'Đăng xuất mọi nơi' thu hồi tất cả", pr:"P2", steps:["Logout thường", "Kiểm thiết bị khác", "Thử 'Đăng xuất mọi nơi'"]},
+  {sub:"UX", lay:"ui", tc:"Xác nhận khi có dữ liệu chưa lưu", pre:"Đang nhập liệu dở", exp:"Hỏi xác nhận trước khi logout để tránh mất dữ liệu (nếu có)", pr:"P2", steps:["Nhập liệu dở → bấm logout", "Xác nhận có cảnh báo"]},
+  {sub:"UX", lay:"both", tc:"Logout khi mất mạng", pre:"Ngắt mạng rồi logout", exp:"Vẫn xoá phiên phía client & chuyển login; đồng bộ server khi có mạng", pr:"P2", steps:["Ngắt mạng", "Bấm logout", "Xác nhận xử lý gọn"]},
+  {sub:"Xử lý đồng thời", lay:"both", tc:"Logout khi API đang xử lý", pre:"Đang có request dở dang", exp:"Request đang chạy bị huỷ/hoàn tất an toàn; sau logout không còn dùng token cũ, không rò rỉ dữ liệu", pr:"P1", steps:["Kích hoạt một request lâu", "Bấm logout khi đang xử lý", "Xác nhận không lỗi & token cũ vô hiệu"]},
+  {sub:"Quản trị", lay:"api", tc:"Bị đăng xuất khi Admin vô hiệu hoá / buộc đăng xuất", pre:"Admin thu hồi phiên tài khoản", exp:"Phiên bị thu hồi ngay; thao tác tiếp → 401/403, chuyển về login", pr:"P1", steps:["Admin vô hiệu hoá/buộc đăng xuất user", "User thao tác tiếp", "Xác nhận bị đăng xuất (401/403)"]},
+  {sub:"Edge", lay:"both", tc:"Auto-logout khi hết phiên", pre:"Idle/absolute timeout", exp:"Tự đăng xuất tương đương logout; chuyển login, giữ URL đích", pr:"P2", steps:["Để hết phiên", "Thao tác", "Xác nhận auto-logout"]},
+  {sub:"Edge", lay:"both", tc:"Logout khi phiên đã hết hạn", pre:"Token đã invalid", exp:"Vẫn chuyển login gọn, không lỗi/không crash", pr:"P2", steps:["Để token hết hạn", "Bấm logout", "Xác nhận xử lý gọn"]},
+  {sub:"Edge", lay:"ui", tc:"Double-click logout", pre:"Ở nút logout", exp:"Bấm 2 lần nhanh không gây lỗi/không gọi 2 lần lỗi", pr:"P3", steps:["Bấm logout 2 lần nhanh", "Xác nhận không lỗi"]},
+  {sub:"SSO", lay:"api", tc:"Single Logout (SLO)", pre:"Dùng SSO/IdP", exp:"Logout thu hồi phiên ở IdP &/hoặc các app liên kết (nếu cấu hình SLO)", pr:"P2", steps:["Logout từ 1 app SSO", "Kiểm các app/IdP", "Xác nhận SLO đúng cấu hình"]},
+];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
 const FEATURE_IDS = [];
 const TC_FEAT = [];
 let n2 = 0;
 LOGIN_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Login", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+LOGOUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Logout", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_GET_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API GET", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_POST_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API POST", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_PUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API PUT", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
