@@ -1177,7 +1177,7 @@
 <div id="view-testcase" class="view" hidden>
   <div class="wrap tc-wrap">
     <div class="tc-head"><h2>Test case</h2><span class="tc-count" id="tcCount"></span></div>
-    <p style="color:var(--muted);font-size:13px;margin:2px 0 0;max-width:72ch">Tự sinh từ checklist "cần test" của các component — mỗi mục kiểm = 1 test case. Nhớ chạy kèm <a href="#baseline">Checklist nền</a> cho mọi component. Lọc theo component hoặc từ khoá, rồi <strong>Xuất CSV</strong> để nhập vào Excel / công cụ quản lý test.</p>
+    <p style="color:var(--muted);font-size:13px;margin:2px 0 0;max-width:74ch">Bộ test case theo 2 chế độ: <strong>Theo Component</strong> (sinh từ checklist của các component) và <strong>Theo Feature</strong> (Login, API GET/POST/PUT/PATCH/DELETE, Thanh toán, Đăng nhập &amp; phiên, a11y…). Lọc theo Feature/Component, Hạng mục, Layer, Ưu tiên hoặc từ khoá; bấm <strong>⋯</strong> để xem Bước thực hiện; <strong>Xuất CSV</strong> để nhập vào Excel / công cụ quản lý test. Với component, nhớ chạy kèm mục <strong>Checklist nền</strong> (tab Sổ tay).</p>
     <div class="tc-seg" role="tablist" aria-label="Kiểu test case">
       <button class="tc-seg-b on" data-mode="component" type="button">Theo Component</button>
       <button class="tc-seg-b" data-mode="feature" type="button">Theo Feature</button>
@@ -1799,7 +1799,8 @@ const compPrio = it => {
 };
 CATS.forEach(cat => COMPS.filter(x=>x.c===cat.id).forEach(x=>{
   const api = (API[x.n] || ["—"])[0];
-  x.t.forEach(item=>{ n1++; TC_COMP.push({ id:"TC-C-"+String(n1).padStart(3,"0"), group:x.n, sub:cat.vi, text:item, api, expected:EXPECT, priority:compPrio(item), steps:["Đưa "+x.n+" về trạng thái liên quan","Thực hiện kiểm: "+item,"Xác nhận kết quả đúng, không lỗi/không cảnh báo ngoài ý muốn"] }); });
+  const compLay = api === "—" ? "ui" : "both";
+  x.t.forEach(item=>{ n1++; TC_COMP.push({ id:"TC-C-"+String(n1).padStart(3,"0"), group:x.n, sub:cat.vi, text:item, api, lay:compLay, expected:EXPECT, priority:compPrio(item), steps:["Đưa "+x.n+" về trạng thái liên quan","Thực hiện kiểm: "+item,"Xác nhận kết quả đúng, không lỗi/không cảnh báo ngoài ý muốn"] }); });
 }));
 
 const LOGIN_TC = [
@@ -2192,7 +2193,7 @@ function tcRefreshDependent(){
 }
 function tcSetupMode(){
   const isComp = tcMode==="component";
-  tcHead.innerHTML = `<tr><th>ID</th><th>${isComp?"Component":"Feature"}</th><th>${isComp?"Nhóm":"Hạng mục"}</th><th>Nội dung kiểm thử</th><th>${isComp?"API":"Lớp"}</th><th>Kết quả mong đợi</th><th>Ưu tiên</th><th>Bước</th></tr>`;
+  tcHead.innerHTML = `<tr><th>ID</th><th>${isComp?"Component":"Feature"}</th><th>${isComp?"Group":"Category"}</th><th>Test Case</th><th>Layer</th><th>Expected Result</th><th>Priority</th><th>Steps</th></tr>`;
   tcFillSelect(tcFilter, tcData().map(t=>t.group), `Tất cả ${isComp?"component":"feature"}`);
   tcRefreshDependent();
   renderTC();
@@ -2211,14 +2212,12 @@ function renderTC(){
   const isComp = tcMode==="component";
   const rows = tcFiltered();
   tcBody.innerHTML = rows.map(t=>{
-    const col5 = isComp
-      ? tcApiChips(t.api)
-      : (t.lay ? `<span class="lay ${t.lay}">${LAY_LABEL[t.lay]||t.lay}</span>` : `<span class="apim none">—</span>`);
+    const col5 = t.lay ? `<span class="lay ${t.lay}">${LAY_LABEL[t.lay]||t.lay}</span>` : `<span class="apim none">—</span>`;
     const prioBadge = t.priority ? `<span class="prio ${t.priority.toLowerCase()}">${escHtml(t.priority)}</span>` : "";
     const stepBtn = (t.steps && t.steps.length) ? `<button class="stepbtn" type="button" aria-expanded="false" aria-label="Xem bước thực hiện">⋯</button>` : "";
     let row = `<tr><td class="id">${t.id}</td><td class="comp-c">${escHtml(t.group)}</td><td>${escHtml(t.sub)}</td><td>${escHtml(t.text)}</td><td>${col5}</td><td style="color:var(--muted)">${escHtml(t.expected||EXPECT)}</td><td>${prioBadge}</td><td>${stepBtn}</td></tr>`;
     if(t.steps && t.steps.length){
-      row += `<tr class="tc-steps" hidden><td colspan="8"><span class="lbl-steps">Bước thực hiện</span><ol>${t.steps.map(s=>`<li>${escHtml(s)}</li>`).join("")}</ol></td></tr>`;
+      row += `<tr class="tc-steps" hidden><td colspan="8"><span class="lbl-steps">Steps</span><ol>${t.steps.map(s=>`<li>${escHtml(s)}</li>`).join("")}</ol></td></tr>`;
     }
     return row;
   }).join("");
@@ -2248,7 +2247,7 @@ tcSetupMode();
 document.getElementById("tcExport").addEventListener("click", ()=>{
   const isComp = tcMode==="component";
   const rows = tcFiltered();
-  const head = ["ID", isComp?"Component":"Feature", isComp?"Nhóm":"Hạng mục", "Lớp","Nội dung kiểm thử","API","Kết quả mong đợi","Ưu tiên","Bước thực hiện","Trạng thái","Ghi chú"];
+  const head = ["ID", isComp?"Component":"Feature", isComp?"Group":"Category", "Layer","Test Case","API","Expected Result","Priority","Steps","Status","Note"];
   const cell = s => '"' + String(s).replace(/"/g,'""') + '"';
   const csv = [head.map(cell).join(",")]
     .concat(rows.map(t => [t.id,t.group,t.sub,(t.lay?(LAY_LABEL[t.lay]||t.lay):""),t.text,t.api,(t.expected||EXPECT),(t.priority||""),(t.steps&&t.steps.length?t.steps.map((s,i)=>(i+1)+". "+s).join(" | "):""),"",""].map(cell).join(",")))
