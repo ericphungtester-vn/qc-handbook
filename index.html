@@ -2008,8 +2008,115 @@ const EMAIL_TC = [
   {sub:"Push", lay:"both", tc:"Tôn trọng cài đặt tắt thông báo", pre:"User tắt push", exp:"Không gửi push khi user đã tắt", pr:"P2", steps:["Tắt thông báo", "Kích hoạt sự kiện", "Xác nhận không nhận push"]},
   {sub:"Nội dung", lay:"both", tc:"i18n theo ngôn ngữ người nhận", pre:"User có ngôn ngữ ưu tiên", exp:"Email đúng ngôn ngữ; không lẫn ngôn ngữ", pr:"P3", steps:["Đặt ngôn ngữ user", "Nhận email", "Xác nhận đúng ngôn ngữ"]},
 ];
+const SEO_TC = [
+  {sub:"Meta", lay:"api", tc:"Title & meta description", pre:"Mỗi trang", exp:"Title ~50–60 ký tự, description ~150–160, mỗi trang riêng, có từ khoá", pr:"P2", steps:["Xem source từng trang", "Đo độ dài & tính duy nhất"]},
+  {sub:"Cấu trúc", lay:"both", tc:"Heading & 1 H1/trang", pre:"Trang bất kỳ", exp:"Đúng 1 <h1>; phân cấp h2/h3 hợp lý", pr:"P2", steps:["Kiểm cây heading", "Xác nhận 1 h1"]},
+  {sub:"Chia sẻ", lay:"both", tc:"OpenGraph / Twitter card", pre:"Chia sẻ link", exp:"Hiện đúng ảnh + tiêu đề + mô tả khi share", pr:"P2", steps:["Share link (debugger OG)", "Xác nhận preview đúng"]},
+  {sub:"Index", lay:"api", tc:"Canonical / sitemap / robots", pre:"Site có nhiều URL", exp:"Canonical đúng; sitemap.xml & robots.txt cho index đúng trang", pr:"P2", steps:["Kiểm canonical, sitemap, robots", "Xác nhận cấu hình index"]},
+  {sub:"Index", lay:"api", tc:"Trang staging/nội bộ không bị index", pre:"Có môi trường staging", exp:"noindex / chặn robots cho staging", pr:"P1", steps:["Kiểm header/meta staging", "Xác nhận noindex"]},
+  {sub:"Cấu trúc", lay:"api", tc:"Structured data (schema.org)", pre:"Trang sản phẩm/bài viết", exp:"Đánh dấu đúng → rich result hợp lệ", pr:"P3", steps:["Chạy Rich Results Test", "Xác nhận hợp lệ"]},
+  {sub:"Media", lay:"api", tc:"Ảnh có alt", pre:"Trang có ảnh", exp:"Alt mô tả (SEO + a11y)", pr:"P3", steps:["Kiểm alt các ảnh", "Xác nhận có mô tả"]},
+];
+const ANALYTICS_TC = [
+  {sub:"Sự kiện", lay:"api", tc:"Event bắn đúng", pre:"Thao tác click/submit/view", exp:"Đúng tên event & tham số; đúng thời điểm", pr:"P1", steps:["Thực hiện thao tác", "Kiểm event (DebugView/network)"]},
+  {sub:"Sự kiện", lay:"api", tc:"Pageview SPA", pre:"Đổi route (SPA)", exp:"Bắn pageview khi đổi route, không reload", pr:"P2", steps:["Điều hướng nội bộ", "Xác nhận pageview đúng"]},
+  {sub:"Sự kiện", lay:"api", tc:"Không trùng / không thiếu", pre:"Một thao tác", exp:"Không bắn 2 lần; không sót event quan trọng", pr:"P2", steps:["Lặp thao tác", "Đếm số event"]},
+  {sub:"Bảo mật", lay:"api", tc:"Chỉ chạy sau consent", pre:"Chưa đồng ý cookie", exp:"Không bắn tracking tới khi user đồng ý (GDPR)", pr:"P1", steps:["Vào trang chưa consent", "Xác nhận không có tracking"]},
+  {sub:"Bảo mật", lay:"api", tc:"Không gửi PII", pre:"Bắn event", exp:"Không chứa email/tên/thẻ trong tham số", pr:"P1", steps:["Soi payload event", "Xác nhận không có PII"]},
+  {sub:"Đo lường", lay:"api", tc:"Conversion / funnel", pre:"Đi hết phễu", exp:"Các bước & mục tiêu ghi nhận đúng", pr:"P2", steps:["Hoàn tất funnel", "Đối chiếu báo cáo"]},
+];
+const CONSENT_TC = [
+  {sub:"Consent", lay:"both", tc:"Cookie consent banner", pre:"Vào lần đầu", exp:"Banner hiện; chặn tracking đến khi đồng ý", pr:"P1", steps:["Vào trang lần đầu", "Xác nhận banner & chặn tracking"]},
+  {sub:"Consent", lay:"both", tc:"Lưu & rút lại consent", pre:"Đã chọn consent", exp:"Nhớ lựa chọn; cho đổi/rút lại sau", pr:"P2", steps:["Chọn rồi rút lại consent", "Xác nhận áp dụng"]},
+  {sub:"Pháp lý", lay:"both", tc:"Privacy Policy & Terms", pre:"Trang có chính sách", exp:"Có, truy cập được, cập nhật", pr:"P2", steps:["Mở Privacy/Terms", "Xác nhận tồn tại & mới"]},
+  {sub:"GDPR", lay:"api", tc:"Quyền dữ liệu (xem/xoá/tải)", pre:"User yêu cầu dữ liệu", exp:"Cho phép data request (xem/xoá/tải)", pr:"P2", steps:["Gửi data request", "Xác nhận xử lý"]},
+  {sub:"GDPR", lay:"both", tc:"Thu thập tối thiểu", pre:"Form thu thập dữ liệu", exp:"Chỉ lấy dữ liệu cần; nêu rõ mục đích", pr:"P3", steps:["Rà form thu thập", "Xác nhận tối thiểu"]},
+  {sub:"A11y", lay:"both", tc:"Tuân thủ WCAG", pre:"Toàn site", exp:"Đạt WCAG (nghĩa vụ pháp lý nhiều nước)", pr:"P2", steps:["Audit a11y", "Xác nhận đạt mức cam kết"]},
+];
+const ERRORS_TC = [
+  {sub:"Lỗi trang", lay:"both", tc:"404 Không tìm thấy", pre:"Truy cập URL sai", exp:"Trang 404 thân thiện; có lối quay lại", pr:"P1", steps:["Vào URL không tồn tại", "Xác nhận trang 404 & lối thoát"]},
+  {sub:"Lỗi server", lay:"both", tc:"500 / lỗi server", pre:"Server lỗi", exp:"Thông báo thân thiện (không lộ stack); nút thử lại", pr:"P1", steps:["Gây lỗi 500", "Xác nhận thông báo & thử lại"]},
+  {sub:"Mạng", lay:"both", tc:"Offline / mất mạng", pre:"Ngắt mạng", exp:"Báo rõ; hàng đợi/thử lại; không mất thao tác", pr:"P1", steps:["Ngắt mạng & thao tác", "Xác nhận xử lý gọn"]},
+  {sub:"Phiên", lay:"both", tc:"Hết phiên (session expired)", pre:"Phiên hết hạn", exp:"Chuyển login; giữ URL đích & dữ liệu đang nhập nếu được", pr:"P1", steps:["Để phiên hết hạn & thao tác", "Xác nhận chuyển login giữ đích"]},
+  {sub:"Quyền", lay:"both", tc:"Không có quyền (403)", pre:"Truy cập tài nguyên cấm", exp:"Thông báo rõ; không lộ dữ liệu/không render nút cấm", pr:"P1", steps:["Truy cập URL cấm", "Xác nhận 403 & không lộ"]},
+  {sub:"Biên", lay:"both", tc:"Rỗng vs lỗi", pre:"API trả rỗng vs lỗi", exp:"Empty state khác màn lỗi; phân biệt rõ", pr:"P2", steps:["Tạo trạng thái rỗng & lỗi", "Xác nhận hiển thị khác nhau"]},
+  {sub:"Mạng", lay:"both", tc:"Mạng chậm / timeout", pre:"Phản hồi chậm", exp:"Có loader; timeout & thông báo; không treo vô hạn", pr:"P2", steps:["Giả lập chậm", "Xác nhận loader & timeout"]},
+];
+const INTERACTION_TC = [
+  {sub:"Con trỏ/cảm ứng", lay:"ui", tc:"Hover vs touch", pre:"Desktop & mobile", exp:"Không phụ thuộc hover; có trạng thái thay thế trên touch", pr:"P2", steps:["Kiểm trên desktop & mobile", "Xác nhận không cần hover"]},
+  {sub:"Cử chỉ", lay:"ui", tc:"Kéo-thả (drag & drop)", pre:"Có tính năng DnD", exp:"Phản hồi khi kéo; huỷ được; thả sai chỗ xử lý gọn", pr:"P2", steps:["Kéo-thả & thả sai chỗ", "Xác nhận hành vi"]},
+  {sub:"Cử chỉ", lay:"ui", tc:"Swipe / long-press", pre:"Trên cảm ứng", exp:"Vuốt & nhấn giữ hoạt động đúng", pr:"P3", steps:["Vuốt/nhấn giữ", "Xác nhận đúng"]},
+  {sub:"Bàn phím", lay:"ui", tc:"Phím tắt", pre:"Có shortcut", exp:"Shortcut hoạt động, không xung đột; có danh sách", pr:"P2", steps:["Dùng shortcut", "Xác nhận & không xung đột"]},
+  {sub:"Trình duyệt", lay:"both", tc:"Back/Forward/Refresh", pre:"Đang thao tác", exp:"Giữ đúng trạng thái, không mất dữ liệu đang nhập", pr:"P1", steps:["Bấm back/forward/refresh", "Xác nhận state đúng"]},
+  {sub:"Trình duyệt", lay:"both", tc:"Deep-link / URL state", pre:"Bookmark/URL", exp:"URL phản ánh trạng thái (tab/filter/trang); mở lại đúng", pr:"P2", steps:["Đổi state → copy URL → mở lại", "Xác nhận khôi phục"]},
+  {sub:"Chống lặp", lay:"both", tc:"Double-click / double-submit", pre:"Bấm nhanh 2 lần", exp:"Không tạo bản ghi trùng / không gửi 2 request", pr:"P1", steps:["Bấm submit 2 lần nhanh", "Xác nhận chỉ 1 lần"]},
+];
+const RESPONSIVE_TC = [
+  {sub:"Breakpoints", lay:"ui", tc:"Mobile/tablet/desktop", pre:"Đổi kích thước màn", exp:"Không vỡ layout ở ~360/768/1280+ & khoảng chuyển", pr:"P1", steps:["Resize qua các breakpoint", "Xác nhận không vỡ"]},
+  {sub:"Xoay", lay:"ui", tc:"Portrait ↔ landscape", pre:"Xoay thiết bị", exp:"Hiển thị đúng cả 2 chiều", pr:"P2", steps:["Xoay màn", "Xác nhận layout"]},
+  {sub:"Zoom", lay:"ui", tc:"Zoom 200% / phóng chữ", pre:"Zoom trình duyệt 200%", exp:"Không mất nội dung/không tràn", pr:"P2", steps:["Zoom 200% & tăng cỡ chữ", "Xác nhận đọc được"]},
+  {sub:"Cuộn", lay:"ui", tc:"Không cuộn ngang ngoài ý muốn", pre:"Mọi khổ màn", exp:"Không xuất hiện thanh cuộn ngang thừa", pr:"P1", steps:["Kiểm các khổ", "Xác nhận không cuộn ngang"]},
+  {sub:"Cảm ứng", lay:"ui", tc:"Vùng chạm ≥ 44px", pre:"Trên mobile", exp:"Nút/link đủ lớn ≥ 44×44px", pr:"P2", steps:["Đo vùng chạm", "Xác nhận ≥ 44px"]},
+  {sub:"Media", lay:"ui", tc:"Ảnh responsive", pre:"Nhiều khổ màn", exp:"srcset đúng; không méo; retina @2x", pr:"P2", steps:["Kiểm ảnh các khổ", "Xác nhận không méo"]},
+  {sub:"Đa trình duyệt", lay:"ui", tc:"Ma trận trình duyệt/OS", pre:"Chrome/Safari/Firefox/Edge; iOS/Android", exp:"Hoạt động & hiển thị đúng", pr:"P2", steps:["Kiểm trên các trình duyệt/OS", "Xác nhận đồng nhất"]},
+  {sub:"Cảm ứng", lay:"ui", tc:"Bàn phím ảo không che input", pre:"Mobile gõ liệu", exp:"Trang tự cuộn tới ô; không bị che", pr:"P2", steps:["Focus ô gần cuối", "Xác nhận không bị bàn phím che"]},
+];
+const A11Y_TC = [
+  {sub:"Bàn phím", lay:"ui", tc:"Tab & thứ tự focus", pre:"Điều hướng bàn phím", exp:"Tab tới mọi phần tử tương tác đúng thứ tự; không bẫy focus", pr:"P1", steps:["Tab qua trang", "Xác nhận thứ tự & không bẫy"]},
+  {sub:"Focus", lay:"ui", tc:"Focus nhìn thấy", pre:"Phần tử được focus", exp:"Có viền focus rõ; không outline:none trống", pr:"P1", steps:["Tab tới từng phần tử", "Xác nhận thấy focus"]},
+  {sub:"Screen reader", lay:"both", tc:"Nhãn & vai trò", pre:"Dùng screen reader", exp:"Nhãn đúng; role & trạng thái đọc được; aria-live cho vùng động", pr:"P1", steps:["Bật screen reader", "Kiểm nhãn/role/trạng thái"]},
+  {sub:"Màu", lay:"ui", tc:"Tương phản", pre:"Chữ & nền", exp:"Chữ thường ≥ 4.5:1; chữ lớn/icon ≥ 3:1 (light & dark)", pr:"P1", steps:["Đo tương phản", "Xác nhận đạt ngưỡng"]},
+  {sub:"Màu", lay:"ui", tc:"Không chỉ dựa vào màu", pre:"Lỗi/trạng thái", exp:"Có kèm icon/chữ (cho người mù màu)", pr:"P2", steps:["Kiểm trạng thái/lỗi", "Xác nhận không chỉ màu"]},
+  {sub:"Cấu trúc", lay:"both", tc:"Heading & landmark", pre:"Toàn trang", exp:"Heading đúng cấp; đủ landmark; có skip link", pr:"P2", steps:["Kiểm heading & landmark", "Xác nhận có skip-to-content"]},
+  {sub:"Form", lay:"both", tc:"Label & báo lỗi a11y", pre:"Form", exp:"Label gắn đúng ô; lỗi liên kết aria-describedby/invalid", pr:"P1", steps:["Kiểm form", "Xác nhận nhãn & lỗi a11y"]},
+  {sub:"Chuyển động", lay:"ui", tc:"prefers-reduced-motion", pre:"Bật giảm chuyển động", exp:"Tôn trọng reduced-motion", pr:"P2", steps:["Bật reduced-motion", "Xác nhận animation giảm"]},
+];
+const SECURITY_TC = [
+  {sub:"Injection", lay:"both", tc:"XSS", pre:"Ô nhập / hiển thị", exp:"Nhập <script> không thực thi; escape khi hiển thị", pr:"P1", steps:["Nhập payload XSS", "Xác nhận không thực thi"]},
+  {sub:"Injection", lay:"api", tc:"SQL/NoSQL injection", pre:"Ô nhập/query", exp:"Server validate/parametrize; không phá query", pr:"P1", steps:["Gửi payload injection", "Xác nhận bị chặn"]},
+  {sub:"CSRF", lay:"api", tc:"CSRF token", pre:"Thao tác đổi dữ liệu", exp:"Form/POST có token chống CSRF", pr:"P1", steps:["Gửi request thiếu token", "Xác nhận 403"]},
+  {sub:"Clickjacking", lay:"api", tc:"Chống nhúng iframe", pre:"Nhúng trang vào iframe", exp:"X-Frame-Options/CSP frame-ancestors chặn", pr:"P2", steps:["Nhúng iframe", "Xác nhận bị chặn"]},
+  {sub:"Dữ liệu", lay:"both", tc:"Che dữ liệu nhạy cảm", pre:"Hiển thị mật khẩu/thẻ", exp:"Che; không log; không lộ trong URL/console", pr:"P1", steps:["Kiểm hiển thị & log", "Xác nhận được che"]},
+  {sub:"Phân quyền", lay:"both", tc:"Không tin client", pre:"UI ẩn nút cấm", exp:"Server vẫn chặn thật sự dù UI ẩn", pr:"P1", steps:["Gọi thẳng API cấm", "Xác nhận server chặn"]},
+  {sub:"Kết nối", lay:"api", tc:"HTTPS & không mixed content", pre:"Toàn site", exp:"HTTPS toàn trang; không mixed content", pr:"P1", steps:["Kiểm HTTPS & tài nguyên", "Xác nhận không mixed"]},
+  {sub:"Rò rỉ", lay:"api", tc:"Message lỗi không lộ nội bộ", pre:"Gây lỗi", exp:"Không lộ stack/thông tin hệ thống/tài khoản tồn tại", pr:"P2", steps:["Gây lỗi", "Kiểm message"]},
+];
+const I18N_TC = [
+  {sub:"Nội dung", lay:"both", tc:"Chữ dịch dài không vỡ", pre:"Ngôn ngữ dài (DE/VI)", exp:"Nút & nhãn không vỡ khi dịch dài", pr:"P2", steps:["Đổi ngôn ngữ dài", "Xác nhận layout"]},
+  {sub:"RTL", lay:"both", tc:"Ngôn ngữ phải-sang-trái", pre:"Bật RTL (Ả Rập)", exp:"Bố cục lật đúng", pr:"P2", steps:["Bật RTL", "Xác nhận lật đúng"]},
+  {sub:"Định dạng", lay:"both", tc:"Ngày / giờ theo vùng", pre:"Nhiều locale", exp:"Định dạng & múi giờ đúng vùng", pr:"P2", steps:["Đổi locale", "Xác nhận ngày/giờ"]},
+  {sub:"Định dạng", lay:"both", tc:"Số / tiền tệ", pre:"Nhiều locale", exp:"Dấu phân cách & ký hiệu tiền đúng", pr:"P2", steps:["Đổi locale", "Xác nhận số/tiền"]},
+  {sub:"Nội dung", lay:"both", tc:"Số nhiều (plural)", pre:"Đếm 1 vs nhiều", exp:"'1 mục' vs '2 mục' đúng theo ngôn ngữ", pr:"P3", steps:["Kiểm chuỗi plural", "Xác nhận đúng"]},
+  {sub:"Ký tự", lay:"both", tc:"Emoji / tiếng Việt / Unicode", pre:"Nhập/hiển thị", exp:"Hiển thị đúng, không lỗi encoding", pr:"P2", steps:["Nhập ký tự đặc biệt", "Xác nhận hiển thị"]},
+  {sub:"Nội dung", lay:"both", tc:"Truncate chữ dài", pre:"Chuỗi dài", exp:"Cắt gọn (…) & tooltip/xem đầy đủ; không vỡ", pr:"P2", steps:["Nhập chuỗi dài", "Xác nhận truncate"]},
+  {sub:"Nội dung", lay:"api", tc:"Không hard-code chuỗi", pre:"Toàn app", exp:"Mọi chuỗi qua key dịch; không lẫn ngôn ngữ", pr:"P2", steps:["Rà chuỗi UI", "Xác nhận đều qua i18n"]},
+];
+const PERF_TC = [
+  {sub:"Tải", lay:"api", tc:"Lazy load", pre:"Nội dung dưới màn/khi mở", exp:"Chỉ tải khi cần; có placeholder; không tải sớm", pr:"P2", steps:["Cuộn/mở phần tử", "Xác nhận tải đúng lúc"]},
+  {sub:"Tải", lay:"api", tc:"Infinite scroll", pre:"Danh sách dài", exp:"Tải thêm khi chạm đáy; không trùng; dừng khi hết", pr:"P2", steps:["Cuộn tới đáy nhiều lần", "Xác nhận tải đúng"]},
+  {sub:"Tải", lay:"api", tc:"Debounce / throttle", pre:"Gõ/cuộn/resize", exp:"Giới hạn tần suất gọi; huỷ request cũ", pr:"P2", steps:["Gõ liên tục", "Xác nhận không gọi mỗi phím"]},
+  {sub:"Cache", lay:"api", tc:"Caching & revalidate", pre:"Dữ liệu lặp lại", exp:"Dùng cache & revalidate; không hiện dữ liệu cũ", pr:"P2", steps:["Tải lại nhiều lần", "Kiểm cache & làm mới"]},
+  {sub:"Cập nhật", lay:"both", tc:"Optimistic update + rollback", pre:"Thao tác ghi", exp:"UI cập nhật ngay; rollback đúng khi API lỗi", pr:"P2", steps:["Thao tác khi giả lập lỗi API", "Xác nhận rollback"]},
+  {sub:"Lỗi", lay:"both", tc:"Retry / error handling", pre:"Lỗi mạng", exp:"Có nút thử lại; không lặp vô hạn; timeout hợp lý", pr:"P2", steps:["Giả lập lỗi", "Xác nhận retry đúng"]},
+];
+const VITALS_TC = [
+  {sub:"Web Vitals", lay:"perf", tc:"LCP ≤ 2.5s", pre:"Đo tải trang", exp:"Largest Contentful Paint ≤ 2.5s", pr:"P2", steps:["Đo LCP (Lighthouse/RUM)", "Xác nhận ≤ 2.5s"]},
+  {sub:"Web Vitals", lay:"perf", tc:"CLS < 0.1", pre:"Đo trong lúc tải", exp:"Cumulative Layout Shift < 0.1 (không nhảy layout)", pr:"P1", steps:["Đo CLS", "Xác nhận < 0.1"]},
+  {sub:"Web Vitals", lay:"perf", tc:"INP < 200ms", pre:"Tương tác", exp:"Interaction to Next Paint < 200ms", pr:"P2", steps:["Đo INP", "Xác nhận < 200ms"]},
+  {sub:"Web Vitals", lay:"perf", tc:"TTFB", pre:"Đo server", exp:"Time To First Byte nhanh (theo SLA)", pr:"P3", steps:["Đo TTFB", "Xác nhận đạt"]},
+  {sub:"Tối ưu", lay:"api", tc:"Bundle & ảnh", pre:"Kiểm tài nguyên", exp:"Nén/tối ưu; ảnh đúng độ phân giải; số request hợp lý", pr:"P2", steps:["Kiểm size bundle/ảnh & số request", "Xác nhận tối ưu"]},
+];
+const RELEASE_TC = [
+  {sub:"Môi trường", lay:"api", tc:"Tách dev/staging/prod", pre:"Có 3 môi trường", exp:"Riêng biệt; staging gần giống prod để test tin cậy", pr:"P1", steps:["Kiểm cấu hình 3 môi trường", "Xác nhận tách biệt"]},
+  {sub:"Bảo mật", lay:"api", tc:"Secret không lộ client", pre:"Kiểm bundle/frontend", exp:"Không lộ key/secret phía client", pr:"P1", steps:["Soi bundle/DevTools", "Xác nhận không lộ secret"]},
+  {sub:"Feature flag", lay:"both", tc:"Bật/tắt feature", pre:"Có feature flag", exp:"Test cả 2 nhánh on/off; bật/tắt đúng", pr:"P2", steps:["Bật & tắt flag", "Kiểm cả 2 nhánh"]},
+  {sub:"Phát hành", lay:"api", tc:"Release / rollback", pre:"Deploy bản mới", exp:"Có quy trình quay lui nhanh khi lỗi", pr:"P1", steps:["Giả lập lỗi sau deploy", "Xác nhận rollback được"]},
+  {sub:"Cache", lay:"api", tc:"Cache/CDN sau deploy", pre:"Deploy asset mới", exp:"Version/xoá cache đúng; không kẹt bản cũ", pr:"P2", steps:["Deploy asset mới", "Xác nhận nhận bản mới"]},
+  {sub:"Kiểm thử", lay:"both", tc:"Smoke test sau deploy", pre:"Vừa deploy prod", exp:"Chức năng cốt lõi chạy đúng", pr:"P1", steps:["Chạy smoke test", "Xác nhận core OK"]},
+  {sub:"Bản in", lay:"ui", tc:"Print styles", pre:"In trang", exp:"Trang in gọn; ẩn nav/nút; ngắt trang hợp lý", pr:"P3", steps:["In thử (Ctrl+P)", "Xác nhận bản in gọn"]},
+];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
-const FEATURE_IDS = ["seo","analytics","legal","errors","interaction","responsive","a11y","security","content-i18n","perf","vitals","release"];
+const FEATURE_IDS = [];
 const TC_FEAT = [];
 let n2 = 0;
 LOGIN_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Login", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
@@ -2021,6 +2128,18 @@ API_DELETE_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3
 AUTH_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Đăng nhập & phiên", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 PAYMENT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Thanh toán", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 EMAIL_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Email & Notification", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+SEO_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"SEO & Meta", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+ANALYTICS_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Analytics & Tracking", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+CONSENT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Consent & Pháp lý", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+ERRORS_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Trạng thái lỗi & biên", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+INTERACTION_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Tương tác & cử chỉ", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+RESPONSIVE_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Responsive & đa thiết bị", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+A11Y_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Accessibility (a11y)", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+SECURITY_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Bảo mật UI", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+I18N_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Nội dung & i18n", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+PERF_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Hiệu năng & tải dữ liệu", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+VITALS_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Web Vitals", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+RELEASE_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Môi trường & phát hành", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 FEATURE_IDS.forEach(id=>{
   const sec = document.getElementById(id); if(!sec) return;
   const h = sec.querySelector("h3");
