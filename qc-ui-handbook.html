@@ -1894,12 +1894,86 @@ const API_GET_TC = [
   {sub:"Hiệu năng", lay:"perf", tc:"Response time", pre:"Tải bình thường", exp:"p95 ≤ ngưỡng SLA (thường 300–800ms cho GET đọc)", pr:"P2", steps:["Đo p50/p95 thời gian phản hồi GET", "Xác nhận p95 đạt SLA"]},
   {sub:"Hiệu năng", lay:"perf", tc:"Dữ liệu lớn không timeout", pre:"Tập dữ liệu lớn", exp:"Phân trang giảm tải; không timeout; truy vấn có index (tránh N+1)", pr:"P2", steps:["Gọi GET tập dữ liệu lớn", "Theo dõi thời gian & truy vấn", "Xác nhận không timeout & hiệu quả"]},
 ];
+const API_POST_TC = [
+  {sub:"Chức năng", lay:"api", tc:"POST tạo thành công → 201", pre:"Payload hợp lệ", exp:"HTTP 201 Created + header Location + body bản ghi vừa tạo", pr:"P1", steps:["Gọi POST với body hợp lệ", "Xác nhận 201, Location & body created"]},
+  {sub:"Chức năng", lay:"api", tc:"Field do server sinh", pre:"Tạo bản ghi", exp:"id, createdAt… do server set; client KHÔNG override được", pr:"P1", steps:["POST kèm id/createdAt tự đặt", "Xác nhận server bỏ qua & tự sinh"]},
+  {sub:"Chức năng", lay:"api", tc:"Body trả về không lộ dữ liệu nhạy cảm", pre:"Tạo thành công", exp:"Response không chứa mật khẩu/hash/PII thừa", pr:"P2", steps:["POST tạo", "Soi body trả về"]},
+  {sub:"Chức năng", lay:"api", tc:"Tạo kèm quan hệ/nested", pre:"Payload có nested", exp:"Bản ghi con/quan hệ được tạo đúng & nhất quán", pr:"P2", steps:["POST payload lồng nhau", "Xác nhận nested tạo đúng"]},
+  {sub:"Validation", lay:"api", tc:"Thiếu field bắt buộc → 400", pre:"Bỏ field bắt buộc", exp:"HTTP 400; báo rõ field lỗi", pr:"P1", steps:["POST thiếu field bắt buộc", "Xác nhận 400 & thông báo field"]},
+  {sub:"Validation", lay:"api", tc:"Sai kiểu dữ liệu → 400", pre:"Field sai kiểu", exp:"HTTP 400", pr:"P1", steps:["POST field sai kiểu (số ↔ chữ)", "Xác nhận 400"]},
+  {sub:"Validation", lay:"api", tc:"Body rỗng / JSON lỗi → 400", pre:"Gửi body rỗng hoặc JSON hỏng", exp:"HTTP 400 Bad Request", pr:"P1", steps:["POST body rỗng & JSON malformed", "Xác nhận 400"]},
+  {sub:"Validation", lay:"api", tc:"Content-Type sai → 415", pre:"Content-Type không phải JSON", exp:"HTTP 415 Unsupported Media Type", pr:"P2", steps:["POST với Content-Type: text/plain", "Xác nhận 415"]},
+  {sub:"Validation", lay:"api", tc:"Payload quá lớn → 413", pre:"Body vượt giới hạn", exp:"HTTP 413 Payload Too Large", pr:"P2", steps:["POST body rất lớn", "Xác nhận 413"]},
+  {sub:"Validation", lay:"api", tc:"Kiểm biên độ dài field", pre:"Field ở/ vượt max", exp:"Đúng max → OK; vượt max → 400", pr:"P2", steps:["POST field ở max & vượt max", "Xác nhận xử lý đúng"]},
+  {sub:"Validation", lay:"api", tc:"Trùng unique → 409", pre:"Giá trị unique đã tồn tại (email…)", exp:"HTTP 409 Conflict", pr:"P1", steps:["POST trùng email/unique", "Xác nhận 409"]},
+  {sub:"Bảo mật", lay:"api", tc:"XSS / SQLi trong field", pre:"Field chứa payload", exp:"Server validate/escape; không thực thi; không 500", pr:"P1", steps:["POST field chứa <script>/' OR 1=1--", "Xác nhận chặn & lưu an toàn"]},
+  {sub:"Bảo mật", lay:"api", tc:"Mass assignment", pre:"Gửi field không được phép (role, isAdmin…)", exp:"Field lạ/không cho phép bị bỏ qua (OWASP API6)", pr:"P1", steps:["POST kèm field nhạy cảm ngoài phạm vi", "Xác nhận không được gán"]},
+  {sub:"Bảo mật", lay:"api", tc:"Auth: không token → 401", pre:"Không gửi token", exp:"HTTP 401", pr:"P1", steps:["POST không Authorization", "Xác nhận 401"]},
+  {sub:"Bảo mật", lay:"api", tc:"BOLA: tạo dưới tài khoản người khác → 403", pre:"Token A tạo cho B", exp:"HTTP 403; không tạo được cho chủ khác (OWASP API1)", pr:"P1", steps:["Đăng nhập A", "POST ownerId=B", "Xác nhận 403"]},
+  {sub:"Bảo mật", lay:"api", tc:"Rate limit → 429", pre:"Tạo vượt ngưỡng", exp:"HTTP 429 + Retry-After", pr:"P2", steps:["POST vượt ngưỡng", "Xác nhận 429"]},
+  {sub:"Bảo mật", lay:"api", tc:"CSRF (nếu dùng cookie)", pre:"Request thiếu/sai CSRF token", exp:"HTTP 403", pr:"P2", steps:["POST thiếu CSRF token", "Xác nhận 403"]},
+  {sub:"Idempotency & đồng thời", lay:"api", tc:"Chống tạo trùng khi double-submit", pre:"Gửi 2 lần nhanh / cùng Idempotency-Key", exp:"Chỉ tạo 1 bản ghi (Idempotency-Key)", pr:"P1", steps:["POST 2 lần cùng Idempotency-Key", "Xác nhận chỉ 1 bản ghi"]},
+  {sub:"Idempotency & đồng thời", lay:"api", tc:"Ký tự đặc biệt/Unicode/emoji", pre:"Field có emoji/Unicode/tiếng Việt", exp:"Lưu & trả về đúng, không lỗi encoding", pr:"P2", steps:["POST field có emoji/Unicode", "GET lại xác nhận đúng"]},
+  {sub:"Idempotency & đồng thời", lay:"api", tc:"Transaction rollback khi lỗi", pre:"Lỗi giữa chừng (vd nested lỗi)", exp:"Rollback: không để lại bản ghi lỗi dở", pr:"P1", steps:["POST payload gây lỗi giữa chừng", "Xác nhận không tạo bản ghi một phần"]},
+  {sub:"Hiệu năng", lay:"perf", tc:"Response time", pre:"Tải bình thường", exp:"p95 ≤ ngưỡng SLA (ghi thường chậm hơn đọc)", pr:"P2", steps:["Đo p95 thời gian POST", "Xác nhận đạt SLA"]},
+];
+const API_PUT_TC = [
+  {sub:"Chức năng", lay:"api", tc:"PUT cập nhật toàn bộ → 200/204", pre:"Bản ghi tồn tại, payload đầy đủ", exp:"HTTP 200/204; dữ liệu thay đủ theo payload", pr:"P1", steps:["PUT với đại diện đầy đủ", "Xác nhận 200/204 & dữ liệu đúng"]},
+  {sub:"Chức năng", lay:"api", tc:"Full-replace: field bỏ trống bị reset", pre:"Payload thiếu field không bắt buộc", exp:"Field không gửi bị đặt về default/null (khác PATCH)", pr:"P1", steps:["PUT thiếu 1 field tuỳ chọn", "GET lại xác nhận field bị reset"]},
+  {sub:"Chức năng", lay:"api", tc:"PUT id không tồn tại", pre:"id không có", exp:"404 (hoặc 201 nếu thiết kế upsert)", pr:"P1", steps:["PUT /resource/{id_khong_ton_tai}", "Xác nhận 404 hoặc 201 theo thiết kế"]},
+  {sub:"Chức năng", lay:"api", tc:"Response phản ánh bản ghi sau cập nhật", pre:"Cập nhật thành công", exp:"Body/GET tiếp theo phản ánh đúng trạng thái mới", pr:"P2", steps:["PUT rồi GET", "Đối chiếu dữ liệu"]},
+  {sub:"Validation", lay:"api", tc:"Thiếu field bắt buộc → 400", pre:"PUT cần đại diện đầy đủ", exp:"HTTP 400", pr:"P1", steps:["PUT thiếu field bắt buộc", "Xác nhận 400"]},
+  {sub:"Validation", lay:"api", tc:"Sai kiểu / biên độ dài → 400", pre:"Field sai kiểu hoặc vượt max", exp:"HTTP 400", pr:"P2", steps:["PUT field sai kiểu/vượt max", "Xác nhận 400"]},
+  {sub:"Đồng thời", lay:"api", tc:"Idempotent", pre:"Gửi lại cùng PUT", exp:"Kết quả không đổi sau nhiều lần gửi (RFC 9110)", pr:"P1", steps:["PUT 2 lần cùng payload", "Xác nhận trạng thái cuối như nhau"]},
+  {sub:"Đồng thời", lay:"api", tc:"Optimistic locking (ETag/If-Match) → 412", pre:"2 client sửa đồng thời", exp:"Sửa trên bản cũ → 412 Precondition Failed", pr:"P1", steps:["Lấy ETag", "Client khác sửa trước", "PUT với If-Match cũ → 412"]},
+  {sub:"Bảo mật", lay:"api", tc:"Field bất biến không đổi được", pre:"PUT cố đổi id/createdAt", exp:"id/createdAt giữ nguyên (bỏ qua)", pr:"P1", steps:["PUT đổi id/createdAt", "Xác nhận không thay đổi"]},
+  {sub:"Bảo mật", lay:"api", tc:"Mass assignment", pre:"Gửi field nhạy cảm ngoài phạm vi", exp:"Bị bỏ qua (OWASP API6)", pr:"P1", steps:["PUT kèm role/isAdmin", "Xác nhận không được gán"]},
+  {sub:"Bảo mật", lay:"api", tc:"XSS / SQLi", pre:"Field chứa payload", exp:"Chặn/escape an toàn", pr:"P1", steps:["PUT field chứa payload", "Xác nhận an toàn"]},
+  {sub:"Bảo mật", lay:"api", tc:"Auth 401/403 & BOLA", pre:"Không token / sửa của người khác", exp:"401 khi không token; 403 khi sửa bản ghi người khác", pr:"P1", steps:["PUT không token → 401", "PUT bản ghi người khác → 403"]},
+  {sub:"Mã trạng thái", lay:"api", tc:"Content-Type sai → 415", pre:"Content-Type không phải JSON", exp:"HTTP 415", pr:"P2", steps:["PUT với Content-Type sai", "Xác nhận 415"]},
+  {sub:"Hiệu năng", lay:"perf", tc:"Response time", pre:"Tải bình thường", exp:"p95 ≤ ngưỡng SLA", pr:"P2", steps:["Đo p95 thời gian PUT", "Xác nhận đạt SLA"]},
+];
+const API_PATCH_TC = [
+  {sub:"Chức năng", lay:"api", tc:"PATCH cập nhật một phần", pre:"Bản ghi tồn tại", exp:"Chỉ field gửi thay đổi; field khác giữ nguyên", pr:"P1", steps:["PATCH 1 field", "GET lại xác nhận field khác không đổi"]},
+  {sub:"Chức năng", lay:"api", tc:"PATCH id không tồn tại → 404", pre:"id không có", exp:"HTTP 404", pr:"P1", steps:["PATCH /resource/{id_khong_ton_tai}", "Xác nhận 404"]},
+  {sub:"Chức năng", lay:"api", tc:"Body rỗng → no-op / 400", pre:"PATCH body rỗng", exp:"Không đổi gì (no-op) hoặc 400 theo thiết kế", pr:"P2", steps:["PATCH body {}", "Xác nhận hành vi đúng thiết kế"]},
+  {sub:"Chức năng", lay:"api", tc:"Set field = null tường minh", pre:"Gửi field: null", exp:"Field bị xoá giá trị đúng (phân biệt với không gửi)", pr:"P2", steps:["PATCH {field:null}", "Xác nhận field được set null"]},
+  {sub:"Chức năng", lay:"api", tc:"Định dạng patch đúng", pre:"merge-patch+json / json-patch+json", exp:"Server hiểu đúng định dạng patch khai báo", pr:"P3", steps:["PATCH đúng Content-Type patch", "Xác nhận áp dụng đúng"]},
+  {sub:"Validation", lay:"api", tc:"Field không hợp lệ → bỏ qua/400", pre:"PATCH field lạ", exp:"Bỏ qua an toàn hoặc 400 (đúng thiết kế)", pr:"P2", steps:["PATCH field không tồn tại", "Xác nhận xử lý đúng"]},
+  {sub:"Validation", lay:"api", tc:"Sai kiểu → 400", pre:"Field sai kiểu", exp:"HTTP 400", pr:"P2", steps:["PATCH field sai kiểu", "Xác nhận 400"]},
+  {sub:"Đồng thời", lay:"api", tc:"ETag/If-Match → 412", pre:"Sửa đồng thời", exp:"Sửa trên bản cũ → 412", pr:"P1", steps:["Lấy ETag", "Client khác sửa", "PATCH If-Match cũ → 412"]},
+  {sub:"Bảo mật", lay:"api", tc:"Field bất biến không đổi", pre:"PATCH cố đổi id/createdAt", exp:"Giữ nguyên (bỏ qua)", pr:"P1", steps:["PATCH đổi id/createdAt", "Xác nhận không đổi"]},
+  {sub:"Bảo mật", lay:"api", tc:"Mass assignment", pre:"Gửi field nhạy cảm", exp:"Bị bỏ qua (OWASP API6)", pr:"P1", steps:["PATCH kèm role/isAdmin", "Xác nhận không được gán"]},
+  {sub:"Bảo mật", lay:"api", tc:"XSS / SQLi", pre:"Field chứa payload", exp:"Chặn/escape an toàn", pr:"P1", steps:["PATCH field chứa payload", "Xác nhận an toàn"]},
+  {sub:"Bảo mật", lay:"api", tc:"Auth 401/403 & BOLA", pre:"Không token / sửa của người khác", exp:"401 / 403 đúng", pr:"P1", steps:["PATCH không token → 401", "PATCH bản ghi người khác → 403"]},
+  {sub:"Hiệu năng", lay:"perf", tc:"Response time", pre:"Tải bình thường", exp:"p95 ≤ ngưỡng SLA", pr:"P2", steps:["Đo p95 thời gian PATCH", "Xác nhận đạt SLA"]},
+];
+const API_DELETE_TC = [
+  {sub:"Chức năng", lay:"api", tc:"DELETE thành công → 200/204", pre:"Bản ghi tồn tại", exp:"HTTP 200/204; GET lại → 404", pr:"P1", steps:["DELETE bản ghi", "GET lại xác nhận 404"]},
+  {sub:"Chức năng", lay:"api", tc:"Idempotent: xoá lại lần 2", pre:"Bản ghi đã bị xoá", exp:"Nhất quán: 404 (hoặc 204) — không lỗi (RFC 9110 idempotent)", pr:"P1", steps:["DELETE lần 1 (OK)", "DELETE lại cùng id", "Xác nhận 404/204 nhất quán"]},
+  {sub:"Chức năng", lay:"api", tc:"Xoá id không tồn tại → 404", pre:"id không có", exp:"HTTP 404", pr:"P1", steps:["DELETE id không tồn tại", "Xác nhận 404"]},
+  {sub:"Chức năng", lay:"api", tc:"Soft delete", pre:"Thiết kế soft delete", exp:"Đánh dấu deleted; GET thường không trả; vẫn còn trong DB", pr:"P2", steps:["DELETE (soft)", "GET thường không thấy", "Kiểm DB vẫn còn cờ deleted"]},
+  {sub:"Chức năng", lay:"api", tc:"Cascade / toàn vẹn tham chiếu", pre:"Bản ghi có ràng buộc con", exp:"Cascade đúng, hoặc chặn với 409 nếu còn tham chiếu", pr:"P1", steps:["DELETE bản ghi có con", "Xác nhận cascade đúng hoặc 409"]},
+  {sub:"Chức năng", lay:"api", tc:"Không xoá được bản ghi được bảo vệ → 409", pre:"Bản ghi đang được dùng/khoá", exp:"HTTP 409 Conflict; không xoá", pr:"P2", steps:["DELETE bản ghi đang được tham chiếu", "Xác nhận 409"]},
+  {sub:"Chức năng", lay:"both", tc:"Restore sau soft delete", pre:"Hỗ trợ khôi phục", exp:"Khôi phục được bản ghi đã soft-delete (nếu thiết kế)", pr:"P3", steps:["Soft delete rồi restore", "Xác nhận bản ghi trở lại"]},
+  {sub:"Bảo mật", lay:"api", tc:"Auth 401/403 & BOLA", pre:"Không token / xoá của người khác", exp:"401 / 403 đúng (không xoá được của người khác)", pr:"P1", steps:["DELETE không token → 401", "DELETE bản ghi người khác → 403"]},
+  {sub:"Bảo mật", lay:"api", tc:"CSRF (nếu cookie)", pre:"Thiếu/sai CSRF token", exp:"HTTP 403", pr:"P2", steps:["DELETE thiếu CSRF", "Xác nhận 403"]},
+  {sub:"Bảo mật", lay:"api", tc:"Ghi audit log việc xoá", pre:"Xoá bản ghi", exp:"Log ai/khi nào/what; không lộ dữ liệu nhạy cảm (ASVS V7)", pr:"P2", steps:["DELETE", "Kiểm audit log có bản ghi"]},
+  {sub:"Bảo mật", lay:"api", tc:"Rate limit → 429", pre:"Xoá vượt ngưỡng", exp:"HTTP 429", pr:"P3", steps:["DELETE vượt ngưỡng", "Xác nhận 429"]},
+  {sub:"UX", lay:"both", tc:"Xác nhận trước khi xoá & chống xoá nhầm", pre:"Thao tác xoá trên UI", exp:"Có hộp xác nhận; không xoá nhầm hàng loạt", pr:"P2", steps:["Bấm xoá trên UI", "Xác nhận có bước xác nhận"]},
+  {sub:"Đồng thời", lay:"api", tc:"ETag/If-Match (xoá có điều kiện) → 412", pre:"Bản ghi đã đổi", exp:"Xoá trên bản cũ → 412", pr:"P2", steps:["Lấy ETag", "Bản ghi bị đổi", "DELETE If-Match cũ → 412"]},
+  {sub:"Hiệu năng", lay:"perf", tc:"Response time & bulk delete", pre:"Tải bình thường / xoá hàng loạt", exp:"p95 ≤ SLA; bulk delete (nếu có) hiệu quả, không timeout", pr:"P2", steps:["Đo p95 DELETE", "Nếu có bulk: đo & kiểm tính đúng"]},
+];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
 const FEATURE_IDS = ["authsession","payment","notify","seo","analytics","legal","errors","interaction","responsive","a11y","security","content-i18n","perf","vitals","release"];
 const TC_FEAT = [];
 let n2 = 0;
 LOGIN_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Login", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 API_GET_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API GET", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+API_POST_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API POST", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+API_PUT_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API PUT", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+API_PATCH_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API PATCH", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+API_DELETE_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API DELETE", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 FEATURE_IDS.forEach(id=>{
   const sec = document.getElementById(id); if(!sec) return;
   const h = sec.querySelector("h3");
