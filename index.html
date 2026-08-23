@@ -1855,11 +1855,51 @@ const LOGIN_TC = [
   {sub:"Hiệu năng", lay:"perf", tc:"Response time đăng nhập", pre:"Tải bình thường", exp:"API login ≤ 1s ở p95 (lý tưởng < 500ms median) — chuẩn UX Nielsen (≤1s giữ luồng thao tác)", pr:"P2", steps:["Đo p50/p95 thời gian phản hồi API login dưới tải dự kiến", "Xác nhận p95 ≤ 1s (median < 500ms)"]},
   {sub:"Hiệu năng", lay:"perf", tc:"Stress nhiều login đồng thời", pre:"N người dùng đồng thời", exp:"Ổn định: error rate < 1%, p95 trong ngưỡng SLA, không rớt/timeout", pr:"P2", steps:["Chạy tải N login đồng thời (JMeter/k6)", "Theo dõi error rate & p95", "Xác nhận error rate < 1% & p95 đạt SLA"]},
 ];
+const API_GET_TC = [
+  {sub:"Chức năng", lay:"api", tc:"GET thành công (200) trả đúng dữ liệu", pre:"Endpoint & dữ liệu tồn tại", exp:"HTTP 200; body đúng schema & kiểu dữ liệu", pr:"P1", steps:["Gọi GET endpoint hợp lệ", "Kiểm HTTP 200", "Đối chiếu body với schema/kiểu"]},
+  {sub:"Chức năng", lay:"api", tc:"GET theo ID hợp lệ → đúng bản ghi", pre:"Bản ghi id tồn tại", exp:"HTTP 200; trả đúng bản ghi theo id", pr:"P1", steps:["Gọi GET /resource/{id} hợp lệ", "Xác nhận đúng bản ghi"]},
+  {sub:"Chức năng", lay:"api", tc:"GET danh sách → cấu trúc đúng", pre:"Có dữ liệu", exp:"HTTP 200; mảng + metadata phân trang đúng cấu trúc", pr:"P1", steps:["Gọi GET danh sách", "Kiểm cấu trúc mảng & metadata"]},
+  {sub:"Chức năng", lay:"api", tc:"Content-Type & charset", pre:"Gọi GET", exp:"Content-Type: application/json; charset=UTF-8", pr:"P2", steps:["Gọi GET", "Kiểm header Content-Type & charset"]},
+  {sub:"Chức năng", lay:"api", tc:"Kiểu & định dạng field", pre:"Gọi GET", exp:"Số/boolean đúng kiểu; ngày theo ISO 8601; không null sai chỗ", pr:"P2", steps:["Gọi GET", "Kiểm kiểu & định dạng từng field (ngày ISO 8601…)"]},
+  {sub:"Tham số & lọc", lay:"api", tc:"Path param không tồn tại → 404", pre:"id không tồn tại", exp:"HTTP 404; body lỗi có cấu trúc", pr:"P1", steps:["Gọi GET /resource/{id_khong_ton_tai}", "Xác nhận HTTP 404"]},
+  {sub:"Tham số & lọc", lay:"api", tc:"Param sai kiểu → 400", pre:"id cần số nhưng gửi chữ", exp:"HTTP 400 Bad Request; báo lỗi rõ", pr:"P1", steps:["Gọi GET /resource/abc (cần số)", "Xác nhận HTTP 400"]},
+  {sub:"Tham số & lọc", lay:"api", tc:"Filter theo query đúng", pre:"Có dữ liệu để lọc", exp:"Chỉ trả bản ghi khớp filter", pr:"P1", steps:["Gọi GET ?status=active", "Xác nhận kết quả đúng filter"]},
+  {sub:"Tham số & lọc", lay:"api", tc:"Query không hỗ trợ", pre:"Gửi param lạ", exp:"Bỏ qua an toàn hoặc 400 (đúng thiết kế), không lỗi server", pr:"P2", steps:["Gọi GET ?param_la=x", "Xác nhận xử lý theo thiết kế"]},
+  {sub:"Tham số & lọc", lay:"api", tc:"Sort asc/desc đúng", pre:"Có dữ liệu", exp:"Sắp xếp đúng chiều & đúng field", pr:"P2", steps:["Gọi GET ?sort=name&order=desc", "Xác nhận thứ tự đúng"]},
+  {sub:"Tham số & lọc", lay:"api", tc:"Giá trị mặc định khi thiếu param", pre:"Không gửi page/size…", exp:"Áp dụng default hợp lý & nhất quán", pr:"P2", steps:["Gọi GET không kèm param", "Xác nhận default (vd page=1, size=20)"]},
+  {sub:"Tham số & lọc", lay:"api", tc:"Ký tự đặc biệt / Unicode trong query", pre:"Query có dấu/space/ký tự đặc biệt", exp:"URL-encode & xử lý đúng; không vỡ", pr:"P2", steps:["Gọi GET ?q=Hà%20Nội", "Xác nhận decode & kết quả đúng"]},
+  {sub:"Tham số & lọc", lay:"api", tc:"Injection ở query bị chặn", pre:"Gửi payload SQLi/NoSQLi", exp:"Server chặn/parametrize; không lộ dữ liệu, không 500", pr:"P1", steps:["Gọi GET ?id=1 OR 1=1", "Xác nhận không bypass & không 500"]},
+  {sub:"Phân trang", lay:"api", tc:"page/size (limit/offset) đúng", pre:"Có nhiều bản ghi", exp:"Trả đúng trang & đúng số lượng/trang", pr:"P1", steps:["Gọi GET ?page=2&size=10", "Xác nhận đúng tập bản ghi trang 2"]},
+  {sub:"Phân trang", lay:"api", tc:"page ngoài khoảng / âm / 0", pre:"Gửi page bất thường", exp:"Xử lý đúng: rỗng/clamp/400 (đúng thiết kế), không lỗi", pr:"P2", steps:["Gọi GET ?page=-1 và ?page=99999", "Xác nhận hành vi đúng thiết kế"]},
+  {sub:"Phân trang", lay:"api", tc:"size vượt max", pre:"Gửi size rất lớn", exp:"Giới hạn max page size (không trả toàn bộ DB)", pr:"P2", steps:["Gọi GET ?size=100000", "Xác nhận bị clamp về max"]},
+  {sub:"Phân trang", lay:"api", tc:"total / count chính xác", pre:"Có dữ liệu", exp:"total/count khớp số bản ghi thực", pr:"P2", steps:["Gọi GET danh sách", "Đối chiếu total với dữ liệu thực"]},
+  {sub:"Phân trang", lay:"both", tc:"Danh sách rỗng → 200 + mảng rỗng", pre:"Không có bản ghi khớp", exp:"HTTP 200 + mảng rỗng (KHÔNG 404); UI hiện empty state", pr:"P1", steps:["Gọi GET với filter không khớp", "Xác nhận 200 + [] & UI empty state"]},
+  {sub:"Xác thực & phân quyền", lay:"api", tc:"Không token → 401", pre:"Endpoint cần auth, không gửi token", exp:"HTTP 401 Unauthorized", pr:"P1", steps:["Gọi GET không Authorization", "Xác nhận 401"]},
+  {sub:"Xác thực & phân quyền", lay:"api", tc:"Token sai / hết hạn → 401", pre:"Token invalid/expired", exp:"HTTP 401", pr:"P1", steps:["Gọi GET với token sai/hết hạn", "Xác nhận 401"]},
+  {sub:"Xác thực & phân quyền", lay:"api", tc:"Token của môi trường khác (dev/staging) dùng ở prod", pre:"Có token cấp ở môi trường khác", exp:"Bị từ chối (HTTP 401/403); mỗi môi trường có secret/issuer riêng, không dùng chéo", pr:"P1", steps:["Lấy token ở môi trường dev/staging", "Gọi API prod bằng token đó", "Xác nhận 401/403"]},
+  {sub:"Xác thực & phân quyền", lay:"api", tc:"Không đủ quyền → 403", pre:"Token hợp lệ nhưng thiếu quyền", exp:"HTTP 403 Forbidden", pr:"P1", steps:["Gọi GET tài nguyên ngoài quyền", "Xác nhận 403"]},
+  {sub:"Xác thực & phân quyền", lay:"api", tc:"BOLA/IDOR: id của người khác", pre:"Đăng nhập user A, truy id của B", exp:"HTTP 403/404, KHÔNG lộ dữ liệu của B (OWASP API1)", pr:"P1", steps:["Đăng nhập A", "GET /resource/{id_cua_B}", "Xác nhận 403/404, không lộ dữ liệu"]},
+  {sub:"Bảo mật", lay:"api", tc:"Không lộ dữ liệu nhạy cảm thừa", pre:"Gọi GET thành công", exp:"Chỉ trả field cần thiết; không lộ mật khẩu/hash/PII thừa (OWASP API3)", pr:"P1", steps:["Gọi GET", "Soi body", "Xác nhận không có field nhạy cảm thừa"]},
+  {sub:"Bảo mật", lay:"api", tc:"Rate limiting → 429", pre:"Gọi vượt ngưỡng", exp:"HTTP 429 Too Many Requests + Retry-After (OWASP API4)", pr:"P2", steps:["Gọi GET vượt ngưỡng rate limit", "Xác nhận 429 & Retry-After"]},
+  {sub:"Bảo mật", lay:"api", tc:"HTTPS only", pre:"Gọi qua HTTP", exp:"Chỉ phục vụ HTTPS; HTTP bị chặn/redirect", pr:"P1", steps:["Gọi GET qua http://", "Xác nhận bị chặn/redirect sang https"]},
+  {sub:"Bảo mật", lay:"api", tc:"CORS cấu hình đúng", pre:"Gọi từ origin khác", exp:"Chỉ cho origin được phép; preflight đúng", pr:"P2", steps:["Gọi từ origin không cho phép", "Xác nhận bị CORS chặn"]},
+  {sub:"Bảo mật", lay:"api", tc:"GET là safe method (không side-effect)", pre:"Có bản ghi", exp:"Gọi GET nhiều lần KHÔNG thay đổi dữ liệu (RFC 9110: safe & idempotent)", pr:"P1", steps:["Gọi GET nhiều lần", "Kiểm dữ liệu không đổi & không tạo side-effect"]},
+  {sub:"Mã trạng thái & lỗi", lay:"api", tc:"Sai endpoint / URL không tồn tại → 404", pre:"Gọi path không có route", exp:"HTTP 404 (route không khớp); body lỗi chuẩn — phân biệt với 404 do id không tồn tại", pr:"P2", steps:["Gọi GET /duong-dan-khong-ton-tai", "Xác nhận HTTP 404 & body lỗi chuẩn"]},
+  {sub:"Mã trạng thái & lỗi", lay:"api", tc:"Đúng mã trạng thái theo ngữ cảnh", pre:"Các tình huống khác nhau", exp:"200/400/401/403/404/429/500 trả đúng ngữ cảnh", pr:"P1", steps:["Tạo từng tình huống", "Xác nhận mã HTTP đúng"]},
+  {sub:"Mã trạng thái & lỗi", lay:"api", tc:"Error body chuẩn, không lộ stack", pre:"Gây lỗi", exp:"Body lỗi có cấu trúc (code, message); KHÔNG lộ stack trace/thông tin hệ thống", pr:"P1", steps:["Gây lỗi 400/500", "Kiểm body lỗi có cấu trúc & không lộ nội bộ"]},
+  {sub:"Mã trạng thái & lỗi", lay:"api", tc:"405 khi method không hỗ trợ", pre:"Endpoint chỉ hỗ trợ GET", exp:"Gọi method khác → 405 Method Not Allowed + Allow header", pr:"P2", steps:["Gọi POST/DELETE lên endpoint GET-only", "Xác nhận 405 & header Allow"]},
+  {sub:"Header & Cache", lay:"api", tc:"ETag / If-None-Match → 304", pre:"Lần 2 gọi với ETag", exp:"Trả 304 Not Modified khi dữ liệu chưa đổi", pr:"P2", steps:["Gọi GET lấy ETag", "Gọi lại với If-None-Match", "Xác nhận 304"]},
+  {sub:"Header & Cache", lay:"api", tc:"Cache-Control đúng", pre:"Gọi GET", exp:"Cache-Control phù hợp (public/private/no-store theo độ nhạy dữ liệu)", pr:"P2", steps:["Gọi GET", "Kiểm header Cache-Control"]},
+  {sub:"Header & Cache", lay:"api", tc:"HEAD trả header giống GET, không body", pre:"Endpoint hỗ trợ HEAD", exp:"HEAD trả cùng header, không có body", pr:"P3", steps:["Gọi HEAD endpoint", "So header với GET; xác nhận không body"]},
+  {sub:"Hiệu năng", lay:"perf", tc:"Response time", pre:"Tải bình thường", exp:"p95 ≤ ngưỡng SLA (thường 300–800ms cho GET đọc)", pr:"P2", steps:["Đo p50/p95 thời gian phản hồi GET", "Xác nhận p95 đạt SLA"]},
+  {sub:"Hiệu năng", lay:"perf", tc:"Dữ liệu lớn không timeout", pre:"Tập dữ liệu lớn", exp:"Phân trang giảm tải; không timeout; truy vấn có index (tránh N+1)", pr:"P2", steps:["Gọi GET tập dữ liệu lớn", "Theo dõi thời gian & truy vấn", "Xác nhận không timeout & hiệu quả"]},
+];
 // Nguồn 2 — Feature: Login (chi tiết, có bước thực hiện) + các mục checklist tính năng/luồng
 const FEATURE_IDS = ["authsession","payment","notify","seo","analytics","legal","errors","interaction","responsive","a11y","security","content-i18n","perf","vitals","release"];
 const TC_FEAT = [];
 let n2 = 0;
 LOGIN_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"Login", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
+API_GET_TC.forEach(t=>{ n2++; TC_FEAT.push({ id:"TC-F-"+String(n2).padStart(3,"0"), group:"API GET", sub:t.sub, text:t.tc, api:"—", expected:t.exp, priority:t.pr, lay:t.lay, steps:t.steps }); });
 FEATURE_IDS.forEach(id=>{
   const sec = document.getElementById(id); if(!sec) return;
   const h = sec.querySelector("h3");
