@@ -2917,7 +2917,10 @@ document.getElementById("tcExport").addEventListener("click", ()=>{
   const blob = new Blob(["﻿"+csv], {type:"text/csv;charset=utf-8"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = isComp ? "testcases-component.csv" : "testcases-feature.csv";
+  const scope = tcFilter.value;
+  const prefix = isComp ? "component" : "feature";
+  const name = scope ? "-" + scope.replace(/[\/\\:*?"<>|]+/g," ").replace(/\s+/g," ").trim() : "";
+  a.href = url; a.download = prefix + name + ".csv";
   document.body.appendChild(a); a.click(); a.remove();
   URL.revokeObjectURL(url);
 });
